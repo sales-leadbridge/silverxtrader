@@ -3,300 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SilverX | Premium Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>SilverX | Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #0052cc; --green: #00bf63; --red: #ff4757; --dark: #0a0e17; }
-        body { background: var(--dark); color: white; font-family: sans-serif; margin: 0; padding-bottom: 50px; }
-        
+        :root { --primary: #0052cc; --green: #00bf63; --red: #ff4757; --bg: #f4f6f8; --card: #ffffff; }
+        body { background: var(--bg); color: #333; font-family: 'Poppins', sans-serif; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+
         /* HEADER */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #151a27; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #333; }
-        .header-logo { font-weight: bold; font-size: 20px; }
-        .header-logo span { color: var(--primary); }
-        .time-box { background: #eef2ff; color: #0052cc; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; }
+        .header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .logo { font-weight: 800; font-size: 20px; color: #111; }
+        .logo span { color: var(--primary); }
+        .clock { background: #f0f4ff; color: var(--primary); padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
 
-        /* TOP BUTTONS */
-        .top-nav { display: flex; gap: 10px; padding: 15px; }
-        .nav-btn { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; }
-        .btn-qtx { background: var(--green); color: white; }
-        .btn-vip { background: #ffcc00; color: black; }
-
-        /* SIGNAL CARDS */
-        .card { background: #fff; margin: 15px; border-radius: 25px; overflow: hidden; color: #333; border: 3px solid var(--primary); text-align: center; padding-bottom: 20px; transition: 0.5s; }
-        .card-header { background: var(--primary); color: white; padding: 12px; font-weight: bold; font-size: 18px; }
-        
-        /* GAUGE METER (TradingView Style) */
-        .gauge-container { position: relative; width: 200px; height: 100px; margin: 20px auto; overflow: hidden; }
-        .gauge-arc { position: absolute; width: 200px; height: 200px; border: 15px solid #eee; border-radius: 50%; border-bottom-color: transparent; border-left-color: transparent; transform: rotate(-45deg); }
-        .gauge-color { position: absolute; width: 200px; height: 200px; border: 15px solid transparent; border-radius: 50%; border-top-color: var(--red); border-right-color: var(--green); transform: rotate(-45deg); }
-        .gauge-needle { position: absolute; width: 2px; height: 80px; background: #333; bottom: 0; left: 50%; transform-origin: bottom; transform: rotate(0deg); transition: 2s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
-        
-        .signal-text { font-size: 22px; font-weight: bold; margin: 10px 0; text-transform: uppercase; }
-        .action-btn { width: 85%; padding: 15px; border-radius: 30px; border: none; background: var(--primary); color: white; font-weight: bold; font-size: 16px; cursor: pointer; }
-
-        /* SIDEBAR (KING MENU) */
-        .sidebar { position: fixed; top: 0; right: -100%; width: 80%; height: 100%; background: white; z-index: 2000; transition: 0.4s; padding: 20px; box-shadow: -5px 0 15px rgba(0,0,0,0.5); }
+        /* SIDEBAR MENU */
+        .sidebar { position: fixed; top: 0; right: -100%; width: 280px; height: 100%; background: #fff; box-shadow: -5px 0 20px rgba(0,0,0,0.1); z-index: 1000; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 20px; display: flex; flex-direction: column; }
         .sidebar.active { right: 0; }
-        .menu-item { display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid #eee; border-radius: 12px; margin-bottom: 10px; color: #333; text-decoration: none; font-weight: bold; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .menu-link { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 12px; color: #444; text-decoration: none; font-weight: 600; margin-bottom: 8px; transition: 0.2s; background: #f9f9f9; }
+        .menu-link:hover { background: #eef2ff; color: var(--primary); }
+
+        /* TOP ACTIONS */
+        .actions { padding: 20px 15px 10px; display: flex; gap: 10px; }
+        .act-btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-weight: 700; color: white; cursor: pointer; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .btn-quotex { background: var(--green); }
+        .btn-vip { background: #ffc107; color: #000; }
+
+        /* CARDS GRID */
+        .grid { padding: 15px; display: grid; gap: 15px; }
+        .card { background: var(--card); border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); text-align: center; border: 1px solid #eee; transition: 0.3s; }
+        .card-head { background: #f8f9fa; padding: 12px; font-weight: 700; font-size: 16px; border-bottom: 1px solid #eee; }
+
+        /* GAUGE METER (Advanced) */
+        .gauge-wrapper { position: relative; width: 180px; height: 90px; margin: 20px auto 0; overflow: hidden; }
+        .gauge-bg { width: 180px; height: 180px; border-radius: 50%; background: conic-gradient(from 180deg at 50% 100%, var(--red) 0deg 60deg, #e0e0e0 60deg 120deg, var(--green) 120deg 180deg); position: absolute; top: 0; left: 0; }
+        .gauge-cover { width: 140px; height: 140px; background: var(--card); border-radius: 50%; position: absolute; top: 20px; left: 20px; z-index: 2; }
+        .needle { width: 4px; height: 80px; background: #333; position: absolute; bottom: 0; left: 50%; transform-origin: bottom center; transform: rotate(-90deg); z-index: 3; transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1); border-radius: 4px; }
         
-        /* AD OVERLAY (Anti-Redirect) */
-        #ad-box { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; }
+        /* SIGNAL RESULT */
+        .result-box { padding: 20px; position: relative; z-index: 4; margin-top: -10px; }
+        .status { font-size: 18px; font-weight: 800; color: #888; margin-bottom: 15px; display: block; }
+        .scan-btn { width: 100%; padding: 14px; border-radius: 50px; border: none; background: var(--primary); color: white; font-weight: 700; cursor: pointer; font-size: 15px; box-shadow: 0 4px 15px rgba(0,82,204,0.25); transition: 0.2s; }
+        .scan-btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+
+        /* ADS OVERLAY (Sandboxed) */
+        #ad-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .ad-container { width: 90%; height: 80%; background: white; border-radius: 10px; overflow: hidden; position: relative; }
+        .timer-badge { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px; z-index: 10; }
         iframe { width: 100%; height: 100%; border: none; }
+        
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="header-logo">KING <span>TRADER</span></div>
-        <div class="time-box" id="clock">10:56:59 AM</div>
-        <i class="fas fa-bars" style="font-size: 24px; color: var(--primary);" onclick="toggleMenu()"></i>
+        <div class="logo">KING <span>TRADER</span></div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="clock" id="clock">--:--</div>
+            <i class="fas fa-bars" style="font-size: 22px; cursor: pointer;" onclick="toggleMenu()"></i>
+        </div>
     </div>
 
     <div class="sidebar" id="sidebar">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
-            <h2 style="color: var(--primary); margin: 0;">KING MENU</h2>
-            <i class="fas fa-times" onclick="toggleMenu()" style="font-size: 24px; color: #888;"></i>
+        <div class="sidebar-header">
+            <div class="logo">SILVER<span>X</span></div>
+            <i class="fas fa-times" style="font-size: 22px; cursor: pointer;" onclick="toggleMenu()"></i>
         </div>
-        <a href="https://wa.me/923064391353" class="menu-item"><i class="fab fa-whatsapp" style="color: green;"></i> WhatsApp VIP</a>
-        <a href="https://youtube.com/@kingtraderofficial45" class="menu-item"><i class="fab fa-youtube" style="color: red;"></i> YouTube Pro</a>
-        <a href="https://www.tiktok.com/@silverxtrader" class="menu-item"><i class="fab fa-tiktok"></i> TikTok Analysis</a>
-        <a href="https://market-qx.trade/en/sign-up?lid=1696715" class="menu-item"><i class="fas fa-paper-plane" style="color: #0088cc;"></i> Join Quotex</a>
-        <a href="#" onclick="showPrivacy()" class="menu-item"><i class="fas fa-shield-alt" style="color: var(--primary);"></i> Privacy Policy</a>
+        <a href="https://wa.me/923064391353" class="menu-link"><i class="fab fa-whatsapp" style="color:var(--green)"></i> WhatsApp VIP</a>
+        <a href="https://youtube.com/@kingtraderofficial45" class="menu-link"><i class="fab fa-youtube" style="color:var(--red)"></i> YouTube Pro</a>
+        <a href="https://www.tiktok.com/@silverxtrader" class="menu-link"><i class="fab fa-tiktok"></i> TikTok Analysis</a>
+        <a href="https://market-qx.trade/en/sign-up?lid=1696715" class="menu-link"><i class="fas fa-chart-line" style="color:#0052cc"></i> Join Quotex</a>
+        <a href="#" onclick="alert('Policies are on login screen.')" class="menu-link"><i class="fas fa-shield-alt"></i> Privacy Policy</a>
     </div>
 
-    <div class="top-nav">
-        <button class="nav-btn btn-qtx" onclick="window.open('https://market-qx.trade/en/sign-up?lid=1696715')">JOIN QUOTEX</button>
-        <button class="nav-btn btn-vip" onclick="window.open('https://wa.me/923064391353')">VIP SIGNAL</button>
+    <div class="actions">
+        <button class="act-btn btn-quotex" onclick="window.open('https://market-qx.trade/en/sign-up?lid=1696715')">JOIN QUOTEX</button>
+        <button class="act-btn btn-vip" onclick="window.open('https://wa.me/923064391353')">VIP ACCESS</button>
     </div>
 
-    <div id="pairs-list"></div>
-
-    <div id="ad-box">
-        <div id="timer-ui" style="position: absolute; top: 20px; width: 100%; text-align: center; color: white; z-index: 10; font-size: 24px; font-weight: bold;">
-            Processing Data: <span id="sec">20</span>s
+    <div class="grid" id="grid">
         </div>
-        <iframe id="ad-frame" sandbox="allow-forms allow-scripts allow-pointer-lock"></iframe>
+
+    <div id="ad-modal">
+        <div style="color: white; margin-bottom: 15px; font-weight: bold; font-size: 18px;">ANALYZING MARKET...</div>
+        <div class="ad-container">
+            <div class="timer-badge">WAIT <span id="ad-timer">20</span>s</div>
+            <iframe id="ad-frame" sandbox="allow-forms allow-scripts allow-pointer-lock"></iframe>
+        </div>
+        <div style="color: #aaa; font-size: 12px; margin-top: 10px;">Do not close window</div>
     </div>
 
     <script>
-        const pairs = ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "EUR/JPY", "BTC/USD", "ETH/USD", "SOL/USD", "LTC/USD"];
-        const adLinks = [
-            "https://www.effectivegatecpm.com/zu9fwwufi?key=5c01f6e26f4b9943913f0d36bfa48f6d",
-            "https://www.effectivegatecpm.com/m3re02atee?key=cebdb997452acac01a6d39d48dcb0e68"
-        ];
-
-        // Clock
-        setInterval(() => {
-            const d = new Date();
-            document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
-        }, 1000);
-
-        function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
-
-        // Render Pairs
-        const list = document.getElementById('pairs-list');
-        pairs.forEach((p, i) => {
-            list.innerHTML += `
-                <div class="card" id="card-${i}">
-                    <div class="card-header">${p}</div>
-                    <div class="gauge-container">
-                        <div class="gauge-arc"></div>
-                        <div class="gauge-color"></div>
-                        <div class="gauge-needle" id="needle-${i}"></div>
-                    </div>
-                    <div class="signal-text" id="status-${i}">READY TO SCAN</div>
-                    <button class="action-btn" id="btn-${i}" onclick="startScan(${i})">GET VIP SIGNAL</button>
-                </div>
-            `;
-        });
-
-        function startScan(id) {
-            if(!navigator.onLine) return alert("Check Internet!");
-            
-            const adBox = document.getElementById('ad-box');
-            const frame = document.getElementById('ad-frame');
-            const secTxt = document.getElementById('sec');
-            
-            frame.src = adLinks[Math.floor(Math.random() * adLinks.length)];
-            adBox.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-
-            let count = 20;
-            const t = setInterval(() => {
-                count--;
-                secTxt.innerText = count;
-                if(count <= 0) {
-                    clearInterval(t);
-                    adBox.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                    showSignal(id);
-                }
-            }, 1000);
-        }
-
-        function showSignal(id) {
-            const isBuy = Math.random() > 0.5;
-            const needle = document.getElementById(`needle-${id}`);
-            const status = document.getElementById(`status-${id}`);
-            const card = document.getElementById(`card-${id}`);
-            const btn = document.getElementById(`btn-${id}`);
-
-            const deg = isBuy ? (45 + Math.random()*45) : (-45 - Math.random()*45);
-            needle.style.transform = `rotate(${deg}deg)`;
-            
-            status.innerText = isBuy ? "STRONG BUY" : "STRONG SELL";
-            status.style.color = isBuy ? "#00bf63" : "#ff4757";
-            card.style.borderColor = isBuy ? "#00bf63" : "#ff4757";
-            
-            let wait = 60;
-            btn.disabled = true;
-            const wt = setInterval(() => {
-                wait--;
-                btn.innerText = `WAIT ${wait}s`;
-                if(wait <= 0) {
-                    clearInterval(wt);
-                    btn.disabled = false;
-                    btn.innerText = "GET VIP SIGNAL";
-                }
-            }, 1000);
-        }
-
-        function showPrivacy() {
-            alert("1. SilverX Trader is not responsible for losses.\n2. Signals are 85% accurate, use money management.\n3. Trading involves high risk.");
-        }
-    </script>
-</body>
-</html>
-];
-
-        // 8 Adsterra Direct Links
+        const pairs = ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "EUR/JPY", "BTC/USD", "ETH/USD", "SOL/USD", "LTC/USD", "XRP/USD", "DOGE/USD", "ADA/USD", "DOT/USD", "GBP/JPY", "NZD/USD"];
+        
         const adLinks = [
             "https://www.effectivegatecpm.com/zu9fwwufi?key=5c01f6e26f4b9943913f0d36bfa48f6d",
             "https://www.effectivegatecpm.com/m3re02atee?key=cebdb997452acac01a6d39d48dcb0e68",
             "https://www.effectivegatecpm.com/njujpaga3n?key=2636c1fb3975328fd5e16e532dda0482",
-            "https://www.effectivegatecpm.com/u03w5rk4?key=d5c708947384bde96b27f42a724b41d9",
-            "https://www.effectivegatecpm.com/szh2badub?key=8aef9f0adbfa95686459aaeeea7db26a",
-            "https://www.effectivegatecpm.com/wzb0ven1?key=87866ac53935e941e61c53d03338eb0a",
-            "https://www.effectivegatecpm.com/d29maviwb?key=f03e146f78029f3a63200d7d63db6e42",
-            "https://www.effectivegatecpm.com/p85rfz3v8?key=b50205713bdb8a8e9b85dc14013c31f7"
+            "https://www.effectivegatecpm.com/u03w5rk4?key=d5c708947384bde96b27f42a724b41d9"
         ];
 
-        // --- FUNCTIONS ---
-
-        // 1. Clock
-        setInterval(() => {
-            const now = new Date();
-            let hours = now.getHours();
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12; 
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            document.getElementById('clock').innerText = `${hours}:${minutes} ${ampm}`;
-        }, 1000);
-
-        // 2. Menu Toggle
-        function toggleMenu() {
-            document.getElementById('sidebar').classList.toggle('open');
-        }
-
-        // 3. Internet Check
-        function checkNet() {
-            const screen = document.getElementById('offline-mode');
-            if(navigator.onLine) { screen.style.display = 'none'; } 
-            else { screen.style.display = 'flex'; }
-        }
-        window.addEventListener('online', checkNet);
-        window.addEventListener('offline', checkNet);
-        checkNet(); // Initial check
-
-        // 4. Render Pairs
-        const container = document.getElementById('pairs-container');
-        pairs.forEach((pair, index) => {
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.id = `card-${index}`;
-            div.innerHTML = `
-                <span class="pair-name">${pair}</span>
-                <div class="meter"><div class="meter-fill" id="meter-${index}"></div></div>
-                <button class="signal-btn" id="btn-${index}" onclick="startSignalProcess(${index})">GET SIGNAL</button>
+        // 1. Render Cards
+        const grid = document.getElementById('grid');
+        pairs.forEach((pair, i) => {
+            grid.innerHTML += `
+                <div class="card" id="card-${i}">
+                    <div class="card-head" id="head-${i}">${pair}</div>
+                    <div class="gauge-wrapper">
+                        <div class="gauge-bg"></div>
+                        <div class="gauge-cover"></div>
+                        <div class="needle" id="needle-${i}"></div>
+                    </div>
+                    <div class="result-box">
+                        <span class="status" id="status-${i}">NEUTRAL</span>
+                        <button class="scan-btn" id="btn-${i}" onclick="processSignal(${i})">GET SIGNAL</button>
+                    </div>
+                </div>
             `;
-            container.appendChild(div);
         });
 
-        // 5. Signal Process (Ad -> Wait -> Signal)
-        function startSignalProcess(index) {
-            // Check Internet
-            if(!navigator.onLine) return;
+        // 2. Logic
+        function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
+        
+        setInterval(() => {
+            const d = new Date();
+            document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        }, 1000);
 
-            // Random Ad Link
-            const randomLink = adLinks[Math.floor(Math.random() * adLinks.length)];
+        function processSignal(id) {
+            if(!navigator.onLine) return alert("No Internet Connection");
             
-            // Open Ad (User must interact)
-            window.open(randomLink, '_blank');
-
-            // Show Overlay (Lock Screen)
-            const overlay = document.getElementById('ad-overlay');
-            const countdownText = document.getElementById('countdown');
-            overlay.style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Scroll lock
-
+            // Show Ad
+            const modal = document.getElementById('ad-modal');
+            const frame = document.getElementById('ad-frame');
+            const timerSpan = document.getElementById('ad-timer');
+            
+            // Random Link
+            frame.src = adLinks[Math.floor(Math.random() * adLinks.length)];
+            modal.style.display = 'flex';
+            
             let timeLeft = 20;
-            countdownText.innerText = timeLeft;
-
+            timerSpan.innerText = timeLeft;
+            
             const timer = setInterval(() => {
                 timeLeft--;
-                countdownText.innerText = timeLeft;
+                timerSpan.innerText = timeLeft;
                 if(timeLeft <= 0) {
                     clearInterval(timer);
-                    overlay.style.display = 'none';
-                    document.body.style.overflow = 'auto'; // Unlock
-                    generateSignal(index);
+                    modal.style.display = 'none';
+                    frame.src = ""; // Stop ad
+                    generateResult(id);
                 }
             }, 1000);
         }
 
-        // 6. Generate Logic (Simulation of RSI/MA)
-        function generateSignal(index) {
-            const btn = document.getElementById(`btn-${index}`);
-            const card = document.getElementById(`card-${index}`);
-            const meter = document.getElementById(`meter-${index}`);
-            
-            // Randomly decide Signal (Weight adjust kar sakte hain)
+        function generateResult(id) {
+            const btn = document.getElementById(`btn-${id}`);
+            const status = document.getElementById(`status-${id}`);
+            const needle = document.getElementById(`needle-${id}`);
+            const head = document.getElementById(`head-${id}`);
+            const card = document.getElementById(`card-${id}`);
+
+            // Logic: Random Buy/Sell
             const isBuy = Math.random() > 0.5;
             
-            // Update UI
+            // Animation
+            const angle = isBuy ? (40 + Math.random() * 40) : (-40 - Math.random() * 40); // 40 to 80 deg (Green) or -40 to -80 (Red)
+            
+            needle.style.transform = `rotate(${angle}deg)`;
+            
             if(isBuy) {
-                card.className = "card buy";
-                btn.className = "signal-btn buy-btn";
-                btn.innerText = "CALL (BUY)";
-                meter.style.width = "85%";
-                meter.style.background = "#00bf63";
+                status.innerText = "STRONG BUY";
+                status.style.color = "var(--green)";
+                head.style.background = "rgba(0, 191, 99, 0.1)";
+                head.style.color = "var(--green)";
+                card.style.border = "2px solid var(--green)";
+                btn.style.background = "var(--green)";
             } else {
-                card.className = "card sell";
-                btn.className = "signal-btn sell-btn";
-                btn.innerText = "PUT (SELL)";
-                meter.style.width = "20%";
-                meter.style.background = "#ff4757";
+                status.innerText = "STRONG SELL";
+                status.style.color = "var(--red)";
+                head.style.background = "rgba(255, 71, 87, 0.1)";
+                head.style.color = "var(--red)";
+                card.style.border = "2px solid var(--red)";
+                btn.style.background = "var(--red)";
             }
 
-            // Reverse Timer (1 Minute Cooldown)
-            let cooldown = 60;
+            // Cooldown
+            let cd = 60;
             btn.disabled = true;
+            btn.innerText = `WAIT ${cd}s`;
             
-            const coolTimer = setInterval(() => {
-                cooldown--;
-                btn.innerText = `WAIT ${cooldown}s`;
-                if(cooldown <= 0) {
-                    clearInterval(coolTimer);
+            const cdTimer = setInterval(() => {
+                cd--;
+                btn.innerText = `WAIT ${cd}s`;
+                if(cd <= 0) {
+                    clearInterval(cdTimer);
                     btn.disabled = false;
                     btn.innerText = "GET SIGNAL";
-                    btn.className = "signal-btn"; // Reset color
-                    card.className = "card"; // Reset border
-                    meter.style.width = "50%";
-                    meter.style.background = "#888";
+                    btn.style.background = "var(--primary)";
+                    status.innerText = "NEUTRAL";
+                    status.style.color = "#888";
+                    head.style.background = "#f8f9fa";
+                    head.style.color = "#333";
+                    card.style.border = "1px solid #eee";
+                    needle.style.transform = "rotate(-90deg)"; // Reset needle center (relative to bottom-center, CSS rotation logic)
+                    // Actually my needle logic: -90 is left. 0 is up. 
+                    // Let's fix reset:
+                    needle.style.transform = "rotate(0deg)"; 
                 }
             }, 1000);
         }
     </script>
 </body>
 </html>
+
