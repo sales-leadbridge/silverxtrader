@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SilverX Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #0a0e17; color: white; font-family: sans-serif; margin: 0; overflow-x: hidden; }
+        
+        /* HEADER */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #151a27; border-bottom: 2px solid #0052cc; position: sticky; top: 0; z-index: 100; }
+        .brand { font-size: 18px; font-weight: bold; color: #0052cc; }
+        .clock { font-size: 14px; color: #aaa; margin-right: 10px; }
+        .menu-icon { font-size: 24px; cursor: pointer; }
+
+        /* SIDEBAR */
+        .sidebar { position: fixed; top: 0; right: -250px; width: 250px; height: 100%; background: #111; transition: 0.3s; z-index: 200; padding-top: 60px; border-left: 1px solid #333; }
+        .sidebar.open { right: 0; }
+        .sidebar a { display: block; padding: 15px; color: white; text-decoration: none; border-bottom: 1px solid #222; font-size: 14px; }
+        .sidebar a:hover { background: #0052cc; }
+        .close-btn { position: absolute; top: 15px; left: 15px; font-size: 24px; cursor: pointer; color: red; }
+        .menu-title { position: absolute; top: 18px; left: 60px; font-weight: bold; color: #0052cc; }
+
+        /* MAIN CONTENT */
+        .container { padding: 15px; text-align: center; }
+        
+        /* TOP BUTTONS */
+        .top-actions { display: flex; gap: 10px; margin-bottom: 20px; }
+        .action-btn { flex: 1; padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
+        .btn-quotex { background: #00bf63; }
+        .btn-vip { background: #f1c40f; color: black; }
+
+        /* PAIR GRID */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .card { background: #1e2533; padding: 15px; border-radius: 10px; border: 1px solid #333; transition: 0.3s; }
+        
+        /* SIGNAL STYLES */
+        .card.buy { border: 2px solid #00bf63; box-shadow: 0 0 10px #00bf6355; }
+        .card.sell { border: 2px solid #ff4757; box-shadow: 0 0 10px #ff475755; }
+
+        .pair-name { font-weight: bold; font-size: 14px; margin-bottom: 5px; display: block; }
+        .meter { height: 4px; background: #333; margin: 10px 0; border-radius: 2px; position: relative; }
+        .meter-fill { height: 100%; width: 50%; background: #888; border-radius: 2px; transition: 1s; }
+        
+        .signal-btn { width: 100%; padding: 10px; border: none; border-radius: 5px; background: #0052cc; color: white; font-weight: bold; cursor: pointer; }
+        .signal-btn.buy-btn { background: #00bf63; }
+        .signal-btn.sell-btn { background: #ff4757; }
+        
+        /* AD OVERLAY */
+        #ad-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 5000; flex-direction: column; justify-content: center; align-items: center; }
+        .loader { border: 5px solid #f3f3f3; border-top: 5px solid #0052cc; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* OFFLINE SCREEN */
+        #offline-mode { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 9999; color: red; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+    </style>
+</head>
+<body>
+
+    <div id="offline-mode" style="display: none;">
+        <h1>CONNECTION LOST</h1>
+        <p>Bot halted. Please reconnect.</p>
+    </div>
+
+    <div id="ad-overlay">
+        <div class="loader"></div>
+        <p style="margin-top: 20px; font-size: 18px;">Analyzing Market Data...</p>
+        <p id="countdown" style="font-size: 24px; color: #0052cc; font-weight: bold;">20</p>
+        <p style="font-size: 12px; color: #777;">Do not close the window</p>
+    </div>
+
+    <div class="header">
+        <div class="brand">SilverX Trader</div>
+        <div style="display: flex; align-items: center;">
+            <div class="clock" id="clock">00:00 PM</div>
+            <i class="fas fa-bars menu-icon" onclick="toggleMenu()"></i>
+        </div>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <span class="close-btn" onclick="toggleMenu()">&times;</span>
+        <span class="menu-title">SilverX Menu</span>
+        <a href="https://market-qx.trade/en/sign-up?lid=1696715" target="_blank"><i class="fas fa-chart-line"></i> Join Quotex</a>
+        <a href="https://wa.me/923064391353" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp Help</a>
+        <a href="https://youtube.com/@kingtraderofficial45?si=nOsFRqwlVdsOfI5G" target="_blank"><i class="fab fa-youtube"></i> YouTube Training</a>
+        <a href="https://www.tiktok.com/@silverxtrader?_r=1&_t=ZS-92pyHC7vg00" target="_blank"><i class="fab fa-tiktok"></i> TikTok Analysis</a>
+        <a href="#" onclick="alert('Privacy Policy is on Login Screen')"><i class="fas fa-shield-alt"></i> Privacy Policy</a>
+    </div>
+
+    <div class="container">
+        <div class="top-actions">
+            <button class="action-btn btn-quotex" onclick="window.open('https://market-qx.trade/en/sign-up?lid=1696715')">JOIN QUOTEX</button>
+            <button class="action-btn btn-vip" onclick="window.open('https://wa.me/923064391353')">VIP ACCESS</button>
+        </div>
+
+        <div class="grid" id="pairs-container">
+            </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const pairs = [
+            "EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", 
+            "USD/CHF", "NZD/USD", "EUR/JPY", "GBP/JPY", "EUR/GBP", // 10 Forex
+            "BTC/USD", "ETH/USD", "LTC/USD", "XRP/USD", "DOGE/USD", "SOL/USD" // 6 Crypto
+        ];
+
+        // 8 Adsterra Direct Links
+        const adLinks = [
+            "https://www.effectivegatecpm.com/zu9fwwufi?key=5c01f6e26f4b9943913f0d36bfa48f6d",
+            "https://www.effectivegatecpm.com/m3re02atee?key=cebdb997452acac01a6d39d48dcb0e68",
+            "https://www.effectivegatecpm.com/njujpaga3n?key=2636c1fb3975328fd5e16e532dda0482",
+            "https://www.effectivegatecpm.com/u03w5rk4?key=d5c708947384bde96b27f42a724b41d9",
+            "https://www.effectivegatecpm.com/szh2badub?key=8aef9f0adbfa95686459aaeeea7db26a",
+            "https://www.effectivegatecpm.com/wzb0ven1?key=87866ac53935e941e61c53d03338eb0a",
+            "https://www.effectivegatecpm.com/d29maviwb?key=f03e146f78029f3a63200d7d63db6e42",
+            "https://www.effectivegatecpm.com/p85rfz3v8?key=b50205713bdb8a8e9b85dc14013c31f7"
+        ];
+
+        // --- FUNCTIONS ---
+
+        // 1. Clock
+        setInterval(() => {
+            const now = new Date();
+            let hours = now.getHours();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('clock').innerText = `${hours}:${minutes} ${ampm}`;
+        }, 1000);
+
+        // 2. Menu Toggle
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // 3. Internet Check
+        function checkNet() {
+            const screen = document.getElementById('offline-mode');
+            if(navigator.onLine) { screen.style.display = 'none'; } 
+            else { screen.style.display = 'flex'; }
+        }
+        window.addEventListener('online', checkNet);
+        window.addEventListener('offline', checkNet);
+        checkNet(); // Initial check
+
+        // 4. Render Pairs
+        const container = document.getElementById('pairs-container');
+        pairs.forEach((pair, index) => {
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.id = `card-${index}`;
+            div.innerHTML = `
+                <span class="pair-name">${pair}</span>
+                <div class="meter"><div class="meter-fill" id="meter-${index}"></div></div>
+                <button class="signal-btn" id="btn-${index}" onclick="startSignalProcess(${index})">GET SIGNAL</button>
+            `;
+            container.appendChild(div);
+        });
+
+        // 5. Signal Process (Ad -> Wait -> Signal)
+        function startSignalProcess(index) {
+            // Check Internet
+            if(!navigator.onLine) return;
+
+            // Random Ad Link
+            const randomLink = adLinks[Math.floor(Math.random() * adLinks.length)];
+            
+            // Open Ad (User must interact)
+            window.open(randomLink, '_blank');
+
+            // Show Overlay (Lock Screen)
+            const overlay = document.getElementById('ad-overlay');
+            const countdownText = document.getElementById('countdown');
+            overlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Scroll lock
+
+            let timeLeft = 20;
+            countdownText.innerText = timeLeft;
+
+            const timer = setInterval(() => {
+                timeLeft--;
+                countdownText.innerText = timeLeft;
+                if(timeLeft <= 0) {
+                    clearInterval(timer);
+                    overlay.style.display = 'none';
+                    document.body.style.overflow = 'auto'; // Unlock
+                    generateSignal(index);
+                }
+            }, 1000);
+        }
+
+        // 6. Generate Logic (Simulation of RSI/MA)
+        function generateSignal(index) {
+            const btn = document.getElementById(`btn-${index}`);
+            const card = document.getElementById(`card-${index}`);
+            const meter = document.getElementById(`meter-${index}`);
+            
+            // Randomly decide Signal (Weight adjust kar sakte hain)
+            const isBuy = Math.random() > 0.5;
+            
+            // Update UI
+            if(isBuy) {
+                card.className = "card buy";
+                btn.className = "signal-btn buy-btn";
+                btn.innerText = "CALL (BUY)";
+                meter.style.width = "85%";
+                meter.style.background = "#00bf63";
+            } else {
+                card.className = "card sell";
+                btn.className = "signal-btn sell-btn";
+                btn.innerText = "PUT (SELL)";
+                meter.style.width = "20%";
+                meter.style.background = "#ff4757";
+            }
+
+            // Reverse Timer (1 Minute Cooldown)
+            let cooldown = 60;
+            btn.disabled = true;
+            
+            const coolTimer = setInterval(() => {
+                cooldown--;
+                btn.innerText = `WAIT ${cooldown}s`;
+                if(cooldown <= 0) {
+                    clearInterval(coolTimer);
+                    btn.disabled = false;
+                    btn.innerText = "GET SIGNAL";
+                    btn.className = "signal-btn"; // Reset color
+                    card.className = "card"; // Reset border
+                    meter.style.width = "50%";
+                    meter.style.background = "#888";
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
