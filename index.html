@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SilverX Trader - Secure Login</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <style>
+        body { margin: 0; padding: 0; background-color: #0a0e17; color: white; font-family: 'Arial', sans-serif; overflow: hidden; /* Scroll Locked initially */ }
+        
+        /* Privacy Modal Styling */
+        #privacy-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; justify-content: center; align-items: center; }
+        .policy-box { background: #151a27; width: 90%; max-height: 80vh; border: 2px solid #0052cc; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; }
+        .policy-content { overflow-y: scroll; text-align: left; padding-right: 10px; flex-grow: 1; font-size: 13px; color: #ccc; line-height: 1.6; }
+        .policy-btn { margin-top: 15px; background: #0052cc; color: white; padding: 15px; border: none; font-size: 16px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
+        h2 { color: #0052cc; text-align: center; border-bottom: 1px solid #333; padding-bottom: 10px; }
+
+        /* Login Screen Styling */
+        .login-container { display: none; height: 100vh; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        .input-field { width: 100%; max-width: 350px; padding: 15px; margin: 10px 0; background: #1e2533; border: 1px solid #333; color: white; border-radius: 5px; }
+        .main-btn { width: 100%; max-width: 380px; padding: 15px; margin-top: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .email-btn { background: #0052cc; color: white; }
+        .google-btn { background: #db4437; color: white; }
+        
+        /* Internet Check Overlay */
+        #offline-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; text-align: center; justify-content: center; align-items: center; flex-direction: column; }
+    </style>
+</head>
+<body>
+
+    <div id="offline-screen">
+        <h1 style="color: red;">NO INTERNET CONNECTION</h1>
+        <p>SilverX Trader requires an active connection.</p>
+    </div>
+
+    <div id="privacy-modal">
+        <div class="policy-box">
+            <h2>PRIVACY & TERMS</h2>
+            <div class="policy-content">
+                <p><strong>1. General Disclaimer:</strong> SilverX Trader is an educational tool. We do not guarantee any profits. Trading involves significant financial risk, and you may lose your entire capital.</p>
+                <p><strong>2. No Financial Advice:</strong> Signals provided are based on automated algorithms and technical analysis. They should not be considered as professional financial advice.</p>
+                <p><strong>3. Use at Your Own Risk:</strong> By using this application, you agree that you are fully responsible for your trading decisions. SilverX Trader is not liable for any losses incurred.</p>
+                <p><strong>4. Third-Party Links:</strong> This app contains links to third-party services (e.g., Quotex, Adsterra). We are not responsible for the content or privacy practices of these external sites.</p>
+                <p><strong>5. Market Volatility:</strong> Cryptocurrency and Forex markets are highly volatile. Past performance of signals does not guarantee future results.</p>
+                <p><strong>6. Software Availability:</strong> We do not guarantee 100% uptime. Technical glitches, internet failures, or maintenance may interrupt services.</p>
+                <p><strong>7. No Liability for Loss:</strong> Under no circumstances shall SilverX Trader, its developers, or affiliates be liable for any direct, indirect, or consequential damages resulting from the use of this app.</p>
+                <p><strong>8. Advertising:</strong> This app uses advertising to support development. Interaction with ads is voluntary, but necessary to access certain features.</p>
+                <p><strong>9. Age Restriction:</strong> You must be at least 18 years old to use this application and participate in trading activities.</p>
+                <p><strong>10. Data Privacy:</strong> We respect your privacy. Your login data is handled securely via Google Firebase, but we are not responsible for third-party breaches.</p>
+                <p><strong>11. Geographical Restrictions:</strong> Users are responsible for ensuring that trading is legal in their jurisdiction/country.</p>
+                <p><strong>12. Acceptance:</strong> Clicking "I Accept" constitutes a legal agreement to these terms. If you do not agree, please close the application immediately.</p>
+            </div>
+            <button class="policy-btn" onclick="acceptPolicy()">I ACCEPT & PROCEED</button>
+        </div>
+    </div>
+
+    <div class="login-container" id="login-screen">
+        <h1 style="color: #0052cc;">SILVER X TRADER</h1>
+        <p>Access the Premium Bot</p>
+        
+        <input type="email" id="email" class="input-field" placeholder="Email Address">
+        <input type="password" id="password" class="input-field" placeholder="Password">
+        
+        <button class="main-btn email-btn" onclick="emailLogin()">LOGIN / SIGNUP</button>
+        <p>OR</p>
+        <button class="main-btn google-btn" onclick="googleLogin()">SIGN IN WITH GOOGLE</button>
+    </div>
+
+    <script>
+        // --- 1. PASTE YOUR FIREBASE CONFIG HERE ---
+const firebaseConfig = {
+  apiKey: "AIzaSyAyXzJ1UUdtWe96NjiQbVCqnWdIv8XakhA",
+    authDomain: "silverxtrader.firebaseapp.com",
+      projectId: "silverxtrader",
+        storageBucket: "silverxtrader.firebasestorage.app",
+          messagingSenderId: "46330013690",
+            appId: "1:46330013690:web:c2aad241ad7abd49e0e643",
+              measurementId: "G-HX4771EN75"
+              };
+        
+        // Initialize Firebase
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const auth = firebase.auth();
+
+        // Internet Check
+        function updateOnlineStatus() {
+            const screen = document.getElementById('offline-screen');
+            if(navigator.onLine) { screen.style.display = 'none'; } 
+            else { screen.style.display = 'flex'; }
+        }
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+
+        // Privacy Policy Logic
+        function acceptPolicy() {
+            document.getElementById('privacy-modal').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+            document.body.style.overflow = 'auto'; // Unlock scroll
+        }
+
+        // Login Logic
+        function googleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).then(() => {
+                window.location.href = "dashboard.html";
+            }).catch(err => alert(err.message));
+        }
+
+        function emailLogin() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            auth.signInWithEmailAndPassword(email, pass)
+                .then(() => window.location.href = "dashboard.html")
+                .catch(() => {
+                    auth.createUserWithEmailAndPassword(email, pass)
+                        .then(() => alert("Account Created! Login again."))
+                        .catch(err => alert(err.message));
+                });
+        }
+    </script>
+</body>
+</html>
