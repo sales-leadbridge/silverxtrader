@@ -3,217 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SilverX | Dashboard</title>
+    <title>SilverX Trader | Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #0052cc; --green: #00bf63; --red: #ff4757; --bg: #f4f6f8; --card: #ffffff; }
-        body { background: var(--bg); color: #333; font-family: 'Poppins', sans-serif; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+        :root { --blue: #0052cc; --green: #00bf63; --red: #ff4757; --dark: #151a27; --card: #ffffff; --bg: #f4f7fa; }
+        body { background: var(--bg); font-family: 'Poppins', sans-serif; margin: 0; padding-bottom: 60px; overflow-x: hidden; }
 
         /* HEADER */
-        .header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
-        .logo { font-weight: 800; font-size: 20px; color: #111; }
-        .logo span { color: var(--primary); }
-        .clock { background: #f0f4ff; color: var(--primary); padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+        .header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 500; }
+        .logo { font-size: 20px; font-weight: 800; color: #222; letter-spacing: -0.5px; }
+        .logo span { color: var(--blue); }
+        .time-badge { background: #eef4ff; color: var(--blue); padding: 5px 12px; border-radius: 50px; font-size: 13px; font-weight: 600; }
 
         /* SIDEBAR MENU */
-        .sidebar { position: fixed; top: 0; right: -100%; width: 280px; height: 100%; background: #fff; box-shadow: -5px 0 20px rgba(0,0,0,0.1); z-index: 1000; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 20px; display: flex; flex-direction: column; }
+        .sidebar { position: fixed; top: 0; right: -100%; width: 280px; height: 100%; background: white; z-index: 1000; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -10px 0 30px rgba(0,0,0,0.1); padding: 25px; box-sizing: border-box; }
         .sidebar.active { right: 0; }
-        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .menu-link { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 12px; color: #444; text-decoration: none; font-weight: 600; margin-bottom: 8px; transition: 0.2s; background: #f9f9f9; }
-        .menu-link:hover { background: #eef2ff; color: var(--primary); }
+        .menu-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .menu-item { display: flex; align-items: center; gap: 15px; padding: 15px; color: #444; text-decoration: none; font-weight: 600; border-radius: 12px; margin-bottom: 8px; transition: 0.2s; background: #f9f9f9; }
+        .menu-item:hover { background: var(--blue); color: white; }
+        .menu-item i { width: 20px; text-align: center; }
 
-        /* TOP ACTIONS */
-        .actions { padding: 20px 15px 10px; display: flex; gap: 10px; }
-        .act-btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-weight: 700; color: white; cursor: pointer; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .btn-quotex { background: var(--green); }
-        .btn-vip { background: #ffc107; color: #000; }
+        /* TOP BUTTONS */
+        .hero-btns { padding: 20px 15px 10px; display: flex; gap: 12px; }
+        .h-btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-weight: 700; color: white; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: 0.2s; }
+        .btn-qx { background: var(--green); }
+        .btn-vip { background: #ffbe0b; color: #000; }
+        .h-btn:active { transform: scale(0.97); }
 
-        /* CARDS GRID */
-        .grid { padding: 15px; display: grid; gap: 15px; }
-        .card { background: var(--card); border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); text-align: center; border: 1px solid #eee; transition: 0.3s; }
-        .card-head { background: #f8f9fa; padding: 12px; font-weight: 700; font-size: 16px; border-bottom: 1px solid #eee; }
-
-        /* GAUGE METER (Advanced) */
-        .gauge-wrapper { position: relative; width: 180px; height: 90px; margin: 20px auto 0; overflow: hidden; }
-        .gauge-bg { width: 180px; height: 180px; border-radius: 50%; background: conic-gradient(from 180deg at 50% 100%, var(--red) 0deg 60deg, #e0e0e0 60deg 120deg, var(--green) 120deg 180deg); position: absolute; top: 0; left: 0; }
-        .gauge-cover { width: 140px; height: 140px; background: var(--card); border-radius: 50%; position: absolute; top: 20px; left: 20px; z-index: 2; }
-        .needle { width: 4px; height: 80px; background: #333; position: absolute; bottom: 0; left: 50%; transform-origin: bottom center; transform: rotate(-90deg); z-index: 3; transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1); border-radius: 4px; }
+        /* GRID */
+        .pair-grid { display: grid; padding: 15px; gap: 15px; }
         
-        /* SIGNAL RESULT */
-        .result-box { padding: 20px; position: relative; z-index: 4; margin-top: -10px; }
-        .status { font-size: 18px; font-weight: 800; color: #888; margin-bottom: 15px; display: block; }
-        .scan-btn { width: 100%; padding: 14px; border-radius: 50px; border: none; background: var(--primary); color: white; font-weight: 700; cursor: pointer; font-size: 15px; box-shadow: 0 4px 15px rgba(0,82,204,0.25); transition: 0.2s; }
-        .scan-btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+        /* PREMIUM CARD */
+        .card { background: var(--card); border-radius: 20px; padding: 0; box-shadow: 0 5px 20px rgba(0,0,0,0.03); border: 1px solid #edf0f5; text-align: center; overflow: hidden; position: relative; transition: 0.3s; }
+        .card-title { background: #fcfcfc; padding: 12px; font-weight: 700; font-size: 16px; border-bottom: 1px solid #edf0f5; color: #333; }
+        
+        /* TRADINGVIEW GAUGE STYLE */
+        .gauge-area { position: relative; width: 200px; height: 100px; margin: 20px auto 5px; overflow: hidden; }
+        .gauge-bg { width: 200px; height: 200px; border-radius: 50%; background: conic-gradient(from 180deg at 50% 100%, var(--red) 0deg 70deg, #e0e0e0 70deg 110deg, var(--green) 110deg 180deg); position: absolute; top: 0; left: 0; }
+        .gauge-mask { width: 160px; height: 160px; background: white; border-radius: 50%; position: absolute; top: 20px; left: 20px; z-index: 2; }
+        .needle { width: 4px; height: 90px; background: #2d3436; position: absolute; bottom: 0; left: 50%; transform-origin: bottom center; transform: rotate(-90deg); z-index: 3; transition: transform 1s ease-out; border-radius: 5px 5px 0 0; }
+        
+        /* SIGNAL CONTROLS */
+        .ctrl-box { padding: 15px 20px 25px; position: relative; z-index: 5; }
+        .sig-status { font-weight: 800; font-size: 18px; color: #b2bec3; margin-bottom: 15px; display: block; letter-spacing: 0.5px; }
+        .sig-btn { width: 100%; padding: 14px; border-radius: 50px; border: none; background: var(--blue); color: white; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,82,204,0.2); transition: 0.2s; }
+        .sig-btn:disabled { background: #dfe6e9; color: #b2bec3; box-shadow: none; cursor: default; }
 
-        /* ADS OVERLAY (Sandboxed) */
-        #ad-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .ad-container { width: 90%; height: 80%; background: white; border-radius: 10px; overflow: hidden; position: relative; }
-        .timer-badge { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px; z-index: 10; }
+        /* AD OVERLAY (Safe Sandbox) */
+        #ad-layer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .ad-frame-box { width: 90%; height: 70%; background: white; border-radius: 15px; overflow: hidden; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        .wait-timer { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.8); color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; z-index: 10; }
         iframe { width: 100%; height: 100%; border: none; }
-        
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="logo">KING <span>TRADER</span></div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <div class="clock" id="clock">--:--</div>
-            <i class="fas fa-bars" style="font-size: 22px; cursor: pointer;" onclick="toggleMenu()"></i>
+        <div class="logo">SILVER<span>X</span> TRADER</div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="time-badge" id="clock">12:00 PM</div>
+            <i class="fas fa-bars" style="font-size: 22px; cursor: pointer; color: #333;" onclick="toggleSidebar()"></i>
         </div>
     </div>
 
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo">SILVER<span>X</span></div>
-            <i class="fas fa-times" style="font-size: 22px; cursor: pointer;" onclick="toggleMenu()"></i>
+        <div class="menu-head">
+            <div class="logo">SILVER<span>X</span> MENU</div>
+            <i class="fas fa-times" style="font-size: 24px; cursor: pointer; color: #ff4757;" onclick="toggleSidebar()"></i>
         </div>
-        <a href="https://wa.me/923064391353" class="menu-link"><i class="fab fa-whatsapp" style="color:var(--green)"></i> WhatsApp VIP</a>
-        <a href="https://youtube.com/@kingtraderofficial45" class="menu-link"><i class="fab fa-youtube" style="color:var(--red)"></i> YouTube Pro</a>
-        <a href="https://www.tiktok.com/@silverxtrader" class="menu-link"><i class="fab fa-tiktok"></i> TikTok Analysis</a>
-        <a href="https://market-qx.trade/en/sign-up?lid=1696715" class="menu-link"><i class="fas fa-chart-line" style="color:#0052cc"></i> Join Quotex</a>
-        <a href="#" onclick="alert('Policies are on login screen.')" class="menu-link"><i class="fas fa-shield-alt"></i> Privacy Policy</a>
+        <a href="https://wa.me/923064391353" target="_blank" class="menu-item"><i class="fab fa-whatsapp" style="color:#25D366"></i> WhatsApp Help</a>
+        <a href="https://youtube.com/@kingtraderofficial45?si=nOsFRqwlVdsOfI5G" target="_blank" class="menu-item"><i class="fab fa-youtube" style="color:#FF0000"></i> YouTube Training</a>
+        <a href="https://www.tiktok.com/@silverxtrader?_r=1&_t=ZS-92pyHC7vg00" target="_blank" class="menu-item"><i class="fab fa-tiktok" style="color:#000"></i> TikTok Analysis</a>
+        <a href="https://market-qx.trade/en/sign-up?lid=1696715" target="_blank" class="menu-item"><i class="fas fa-chart-line" style="color:#0052cc"></i> Join Quotex</a>
+        <a href="#" class="menu-item" onclick="alert('Please view Privacy Policy on Login Screen')"><i class="fas fa-shield-alt" style="color:#555"></i> Privacy Policy</a>
     </div>
 
-    <div class="actions">
-        <button class="act-btn btn-quotex" onclick="window.open('https://market-qx.trade/en/sign-up?lid=1696715')">JOIN QUOTEX</button>
-        <button class="act-btn btn-vip" onclick="window.open('https://wa.me/923064391353')">VIP ACCESS</button>
+    <div class="hero-btns">
+        <button class="h-btn btn-qx" onclick="window.open('https://market-qx.trade/en/sign-up?lid=1696715')">JOIN QUOTEX</button>
+        <button class="h-btn btn-vip" onclick="window.open('https://wa.me/923064391353')">VIP ACCESS</button>
     </div>
 
-    <div class="grid" id="grid">
-        </div>
+    <div class="pair-grid" id="grid"></div>
 
-    <div id="ad-modal">
-        <div style="color: white; margin-bottom: 15px; font-weight: bold; font-size: 18px;">ANALYZING MARKET...</div>
-        <div class="ad-container">
-            <div class="timer-badge">WAIT <span id="ad-timer">20</span>s</div>
-            <iframe id="ad-frame" sandbox="allow-forms allow-scripts allow-pointer-lock"></iframe>
+    <div id="ad-layer">
+        <div style="color: white; margin-bottom: 20px; font-size: 20px; font-weight: bold; text-align: center;">ANALYZING MARKET DATA...</div>
+        <div class="ad-frame-box">
+            <div class="wait-timer">WAIT <span id="timer-val">15</span>s</div>
+            <iframe id="ad-iframe" sandbox="allow-forms allow-scripts allow-pointer-lock"></iframe>
         </div>
-        <div style="color: #aaa; font-size: 12px; margin-top: 10px;">Do not close window</div>
+        <p style="color: #bbb; font-size: 12px; margin-top: 15px;">Secure Connection Established</p>
     </div>
 
     <script>
-        const pairs = ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "EUR/JPY", "BTC/USD", "ETH/USD", "SOL/USD", "LTC/USD", "XRP/USD", "DOGE/USD", "ADA/USD", "DOT/USD", "GBP/JPY", "NZD/USD"];
-        
+        // --- DATA & CONFIG ---
+        const pairs = [
+            "EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", 
+            "USD/CHF", "NZD/USD", "EUR/JPY", "GBP/JPY", "EUR/GBP", // 10 Forex
+            "BTC/USD", "ETH/USD", "LTC/USD", "XRP/USD", "DOGE/USD", "SOL/USD" // 6 Crypto
+        ];
+
         const adLinks = [
             "https://www.effectivegatecpm.com/zu9fwwufi?key=5c01f6e26f4b9943913f0d36bfa48f6d",
             "https://www.effectivegatecpm.com/m3re02atee?key=cebdb997452acac01a6d39d48dcb0e68",
             "https://www.effectivegatecpm.com/njujpaga3n?key=2636c1fb3975328fd5e16e532dda0482",
-            "https://www.effectivegatecpm.com/u03w5rk4?key=d5c708947384bde96b27f42a724b41d9"
+            "https://www.effectivegatecpm.com/u03w5rk4?key=d5c708947384bde96b27f42a724b41d9",
+            "https://www.effectivegatecpm.com/szh2badub?key=8aef9f0adbfa95686459aaeeea7db26a",
+            "https://www.effectivegatecpm.com/wzb0ven1?key=87866ac53935e941e61c53d03338eb0a",
+            "https://www.effectivegatecpm.com/d29maviwb?key=f03e146f78029f3a63200d7d63db6e42",
+            "https://www.effectivegatecpm.com/p85rfz3v8?key=b50205713bdb8a8e9b85dc14013c31f7"
         ];
 
-        // 1. Render Cards
+        // --- FUNCTIONS ---
+
+        // 1. Clock
+        setInterval(() => {
+            const date = new Date();
+            let h = date.getHours();
+            const m = date.getMinutes().toString().padStart(2, '0');
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12; h = h ? h : 12;
+            document.getElementById('clock').innerText = `${h}:${m} ${ampm}`;
+        }, 1000);
+
+        // 2. Sidebar
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+
+        // 3. Initial Popup Logic (Redirect Proof)
+        window.onload = function() {
+            setTimeout(() => {
+                triggerAd(15, false, null); // 15s Initial Ad, No logic after
+            }, 1000);
+        };
+
+        // 4. Trigger Ad System
+        function triggerAd(duration, isSignal, pairId) {
+            const layer = document.getElementById('ad-layer');
+            const frame = document.getElementById('ad-iframe');
+            const timerTxt = document.getElementById('timer-val');
+            
+            // Random Link Load
+            frame.src = adLinks[Math.floor(Math.random() * adLinks.length)];
+            layer.style.display = 'flex';
+            
+            let t = duration;
+            timerTxt.innerText = t;
+
+            const interval = setInterval(() => {
+                t--;
+                timerTxt.innerText = t;
+                if(t <= 0) {
+                    clearInterval(interval);
+                    layer.style.display = 'none';
+                    frame.src = ""; // Stop Ad
+                    if(isSignal && pairId !== null) {
+                        calculateSignal(pairId);
+                    }
+                }
+            }, 1000);
+        }
+
+        // 5. Render Grid
         const grid = document.getElementById('grid');
         pairs.forEach((pair, i) => {
             grid.innerHTML += `
                 <div class="card" id="card-${i}">
-                    <div class="card-head" id="head-${i}">${pair}</div>
-                    <div class="gauge-wrapper">
+                    <div class="card-title" id="title-${i}">${pair}</div>
+                    <div class="gauge-area">
                         <div class="gauge-bg"></div>
-                        <div class="gauge-cover"></div>
+                        <div class="gauge-mask"></div>
                         <div class="needle" id="needle-${i}"></div>
                     </div>
-                    <div class="result-box">
-                        <span class="status" id="status-${i}">NEUTRAL</span>
-                        <button class="scan-btn" id="btn-${i}" onclick="processSignal(${i})">GET SIGNAL</button>
+                    <div class="ctrl-box">
+                        <span class="sig-status" id="status-${i}">NEUTRAL</span>
+                        <button class="sig-btn" id="btn-${i}" onclick="getSignal(${i})">GET SIGNAL</button>
                     </div>
                 </div>
             `;
         });
 
-        // 2. Logic
-        function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
-        
-        setInterval(() => {
-            const d = new Date();
-            document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        }, 1000);
-
-        function processSignal(id) {
-            if(!navigator.onLine) return alert("No Internet Connection");
-            
-            // Show Ad
-            const modal = document.getElementById('ad-modal');
-            const frame = document.getElementById('ad-frame');
-            const timerSpan = document.getElementById('ad-timer');
-            
-            // Random Link
-            frame.src = adLinks[Math.floor(Math.random() * adLinks.length)];
-            modal.style.display = 'flex';
-            
-            let timeLeft = 20;
-            timerSpan.innerText = timeLeft;
-            
-            const timer = setInterval(() => {
-                timeLeft--;
-                timerSpan.innerText = timeLeft;
-                if(timeLeft <= 0) {
-                    clearInterval(timer);
-                    modal.style.display = 'none';
-                    frame.src = ""; // Stop ad
-                    generateResult(id);
-                }
-            }, 1000);
+        // 6. Signal Button Click
+        function getSignal(id) {
+            if(!navigator.onLine) return alert("Please check internet connection");
+            triggerAd(20, true, id); // 20s Ad -> Then Signal
         }
 
-        function generateResult(id) {
-            const btn = document.getElementById(`btn-${id}`);
-            const status = document.getElementById(`status-${id}`);
+        // 7. Logic Engine
+        function calculateSignal(id) {
             const needle = document.getElementById(`needle-${id}`);
-            const head = document.getElementById(`head-${id}`);
+            const status = document.getElementById(`status-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+            const title = document.getElementById(`title-${id}`);
             const card = document.getElementById(`card-${id}`);
 
-            // Logic: Random Buy/Sell
+            // Random Logic (Simulated)
             const isBuy = Math.random() > 0.5;
             
-            // Animation
-            const angle = isBuy ? (40 + Math.random() * 40) : (-40 - Math.random() * 40); // 40 to 80 deg (Green) or -40 to -80 (Red)
+            // Needle Animation
+            // 0deg is vertical (Top).
+            // -90deg is Left (Start).
+            // Buy (Green) = 45deg to 90deg
+            // Sell (Red) = -45deg to -90deg
             
+            const angle = isBuy ? (45 + Math.random()*30) : (-45 - Math.random()*30);
             needle.style.transform = `rotate(${angle}deg)`;
-            
+
             if(isBuy) {
                 status.innerText = "STRONG BUY";
                 status.style.color = "var(--green)";
-                head.style.background = "rgba(0, 191, 99, 0.1)";
-                head.style.color = "var(--green)";
-                card.style.border = "2px solid var(--green)";
                 btn.style.background = "var(--green)";
+                title.style.color = "var(--green)";
+                title.style.background = "rgba(0,191,99,0.1)";
+                card.style.border = "2px solid var(--green)";
             } else {
                 status.innerText = "STRONG SELL";
                 status.style.color = "var(--red)";
-                head.style.background = "rgba(255, 71, 87, 0.1)";
-                head.style.color = "var(--red)";
-                card.style.border = "2px solid var(--red)";
                 btn.style.background = "var(--red)";
+                title.style.color = "var(--red)";
+                title.style.background = "rgba(255,71,87,0.1)";
+                card.style.border = "2px solid var(--red)";
             }
 
-            // Cooldown
-            let cd = 60;
+            // Cooldown Timer
+            let wait = 60;
             btn.disabled = true;
-            btn.innerText = `WAIT ${cd}s`;
+            btn.innerText = `WAIT ${wait}s`;
             
-            const cdTimer = setInterval(() => {
-                cd--;
-                btn.innerText = `WAIT ${cd}s`;
-                if(cd <= 0) {
-                    clearInterval(cdTimer);
+            const coolTimer = setInterval(() => {
+                wait--;
+                btn.innerText = `WAIT ${wait}s`;
+                if(wait <= 0) {
+                    clearInterval(coolTimer);
+                    // Reset UI
                     btn.disabled = false;
                     btn.innerText = "GET SIGNAL";
-                    btn.style.background = "var(--primary)";
+                    btn.style.background = "var(--blue)";
                     status.innerText = "NEUTRAL";
-                    status.style.color = "#888";
-                    head.style.background = "#f8f9fa";
-                    head.style.color = "#333";
-                    card.style.border = "1px solid #eee";
-                    needle.style.transform = "rotate(-90deg)"; // Reset needle center (relative to bottom-center, CSS rotation logic)
-                    // Actually my needle logic: -90 is left. 0 is up. 
-                    // Let's fix reset:
-                    needle.style.transform = "rotate(0deg)"; 
+                    status.style.color = "#b2bec3";
+                    title.style.color = "#333";
+                    title.style.background = "#fcfcfc";
+                    card.style.border = "1px solid #edf0f5";
+                    needle.style.transform = "rotate(-90deg)"; // Reset needle
                 }
             }, 1000);
         }
     </script>
 </body>
 </html>
+
 
