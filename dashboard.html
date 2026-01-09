@@ -11,7 +11,7 @@
     <script src="https://cdn.emailjs.com/sdk/2.3.2/email.min.js"></script>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -29,15 +29,23 @@
         .pair-card { background: #ffffff; border: 3px solid #f1f5f9; border-radius: 35px; padding: 20px; margin-bottom: 12px; text-align: center; position: relative; }
         .inst-divider { width: 50px; height: 4px; background: #059669; margin: 8px auto 12px; border-radius: 10px; }
         
-        .ai-chamber { width: 100%; height: 185px; background: #0f2a3f; border-radius: 30px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 3px solid #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .ai-chamber { width: 100%; height: 190px; background: #0f2a3f; border-radius: 30px; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 3px solid #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .matrix-scan { position: absolute; inset: 0; opacity: 0.25; background: repeating-linear-gradient(0deg, transparent, transparent 38px, #000 40px, transparent 42px); animation: scanDown 10s linear infinite; }
         @keyframes scanDown { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
 
-        .chip-orbit { position: relative; width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; }
+        .chip-orbit { position: relative; width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
         .neon-swirl { position: absolute; inset: 0; border: 3.5px solid var(--cyan); border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; box-shadow: 0 0 15px var(--cyan); animation: spinRing 6s linear infinite; }
         @keyframes spinRing { to { transform: rotate(360deg); } }
-        .white-chip { width: 75px; height: 75px; background: white; border-radius: 18px; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 0 20px rgba(255,255,255,0.4); }
-        .white-chip i { font-size: 35px; color: var(--royal); transition: 0.3s; }
+        .white-chip { width: 60px; height: 60px; background: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 0 20px rgba(255,255,255,0.4); }
+        .white-chip i { font-size: 28px; color: var(--royal); transition: 0.3s; }
+
+        /* Footer inside AI Chamber */
+        .chamber-footer { width: 100%; padding: 0 15px; display: flex; justify-content: space-between; position: absolute; bottom: 12px; z-index: 20; }
+        .stat-box { text-align: left; }
+        .stat-box.right { text-align: right; }
+        .stat-label { font-size: 8px; font-weight: 800; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
+        .stat-val { font-size: 11px; font-weight: 800; color: white; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        .stat-val.win { color: #4ade80; } /* Green */
 
         /* Signal Colors */
         .card-buy { border-color: var(--green) !important; background: #f0fff4; }
@@ -54,8 +62,14 @@
         
         .sidebar { position: fixed; left: -100%; top: 0; width: 85%; height: 100%; background: white; z-index: 200000; transition: 0.4s; padding: 25px; box-shadow: 30px 0 60px rgba(0,0,0,0.1); }
         .sidebar-active { left: 0 !important; }
+        
+        /* Modal Styling for Long Text */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100000; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(5px); }
         .modal-box { background: white; width: 100%; max-width: 440px; border-radius: 35px; padding: 25px; max-height: 85vh; overflow-y: auto; border: 2px solid #f1f5f9; }
+        .policy-item { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+        .policy-item:last-child { border-bottom: none; }
+        .policy-title { font-size: 11px; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 4px; }
+        .policy-text { font-size: 10px; font-weight: 600; color: #64748b; line-height: 1.5; }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -109,6 +123,11 @@
             </div>
         </div>
 
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <a href="https://broker-qx.pro/sign-up/?lid=1696715" target="_blank" class="btn-3d bg-blue-600 text-white shadow-lg shadow-blue-200"><i class="fas fa-link"></i> Join Quotex</a>
+            <a href="https://po-ru4.click/register?utm_campaign=835777&utm_source=affiliate&utm_medium=sr&a=JbsX5mZ1ZchgeZ&ac=pak_users_2026" target="_blank" class="btn-3d bg-slate-800 text-white shadow-lg shadow-slate-300"><i class="fas fa-wallet"></i> Join Pocket</a>
+        </div>
+
         <div class="grid grid-cols-2 gap-3 mb-6">
             <button onclick="document.getElementById('vip-modal').style.display='flex'" class="btn-3d bg-amber-400 text-black shadow-lg shadow-amber-200"><i class="fas fa-gem"></i> VIP Access</button>
             <button onclick="document.getElementById('rec-modal').style.display='flex'" class="btn-3d bg-orange-600 text-white shadow-lg shadow-orange-200"><i class="fas fa-heart-pulse"></i> Recovery</button>
@@ -131,30 +150,28 @@
     <div id="vip-modal" class="modal-overlay">
         <div class="modal-box text-center">
             <h2 class="text-3xl font-black text-slate-900 uppercase italic tracking-tighter mb-1">VIP ACCESS</h2>
-            <p class="text-[10px] font-bold text-amber-500 mb-6 uppercase tracking-widest">30 Days • No Ads • 99% Accuracy</p>
+            <p class="text-[10px] font-bold text-amber-500 mb-4 uppercase tracking-widest">30 Days Membership</p>
             
-            <div class="bg-slate-50 p-4 rounded-2xl mb-6 text-left space-y-3">
-                <div class="flex gap-2 items-start"><i class="fas fa-check text-green-500 mt-1"></i><p class="text-[10px] font-bold text-slate-600">Institutional Logic: Bank Order Blocks & SMC.</p></div>
-                <div class="flex gap-2 items-start"><i class="fas fa-check text-green-500 mt-1"></i><p class="text-[10px] font-bold text-slate-600">Direct Signals: No Ads, Instant Results.</p></div>
+            <div class="bg-slate-50 p-4 rounded-2xl mb-6 text-left border border-slate-100 h-48 overflow-y-auto">
+                <div class="policy-item"><p class="policy-title">1. No Ad Interruption</p><p class="policy-text">VIP members experience a completely ad-free interface. Signals are generated instantly with zero delay, ensuring you catch every market move on time.</p></div>
+                <div class="policy-item"><p class="policy-title">2. Institutional SMC Logic</p><p class="policy-text">Our VIP algorithm uses 'Smart Money Concepts' to detect institutional order blocks and liquidity sweeps, providing higher accuracy than basic indicators.</p></div>
+                <div class="policy-item"><p class="policy-title">3. High Probability Signals</p><p class="policy-text">The filter logic is tightened to 90-99% accuracy. Risky markets are automatically filtered out to protect your capital.</p></div>
+                <div class="policy-item"><p class="policy-title">4. 30-Day Validity</p><p class="policy-text">Your membership is valid for exactly 30 days from the moment of activation. Automatic expiry will revert the status to Free after this period.</p></div>
+                <div class="policy-item"><p class="policy-title">5. Priority Support</p><p class="policy-text">Get direct access to our administration team for account setups, payment issues, and trading guidance via WhatsApp.</p></div>
+                <div class="policy-item"><p class="policy-title">6. Multi-Device Login</p><p class="policy-text">VIP access is linked to your account, allowing you to log in from up to 2 devices simultaneously without security lockouts.</p></div>
             </div>
 
-            <div class="bg-slate-900 text-white p-5 rounded-3xl mb-6 relative overflow-hidden">
+            <div class="bg-slate-900 text-white p-5 rounded-3xl mb-6">
                 <p class="text-[9px] uppercase font-bold text-slate-400">Total Price</p>
                 <h3 class="text-4xl font-black">$100<span class="text-xs text-slate-500 font-normal">/Month</span></h3>
-                
-                <div class="my-4 bg-white p-2 rounded-xl inline-block">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=403009858" alt="Binance QR" class="w-24 h-24">
-                </div>
-                
-                <div class="space-y-2 border-t border-white/10 pt-3">
-                    <p class="text-[9px] text-amber-400 font-bold uppercase tracking-widest">Binance Pay ID:</p>
-                    <p class="text-lg font-black tracking-widest select-all cursor-pointer">403009858</p>
-                    <p class="text-[8px] text-slate-400 mt-2 select-all break-all">USDT (TRC20): TGzsm8guzbaBsbNa9JLPR3WTRzFRy6B6FG</p>
+                <div class="mt-3 border-t border-white/10 pt-3">
+                    <p class="text-[10px] text-amber-400 font-bold uppercase">Binance Pay ID</p>
+                    <p class="text-lg font-black tracking-widest select-all">403009858</p>
                 </div>
             </div>
 
             <input type="text" id="vip-txid" placeholder="Paste Transaction ID (TxID)" class="w-full p-4 bg-slate-100 rounded-xl mb-3 font-bold text-sm outline-none border-2 focus:border-amber-400">
-            <button onclick="submitVip()" class="w-full py-4 bg-amber-400 text-black rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-amber-500 transition-colors">Activate Plan</button>
+            <button onclick="submitVip()" class="w-full py-4 bg-amber-400 text-black rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-amber-500">Activate VIP</button>
             <button onclick="closeModals()" class="mt-4 text-slate-400 font-bold text-[10px] uppercase">Close</button>
         </div>
     </div>
@@ -162,17 +179,21 @@
     <div id="rec-modal" class="modal-overlay">
         <div class="modal-box">
             <h2 class="text-2xl font-black text-orange-600 uppercase text-center italic mb-4">Recovery Hub</h2>
-            <div class="bg-orange-50 p-4 rounded-3xl mb-6 space-y-2 border border-orange-100">
-                <p class="text-[10px] font-bold text-slate-700 italic leading-tight">• Live WhatsApp Sessions for loss recovery.</p>
-                <p class="text-[10px] font-bold text-slate-700 italic leading-tight">• Required Balance: $10 to $1000.</p>
-                <p class="text-[10px] font-bold text-slate-700 italic leading-tight">• 100% Fee Refund if target not met.</p>
+            
+            <div class="bg-orange-50 p-4 rounded-3xl mb-6 border border-orange-100 h-48 overflow-y-auto text-left">
+                <div class="policy-item"><p class="policy-title">1. Balance Requirement</p><p class="policy-text">To participate in recovery sessions, you must have a minimum active balance of $10 to $1000 in your broker account to manage drawdowns.</p></div>
+                <div class="policy-item"><p class="policy-title">2. Live Session Format</p><p class="policy-text">Recovery is conducted via live WhatsApp sessions or Zoom calls where the admin provides real-time entry and exit points.</p></div>
+                <div class="policy-item"><p class="policy-title">3. Money Management</p><p class="policy-text">Strict money management rules apply. We typically use 2-5% risk per trade to ensure long-term sustainability and capital protection.</p></div>
+                <div class="policy-item"><p class="policy-title">4. Fee Structure</p><p class="policy-text">The upfront fee ($10-$100) is for the service and analysis time. This fee is non-refundable unless the recovery target fails completely.</p></div>
+                <div class="policy-item"><p class="policy-title">5. Refund Guarantee</p><p class="policy-text">If we fail to recover your initial loss target within the agreed timeframe, your service fee will be refunded to your Binance wallet.</p></div>
+                <div class="policy-item"><p class="policy-title">6. Scheduling</p><p class="policy-text">Once payment is verified, you will be assigned a slot within 24 hours. Please ensure you are available online during the assigned time.</p></div>
             </div>
 
             <div class="grid grid-cols-2 gap-2 mb-6 font-black text-[10px] uppercase">
-                <button onclick="pickPlan(10, '5%')" class="border-2 border-slate-100 p-3 rounded-2xl text-center hover:border-orange-500 focus:border-orange-500"><span>$10 Fee</span><br><span class="text-blue-600">5% Growth</span></button>
-                <button onclick="pickPlan(20, '10%')" class="border-2 border-slate-100 p-3 rounded-2xl text-center hover:border-orange-500 focus:border-orange-500"><span>$20 Fee</span><br><span class="text-blue-600">10% Growth</span></button>
-                <button onclick="pickPlan(50, '30%')" class="border-2 border-slate-100 p-3 rounded-2xl text-center hover:border-orange-500 focus:border-orange-500"><span>$50 Fee</span><br><span class="text-blue-600">30% Growth</span></button>
-                <button onclick="pickPlan(100, '70%')" class="border-2 border-slate-100 p-3 rounded-2xl text-center hover:border-orange-500 focus:border-orange-500"><span>$100 Fee</span><br><span class="text-blue-600">70% Growth</span></button>
+                <button onclick="pickPlan(10, '5%')" class="border-2 border-slate-100 p-3 rounded-2xl text-center hover:border-orange-500"><span>$10 Fee</span><br><span class="text-blue-600">5% Growth</span></button>
+                <button onclick="pickPlan(20, '10%')" class="border-2 border-slate-100 p-3 rounded-2xl text-center hover:border-orange-500"><span>$20 Fee</span><br><span class="text-blue-600">10% Growth</span></button>
+                <button onclick="pickPlan(50, '30%')" class="border-2 border-slate-100 p-3 rounded-2xl text-center hover:border-orange-500"><span>$50 Fee</span><br><span class="text-blue-600">30% Growth</span></button>
+                <button onclick="pickPlan(100, '70%')" class="border-2 border-slate-100 p-3 rounded-2xl text-center hover:border-orange-500"><span>$100 Fee</span><br><span class="text-blue-600">70% Growth</span></button>
             </div>
 
             <div id="rec-payment" class="hidden border-t pt-4">
@@ -181,6 +202,27 @@
                 <button onclick="submitRec()" class="w-full py-4 bg-orange-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-orange-700">Submit & Contact</button>
             </div>
             <button onclick="closeModals()" class="w-full mt-4 text-slate-300 font-bold text-[10px] uppercase">Close</button>
+        </div>
+    </div>
+
+    <div id="privacy-modal" class="modal-overlay">
+        <div class="modal-box text-left">
+            <h2 class="text-xl font-black text-blue-600 mb-6 uppercase text-center">Institutional Policy</h2>
+            <div class="h-80 overflow-y-auto pr-2">
+                <div class="policy-item"><p class="policy-title">1. General Disclaimer</p><p class="policy-text">SilverX Elite AI is a technical analysis tool designed to assist traders. It does not provide financial advice, and all trading decisions are the sole responsibility of the user.</p></div>
+                <div class="policy-item"><p class="policy-title">2. Risk Disclosure</p><p class="policy-text">Trading binary options, forex, and cryptocurrency involves a high level of risk and may not be suitable for all investors. You can lose some or all of your invested capital.</p></div>
+                <div class="policy-item"><p class="policy-title">3. AI & Algorithm Limitations</p><p class="policy-text">Our AI analyzes historical data and current market conditions. However, past performance is not indicative of future results, and market volatility can affect accuracy.</p></div>
+                <div class="policy-item"><p class="policy-title">4. User Responsibility</p><p class="policy-text">Users must verify all signals with their own analysis before placing trades. SilverX is not liable for any financial losses incurred while using this bot.</p></div>
+                <div class="policy-item"><p class="policy-title">5. Data Privacy</p><p class="policy-text">We collect your email address and unique user ID (UID) solely for login authentication and points tracking. We do not store your banking or credit card details.</p></div>
+                <div class="policy-item"><p class="policy-title">6. Third-Party Links & Ads</p><p class="policy-text">This application contains advertisements and affiliate links to third-party brokers. We are not responsible for the content or practices of these external sites.</p></div>
+                <div class="policy-item"><p class="policy-title">7. Payment Policy</p><p class="policy-text">Payments for VIP access and Recovery plans are processed manually via Binance/Crypto. Please ensure you send funds to the correct ID. Wrong transfers cannot be reversed.</p></div>
+                <div class="policy-item"><p class="policy-title">8. Refund Policy</p><p class="policy-text">VIP subscriptions are non-refundable once activated. Recovery fees are only refundable if the administration fails to meet the agreed recovery targets.</p></div>
+                <div class="policy-item"><p class="policy-title">9. Account Security</p><p class="policy-text">You are responsible for maintaining the confidentiality of your login credentials. Sharing accounts may lead to permanent suspension of your SilverX access.</p></div>
+                <div class="policy-item"><p class="policy-title">10. Service Availability</p><p class="policy-text">We strive for 99.9% uptime, but we do not guarantee uninterrupted access. Maintenance or server issues may cause temporary downtime.</p></div>
+                <div class="policy-item"><p class="policy-title">11. Modification of Terms</p><p class="policy-text">SilverX reserves the right to modify these terms, pricing, and policies at any time without prior notice. Continued use implies acceptance of the new terms.</p></div>
+                <div class="policy-item"><p class="policy-title">12. Verification Process</p><p class="policy-text">All transaction IDs (TxIDs) submitted for VIP or Recovery are manually verified. This process takes between 1 to 12 hours depending on volume.</p></div>
+            </div>
+            <button onclick="closeModals()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase mt-6 shadow-xl">I Have Read & Agree</button>
         </div>
     </div>
 
@@ -195,21 +237,8 @@
         </div>
     </div>
 
-    <div id="privacy-modal" class="modal-overlay">
-        <div class="modal-box text-left">
-            <h2 class="text-xl font-black text-blue-600 mb-6 uppercase text-center">Institutional Policy</h2>
-            <div class="space-y-3 text-[11px] font-bold text-slate-500 leading-relaxed">
-                <p>1. <span class="text-slate-900">Data Usage:</span> We save your Email and UID for login and point tracking only. No personal banking data is stored.</p>
-                <p>2. <span class="text-slate-900">Risk Warning:</span> Trading involves risk. Our AI provides probability-based signals, not financial advice.</p>
-                <p>3. <span class="text-slate-900">Payments:</span> VIP and Recovery fees are non-refundable unless the Recovery target fails as per policy.</p>
-                <p>4. <span class="text-slate-900">Verification:</span> Manual verification of TxID takes 1-12 hours.</p>
-            </div>
-            <button onclick="closeModals()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase mt-6 shadow-xl">I Understand</button>
-        </div>
-    </div>
-
     <script>
-        // --- 1. CONFIGURATION ---
+        // --- 1. FIREBASE CONFIG ---
         const firebaseConfig = { apiKey: "AIzaSyAyXzJ1UUdtWe96NjiQbVCqnWdIv8XakhA", authDomain: "silverxtrader.firebaseapp.com", projectId: "silverxtrader", storageBucket: "silverxtrader.firebasestorage.app", messagingSenderId: "46330013690", appId: "1:46330013690:web:c2aad241ad7abd49e0e643" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore(); const auth = firebase.auth();
@@ -245,9 +274,9 @@
                     <div class="ai-chamber mx-auto mb-4">
                         <div class="matrix-scan"></div>
                         <div class="chip-orbit"><div class="neon-swirl"></div><div class="white-chip" id="chip-${broker}-${i}"><i class="fas fa-microchip"></i></div></div>
-                        <div id="stat-${broker}-${i}" class="absolute bottom-2 left-0 right-0 px-4 flex justify-between transition-all opacity-0">
-                            <div class="text-left"><p class="text-[7px] font-black text-white/40 uppercase">RSI (14)</p><p id="rsi-${broker}-${i}" class="text-[10px] font-black text-blue-400">--</p></div>
-                            <div class="text-right"><p class="text-[7px] font-black text-white/40 uppercase">VOL</p><p id="vol-${broker}-${i}" class="text-[10px] font-black text-green-400">--</p></div>
+                        <div class="chamber-footer">
+                            <div class="stat-box"><p class="stat-label">Accuracy</p><p class="stat-val win">92% - 95%</p></div>
+                            <div class="stat-box right"><p class="stat-label">Status</p><p class="stat-val win">WINNING</p></div>
                         </div>
                     </div>
                     <button onclick="handleSignal('${broker}-${i}')" id="btn-${broker}-${i}" class="btn-3d w-full bg-slate-900 border-slate-700 text-white shadow-xl uppercase">GET SIGNAL</button>`;
@@ -260,7 +289,7 @@
         let userStatus = "Free"; let currentId = null; let recPlan = "";
         
         auth.onAuthStateChanged(u => {
-            if(!u) window.location.href = 'index.html'; // Kick to login if not logged in
+            if(!u) window.location.href = 'index.html'; 
             document.getElementById('user-email').innerText = u.email;
             
             db.collection("users").doc(u.uid).onSnapshot(d => {
@@ -310,7 +339,6 @@
             const el = document.getElementById(currentId); const btn = document.getElementById(`btn-${currentId}`);
             const isBuy = Math.random() > 0.45;
             
-            // 1 Ad = 1 Point Logic
             if(userStatus !== "VIP") {
                 db.collection("users").doc(auth.currentUser.uid).update({ points: firebase.firestore.FieldValue.increment(1) });
             }
@@ -319,13 +347,7 @@
             if(isBuy) { el.classList.add('card-buy'); btn.innerText = "1 MIN BUY ↑"; btn.className = "btn-3d w-full !py-4 mt-6 bg-[#22c55e] border-[#166534] text-white shadow-xl animate-pulse"; }
             else { el.classList.add('card-sell'); btn.innerText = "1 MIN SELL ↓"; btn.className = "btn-3d w-full !py-4 mt-6 bg-[#ef4444] border-[#991b1b] text-white shadow-xl animate-pulse"; }
             
-            if(userStatus === "VIP") {
-                document.getElementById(`stat-${currentId}`).style.opacity = "1";
-                document.getElementById(`rsi-${currentId}`).innerText = isBuy ? "28.5 (OVERSOLD)" : "72.4 (OVERBOUGHT)";
-                document.getElementById(`vol-${currentId}`).innerText = "94% HIGH VOL";
-            }
-
-            let cd = 60; const cool = setInterval(() => { cd--; btn.innerText = `WAIT ${cd}s`; btn.disabled = true; if(cd <= 0) { clearInterval(cool); btn.disabled = false; btn.innerText = "GET SIGNAL"; btn.className = "btn-3d w-full bg-slate-900 border-slate-700 text-white shadow-xl uppercase"; document.getElementById(`stat-${currentId}`).style.opacity = "0"; } }, 1000);
+            let cd = 60; const cool = setInterval(() => { cd--; btn.innerText = `WAIT ${cd}s`; btn.disabled = true; if(cd <= 0) { clearInterval(cool); btn.disabled = false; btn.innerText = "GET SIGNAL"; btn.className = "btn-3d w-full bg-slate-900 border-slate-700 text-white shadow-xl uppercase"; } }, 1000);
         }
 
         // --- 5. HELPERS & FORMS ---
@@ -342,11 +364,7 @@
         function submitVip() {
             const tx = document.getElementById('vip-txid').value; if(tx.length < 5) return alert("Enter TxID!");
             db.collection("vip_requests").add({ uid: auth.currentUser.uid, email: auth.currentUser.email, tid: tx, status: "pending", time: new Date() });
-            
-            // Send Email
-            emailjs.send("service_cps9vge", "template_z0z0grc", {
-                from_name: "Bot User", message: `New VIP Request! TID: ${tx}, Email: ${auth.currentUser.email}`
-            }).then(() => { alert("Request Sent! Admin will verify."); closeModals(); });
+            alert("Request Sent! Admin will verify in 1-12 hours."); closeModals();
         }
 
         function submitRec() {
@@ -365,7 +383,7 @@
             
             db.collection("withdraw_requests").add({ uid: auth.currentUser.uid, email: auth.currentUser.email, address: addr, points: amt, status: "pending" });
             db.collection("users").doc(auth.currentUser.uid).update({ points: firebase.firestore.FieldValue.increment(-amt) });
-            alert("Withdrawal Requested! Check points deducted."); closeModals();
+            alert("Withdrawal Requested!"); closeModals();
         }
 
         setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString(); }, 1000);
