@@ -8,6 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.emailjs.com/sdk/2.3.2/email.min.js"></script>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
@@ -24,7 +25,7 @@
         .ad-close { font-size: 22px; color: #cbd5e1; display: none; cursor: pointer; padding: 10px; }
         .no-scroll { overflow: hidden !important; height: 100vh; }
 
-        /* INSTITUTIONAL SIGNAL BOX */
+        /* PAIR CARDS & ANIMATIONS */
         .pair-card { background: #ffffff; border: 3px solid #f1f5f9; border-radius: 35px; padding: 20px; margin-bottom: 12px; text-align: center; position: relative; }
         .inst-divider { width: 50px; height: 4px; background: #059669; margin: 8px auto 12px; border-radius: 10px; }
         
@@ -38,14 +39,11 @@
         .white-chip { width: 75px; height: 75px; background: white; border-radius: 18px; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 0 20px rgba(255,255,255,0.4); }
         .white-chip i { font-size: 35px; color: var(--royal); transition: 0.3s; }
 
-        /* Signal Response */
+        /* Signal Colors */
         .card-buy { border-color: var(--green) !important; background: #f0fff4; }
-        .card-buy .neon-swirl { border-color: var(--green); box-shadow: 0 0 15px var(--green); }
-        .card-buy i { color: var(--green) !important; }
         .card-sell { border-color: var(--red) !important; background: #fff5f5; }
-        .card-sell .neon-swirl { border-color: var(--red); box-shadow: 0 0 15px var(--red); }
-        .card-sell i { color: var(--red) !important; }
 
+        /* UI ELEMENTS */
         .switcher-container { display: flex; gap: 8px; margin-bottom: 20px; background: #f1f5f9; padding: 6px; border-radius: 24px; }
         .btn-tab { flex: 1; padding: 14px; border-radius: 18px; font-weight: 800; font-size: 11px; text-transform: uppercase; transition: 0.3s; border-bottom: 4px solid rgba(0,0,0,0.1); }
         .tab-active { background: var(--royal) !important; color: white !important; border-bottom-color: #1e3a8a !important; }
@@ -54,61 +52,66 @@
         .btn-3d { border-radius: 18px; font-weight: 800; font-size: 11px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; border-bottom: 5px solid rgba(0,0,0,0.15); padding: 15px; }
         .btn-3d:active { transform: translateY(3px); border-bottom-width: 1px; }
         
-        .sidebar { position: fixed; left: -100%; top: 0; width: 80%; height: 100%; background: white; z-index: 200000; transition: 0.4s; padding: 25px; box-shadow: 30px 0 60px rgba(0,0,0,0.1); }
+        .sidebar { position: fixed; left: -100%; top: 0; width: 85%; height: 100%; background: white; z-index: 200000; transition: 0.4s; padding: 25px; box-shadow: 30px 0 60px rgba(0,0,0,0.1); }
         .sidebar-active { left: 0 !important; }
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100000; align-items: center; justify-content: center; padding: 15px; }
-        .modal-box { background: white; width: 100%; max-width: 440px; border-radius: 40px; padding: 25px; max-height: 85vh; overflow-y: auto; border: 2px solid #f1f5f9; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100000; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(5px); }
+        .modal-box { background: white; width: 100%; max-width: 440px; border-radius: 35px; padding: 25px; max-height: 85vh; overflow-y: auto; border: 2px solid #f1f5f9; }
     </style>
 </head>
-<body>
+<body class="bg-slate-50">
 
     <div id="ad-overlay">
         <div class="ad-nav">
-            <span class="ad-timer-label" id="timer-text">ADS: 15s</span>
+            <span class="ad-timer-label" id="timer-text">CONNECTING...</span>
             <i class="fas fa-times ad-close" id="ad-x-icon" onclick="closeAdPopup()"></i>
         </div>
         <iframe id="ad-frame" src="" style="width:100%; height:100%; border:none;"></iframe>
     </div>
 
-    <header class="sticky top-0 z-[50000] bg-white border-b border-orange-100 px-5 py-3 flex justify-between items-center shadow-sm">
+    <header class="sticky top-0 z-[50000] bg-white border-b border-slate-100 px-5 py-3 flex justify-between items-center shadow-sm">
         <div class="flex items-center gap-2">
-            <div class="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center border-2 border-amber-400 shadow-lg"><i class="fas fa-crown text-amber-400 text-sm" id="crown"></i></div>
-            <h1 class="font-black text-base uppercase">SilverX <span class="text-blue-600">Bot</span></h1>
+            <div class="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center border-2 border-amber-400 shadow-lg"><i class="fas fa-crown text-slate-400 text-sm" id="crown"></i></div>
+            <h1 class="font-black text-base uppercase">SilverX <span class="text-blue-600">Pro</span></h1>
         </div>
         <div class="flex items-center gap-3">
             <p id="live-clock" class="bg-blue-50 px-3 py-1 rounded-lg font-bold text-[10px] text-blue-600 uppercase">00:00:00</p>
-            <i onclick="document.getElementById('sidebar').classList.add('sidebar-active')" class="fas fa-bars-staggered text-xl text-slate-800"></i>
+            <i onclick="document.getElementById('sidebar').classList.add('sidebar-active')" class="fas fa-bars-staggered text-xl text-slate-800 cursor-pointer"></i>
         </div>
     </header>
 
     <div id="sidebar" class="sidebar">
         <div class="flex justify-between items-center mb-10">
-            <h2 class="text-xl font-black uppercase italic">SilverX Menu</h2>
-            <i onclick="document.getElementById('sidebar').classList.remove('sidebar-active')" class="fas fa-times text-2xl text-slate-300"></i>
+            <h2 class="text-xl font-black uppercase italic text-slate-900">SilverX Menu</h2>
+            <i onclick="document.getElementById('sidebar').classList.remove('sidebar-active')" class="fas fa-times text-2xl text-slate-300 cursor-pointer"></i>
         </div>
         <div class="space-y-4">
-            <a href="https://wa.me/923064391353" class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl font-bold"><i class="fab fa-whatsapp text-[#25D366]"></i> Support Center</a>
-            <a href="https://www.tiktok.com/@kingtraderofficail" class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl font-bold"><i class="fab fa-tiktok text-black"></i> TikTok Bot</a>
-            <a href="https://www.youtube.com/@kingtraderofficial45" class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl font-bold"><i class="fab fa-youtube text-red-600"></i> YouTube</a>
-            <button onclick="auth.signOut().then(()=>location.reload())" class="w-full mt-10 p-4 bg-red-50 text-red-500 rounded-2xl font-black uppercase text-xs">Sign Out</button>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <p class="text-[10px] uppercase font-bold text-slate-400">Your Account</p>
+                <p class="text-sm font-black text-slate-900 truncate" id="user-email">Loading...</p>
+            </div>
+            <a href="https://wa.me/923064391353" class="flex items-center gap-4 p-4 bg-white shadow-sm border border-slate-100 rounded-2xl font-bold"><i class="fab fa-whatsapp text-[#25D366] text-xl"></i> Help Center</a>
+            <a href="https://www.tiktok.com/@kingtraderofficail" class="flex items-center gap-4 p-4 bg-white shadow-sm border border-slate-100 rounded-2xl font-bold"><i class="fab fa-tiktok text-black text-xl"></i> TikTok Bot</a>
+            <a href="https://www.youtube.com/@kingtraderofficial45" class="flex items-center gap-4 p-4 bg-white shadow-sm border border-slate-100 rounded-2xl font-bold"><i class="fab fa-youtube text-red-600 text-xl"></i> YouTube</a>
+            <button onclick="document.getElementById('privacy-modal').style.display='flex'" class="w-full p-4 bg-blue-50 text-blue-600 rounded-2xl font-black text-xs uppercase text-left"><i class="fas fa-shield-halved mr-2"></i> Privacy Policy</button>
+            <button onclick="auth.signOut().then(()=>location.reload())" class="w-full mt-6 p-4 bg-red-50 text-red-500 rounded-2xl font-black uppercase text-xs">Sign Out</button>
         </div>
     </div>
 
-    <main class="px-5 py-4">
-        <div class="bg-slate-900 text-white flex justify-between items-center p-6 mb-5 border-b-8 border-orange-500 rounded-[40px] shadow-2xl">
-            <div>
-                <p class="text-[10px] font-black text-amber-400 uppercase mb-1">Status: <span id="tier">Free</span></p>
-                <h4 class="text-3xl font-black text-white"><span id="pts">0</span> <span class="text-xs text-white/60 uppercase">PT</span></h4>
+    <main class="px-5 py-4 pb-32">
+        <div class="bg-slate-900 text-white flex justify-between items-center p-6 mb-5 border-b-8 border-orange-500 rounded-[40px] shadow-2xl relative overflow-hidden">
+            <div class="relative z-10">
+                <p class="text-[10px] font-black text-amber-400 uppercase mb-1">Status: <span id="tier">Checking...</span></p>
+                <h4 class="text-3xl font-black text-white"><span id="pts">0</span> <span class="text-xs text-white/60 uppercase">Points</span></h4>
             </div>
-            <div class="text-right">
-                <p class="text-[9px] font-black text-white uppercase mb-2">Min 5000 PT = $5</p>
-                <button onclick="window.location.href='https://wa.me/923064391353'" class="bg-white text-slate-900 text-[10px] font-black px-5 py-2 rounded-xl uppercase">Withdraw</button>
+            <div class="relative z-10 text-right">
+                <p class="text-[9px] font-black text-white uppercase mb-2">5000 Pts = $5</p>
+                <button onclick="openWithdraw()" class="bg-white text-slate-900 text-[10px] font-black px-5 py-2 rounded-xl uppercase hover:bg-slate-100 transition-colors">Withdraw</button>
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 mb-4">
-            <button onclick="document.getElementById('vip-modal').style.display='flex'" class="btn-3d bg-amber-400 text-black shadow-lg shadow-amber-100">VIP Access</button>
-            <button onclick="document.getElementById('rec-modal').style.display='flex'" class="btn-3d bg-orange-600 text-white shadow-lg shadow-orange-100">Recovery</button>
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <button onclick="document.getElementById('vip-modal').style.display='flex'" class="btn-3d bg-amber-400 text-black shadow-lg shadow-amber-200"><i class="fas fa-gem"></i> VIP Access</button>
+            <button onclick="document.getElementById('rec-modal').style.display='flex'" class="btn-3d bg-orange-600 text-white shadow-lg shadow-orange-200"><i class="fas fa-heart-pulse"></i> Recovery</button>
         </div>
 
         <div class="switcher-container">
@@ -120,26 +123,38 @@
         <div id="po-grid" class="hidden space-y-4"></div>
     </main>
 
+    <footer class="bg-white py-8 text-center border-t border-slate-100 mb-20">
+        <h3 class="font-black text-xl text-slate-900 uppercase italic mb-1">SilverX <span class="text-blue-600">AI Logic</span></h3>
+        <p class="text-[8px] font-bold text-slate-400 uppercase tracking-[2px]">Institutional Trading System &copy; 2026</p>
+    </footer>
+
     <div id="vip-modal" class="modal-overlay">
         <div class="modal-box text-center">
-            <h2 class="text-2xl font-black text-slate-900 uppercase italic">👑 VIP ACCESS</h2>
-            <p class="text-[11px] font-bold text-amber-600 mb-6 uppercase tracking-wider italic">30 Days Membership • 99% Accuracy</p>
+            <h2 class="text-3xl font-black text-slate-900 uppercase italic tracking-tighter mb-1">VIP ACCESS</h2>
+            <p class="text-[10px] font-bold text-amber-500 mb-6 uppercase tracking-widest">30 Days • No Ads • 99% Accuracy</p>
             
             <div class="bg-slate-50 p-4 rounded-2xl mb-6 text-left space-y-3">
-                <div class="flex gap-2 items-start"><i class="fas fa-check-circle text-green-500 mt-1"></i><p class="text-[10px] font-bold">Institutional Logic: Bank Order Blocks aur SMC analysis.</p></div>
-                <div class="flex gap-2 items-start"><i class="fas fa-check-circle text-green-500 mt-1"></i><p class="text-[10px] font-bold">Zero Ad Delay: VIP users ko koi ad nahi dikhayi jayegi.</p></div>
+                <div class="flex gap-2 items-start"><i class="fas fa-check text-green-500 mt-1"></i><p class="text-[10px] font-bold text-slate-600">Institutional Logic: Bank Order Blocks & SMC.</p></div>
+                <div class="flex gap-2 items-start"><i class="fas fa-check text-green-500 mt-1"></i><p class="text-[10px] font-bold text-slate-600">Direct Signals: No Ads, Instant Results.</p></div>
             </div>
 
-            <div class="bg-slate-900 text-white p-5 rounded-3xl mb-6">
-                <p class="text-[9px] uppercase font-bold text-slate-400">Subscription Fee</p>
-                <h3 class="text-3xl font-black">$100<span class="text-xs text-slate-500">/Month</span></h3>
-                <div class="mt-4 pt-4 border-t border-white/10">
-                    <p class="text-[10px] font-black text-amber-400 select-all tracking-widest">BINANCE ID: 403009858</p>
+            <div class="bg-slate-900 text-white p-5 rounded-3xl mb-6 relative overflow-hidden">
+                <p class="text-[9px] uppercase font-bold text-slate-400">Total Price</p>
+                <h3 class="text-4xl font-black">$100<span class="text-xs text-slate-500 font-normal">/Month</span></h3>
+                
+                <div class="my-4 bg-white p-2 rounded-xl inline-block">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=403009858" alt="Binance QR" class="w-24 h-24">
+                </div>
+                
+                <div class="space-y-2 border-t border-white/10 pt-3">
+                    <p class="text-[9px] text-amber-400 font-bold uppercase tracking-widest">Binance Pay ID:</p>
+                    <p class="text-lg font-black tracking-widest select-all cursor-pointer">403009858</p>
+                    <p class="text-[8px] text-slate-400 mt-2 select-all break-all">USDT (TRC20): TGzsm8guzbaBsbNa9JLPR3WTRzFRy6B6FG</p>
                 </div>
             </div>
 
-            <input type="text" id="vip-txid" placeholder="Paste TxID / Proof Here" class="w-full p-4 bg-slate-100 rounded-xl mb-4 font-bold text-sm outline-none border-2 focus:border-amber-400">
-            <button onclick="submitVip()" class="w-full py-4 bg-amber-400 text-black rounded-2xl font-black text-xs uppercase shadow-xl">Activate 30 Days VIP</button>
+            <input type="text" id="vip-txid" placeholder="Paste Transaction ID (TxID)" class="w-full p-4 bg-slate-100 rounded-xl mb-3 font-bold text-sm outline-none border-2 focus:border-amber-400">
+            <button onclick="submitVip()" class="w-full py-4 bg-amber-400 text-black rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-amber-500 transition-colors">Activate Plan</button>
             <button onclick="closeModals()" class="mt-4 text-slate-400 font-bold text-[10px] uppercase">Close</button>
         </div>
     </div>
@@ -147,33 +162,58 @@
     <div id="rec-modal" class="modal-overlay">
         <div class="modal-box">
             <h2 class="text-2xl font-black text-orange-600 uppercase text-center italic mb-4">Recovery Hub</h2>
-            <div class="bg-orange-50 p-4 rounded-3xl mb-6 space-y-2">
-                <p class="text-[10px] font-bold text-slate-600 italic leading-tight">• 1. WhatsApp Live Sessions for recovery.</p>
-                <p class="text-[10px] font-bold text-slate-600 italic leading-tight">• 2. Balance Requirement: $10 - $1000.</p>
-                <p class="text-[10px] font-bold text-slate-600 italic leading-tight">• 3. Refund Policy: If target fails, fee is refunded.</p>
+            <div class="bg-orange-50 p-4 rounded-3xl mb-6 space-y-2 border border-orange-100">
+                <p class="text-[10px] font-bold text-slate-700 italic leading-tight">• Live WhatsApp Sessions for loss recovery.</p>
+                <p class="text-[10px] font-bold text-slate-700 italic leading-tight">• Required Balance: $10 to $1000.</p>
+                <p class="text-[10px] font-bold text-slate-700 italic leading-tight">• 100% Fee Refund if target not met.</p>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 mb-6 font-black text-[10px]">
-                <button onclick="pickPlan(10, '5%')" class="border-2 p-3 rounded-2xl text-center"><span>$10 Fee</span><br><span class="text-blue-600">5% Growth</span></button>
-                <button onclick="pickPlan(20, '10%')" class="border-2 p-3 rounded-2xl text-center"><span>$20 Fee</span><br><span class="text-blue-600">10% Growth</span></button>
-                <button onclick="pickPlan(50, '30%')" class="border-2 p-3 rounded-2xl text-center"><span>$50 Fee</span><br><span class="text-blue-600">30% Growth</span></button>
-                <button onclick="pickPlan(100, '70%')" class="border-2 p-3 rounded-2xl text-center"><span>$100 Fee</span><br><span class="text-blue-600">70% Growth</span></button>
+            <div class="grid grid-cols-2 gap-2 mb-6 font-black text-[10px] uppercase">
+                <button onclick="pickPlan(10, '5%')" class="border-2 border-slate-100 p-3 rounded-2xl text-center hover:border-orange-500 focus:border-orange-500"><span>$10 Fee</span><br><span class="text-blue-600">5% Growth</span></button>
+                <button onclick="pickPlan(20, '10%')" class="border-2 border-slate-100 p-3 rounded-2xl text-center hover:border-orange-500 focus:border-orange-500"><span>$20 Fee</span><br><span class="text-blue-600">10% Growth</span></button>
+                <button onclick="pickPlan(50, '30%')" class="border-2 border-slate-100 p-3 rounded-2xl text-center hover:border-orange-500 focus:border-orange-500"><span>$50 Fee</span><br><span class="text-blue-600">30% Growth</span></button>
+                <button onclick="pickPlan(100, '70%')" class="border-2 border-slate-100 p-3 rounded-2xl text-center hover:border-orange-500 focus:border-orange-500"><span>$100 Fee</span><br><span class="text-blue-600">70% Growth</span></button>
             </div>
 
             <div id="rec-payment" class="hidden border-t pt-4">
-                <p class="text-center font-black text-[10px] mb-2 select-all">BINANCE ID: 403009858</p>
+                <p class="text-center font-black text-[10px] mb-2 select-all text-orange-600">BINANCE ID: 403009858</p>
                 <input type="text" id="rec-tid" placeholder="Enter TxID" class="w-full p-4 bg-slate-100 rounded-xl mb-4 font-bold text-sm outline-none">
-                <button onclick="submitRec()" class="w-full py-4 bg-orange-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl">Activate & Message</button>
+                <button onclick="submitRec()" class="w-full py-4 bg-orange-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-orange-700">Submit & Contact</button>
             </div>
             <button onclick="closeModals()" class="w-full mt-4 text-slate-300 font-bold text-[10px] uppercase">Close</button>
         </div>
     </div>
 
+    <div id="withdraw-modal" class="modal-overlay">
+        <div class="modal-box text-center">
+            <h2 class="text-2xl font-black text-slate-900 uppercase mb-2">Withdraw</h2>
+            <p class="text-[10px] font-bold text-slate-400 mb-6 uppercase">Minimum 5000 Points Required</p>
+            <input type="text" id="wd-address" placeholder="Binance Pay ID / USDT Address" class="w-full p-4 bg-slate-100 rounded-xl mb-3 font-bold text-sm outline-none border-2 focus:border-blue-500">
+            <input type="number" id="wd-amount" placeholder="Points to Withdraw" class="w-full p-4 bg-slate-100 rounded-xl mb-6 font-bold text-sm outline-none border-2 focus:border-blue-500">
+            <button onclick="submitWithdraw()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-blue-700">Request Payout</button>
+            <button onclick="closeModals()" class="mt-4 text-slate-400 font-bold text-[10px] uppercase">Cancel</button>
+        </div>
+    </div>
+
+    <div id="privacy-modal" class="modal-overlay">
+        <div class="modal-box text-left">
+            <h2 class="text-xl font-black text-blue-600 mb-6 uppercase text-center">Institutional Policy</h2>
+            <div class="space-y-3 text-[11px] font-bold text-slate-500 leading-relaxed">
+                <p>1. <span class="text-slate-900">Data Usage:</span> We save your Email and UID for login and point tracking only. No personal banking data is stored.</p>
+                <p>2. <span class="text-slate-900">Risk Warning:</span> Trading involves risk. Our AI provides probability-based signals, not financial advice.</p>
+                <p>3. <span class="text-slate-900">Payments:</span> VIP and Recovery fees are non-refundable unless the Recovery target fails as per policy.</p>
+                <p>4. <span class="text-slate-900">Verification:</span> Manual verification of TxID takes 1-12 hours.</p>
+            </div>
+            <button onclick="closeModals()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase mt-6 shadow-xl">I Understand</button>
+        </div>
+    </div>
+
     <script>
-        // --- DATA & CONFIG ---
+        // --- 1. CONFIGURATION ---
         const firebaseConfig = { apiKey: "AIzaSyAyXzJ1UUdtWe96NjiQbVCqnWdIv8XakhA", authDomain: "silverxtrader.firebaseapp.com", projectId: "silverxtrader", storageBucket: "silverxtrader.firebasestorage.app", messagingSenderId: "46330013690", appId: "1:46330013690:web:c2aad241ad7abd49e0e643" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore(); const auth = firebase.auth();
+        emailjs.init("zqFa81v7RThJXvikM");
 
         const adLinks = [
             "https://www.effectivegatecpm.com/zu9fwwufi?key=5c01f6e26f4b9943913f0d36bfa48f6d",
@@ -186,47 +226,64 @@
             "https://www.effectivegatecpm.com/p85rfz3v8?key=b50205713bdb8a8e9b85dc14013c31f7"
         ];
         
-        const forex = ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "EUR/JPY", "GBP/JPY"];
+        // 16 Pairs (10 Forex + 6 Crypto)
+        const pairs = [
+            "EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "EUR/GBP", "NZD/USD", "USD/CHF", "EUR/JPY", "GBP/JPY", // Forex
+            "BTC/USD", "ETH/USD", "SOL/USD", "XRP/USD", "LTC/USD", "DOGE/USD" // Crypto
+        ];
 
-        // --- RENDER ---
+        // --- 2. RENDER TERMINALS ---
         function render(broker) {
             const el = document.getElementById(`${broker}-grid`);
-            forex.forEach((name, i) => {
+            pairs.forEach((name, i) => {
+                const isCrypto = i >= 10;
                 const card = document.createElement('div');
                 card.className = 'pair-card'; card.id = `${broker}-${i}`;
-                card.innerHTML = `<h3 class="text-xl font-black text-slate-800 uppercase mb-1 italic">${name} <span class="text-[9px] bg-slate-100 px-2 rounded tracking-widest ml-1">OTC</span></h3><div class="inst-divider"></div>
-                    <div class="ai-chamber mx-auto mb-4"><div class="matrix-scan"></div><div class="chip-orbit"><div class="neon-swirl"></div><div class="white-chip" id="chip-${broker}-${i}"><i class="fas fa-microchip"></i></div></div>
-                    <div id="stat-${broker}-${i}" class="box-stat-footer px-4 transition-all opacity-0"><div class="text-left"><p class="text-[7px] font-black text-white/40 uppercase">RSI (14)</p><p id="rsi-${broker}-${i}" class="text-[10px] font-black text-blue-400">--</p></div><div class="text-right"><p class="text-[7px] font-black text-white/40 uppercase">VOL</p><p id="vol-${broker}-${i}" class="text-[10px] font-black text-green-400">--</p></div></div></div>
-                    <button onclick="handleSignal('${broker}-${i}')" id="btn-${broker}-${i}" class="btn-3d btn-blue w-full !py-4 mt-6 uppercase shadow-xl border-b-4 border-blue-800">GET SIGNAL</button>`;
+                card.innerHTML = `
+                    <h3 class="text-lg font-black text-slate-800 uppercase mb-1 italic">${name} <span class="text-[9px] ${isCrypto ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} px-2 rounded tracking-widest ml-1">${isCrypto ? 'CRYPTO' : 'OTC'}</span></h3>
+                    <div class="inst-divider"></div>
+                    <div class="ai-chamber mx-auto mb-4">
+                        <div class="matrix-scan"></div>
+                        <div class="chip-orbit"><div class="neon-swirl"></div><div class="white-chip" id="chip-${broker}-${i}"><i class="fas fa-microchip"></i></div></div>
+                        <div id="stat-${broker}-${i}" class="absolute bottom-2 left-0 right-0 px-4 flex justify-between transition-all opacity-0">
+                            <div class="text-left"><p class="text-[7px] font-black text-white/40 uppercase">RSI (14)</p><p id="rsi-${broker}-${i}" class="text-[10px] font-black text-blue-400">--</p></div>
+                            <div class="text-right"><p class="text-[7px] font-black text-white/40 uppercase">VOL</p><p id="vol-${broker}-${i}" class="text-[10px] font-black text-green-400">--</p></div>
+                        </div>
+                    </div>
+                    <button onclick="handleSignal('${broker}-${i}')" id="btn-${broker}-${i}" class="btn-3d w-full bg-slate-900 border-slate-700 text-white shadow-xl uppercase">GET SIGNAL</button>`;
                 el.appendChild(card);
             });
         }
         render('qx'); render('po');
 
-        // --- AUTH & EXPIRY ---
+        // --- 3. LOGIC & STATE ---
         let userStatus = "Free"; let currentId = null; let recPlan = "";
+        
         auth.onAuthStateChanged(u => {
-            if(!u) window.location.href = 'index.html';
-            db.collection("users").doc(u?.uid).onSnapshot(d => {
+            if(!u) window.location.href = 'index.html'; // Kick to login if not logged in
+            document.getElementById('user-email').innerText = u.email;
+            
+            db.collection("users").doc(u.uid).onSnapshot(d => {
                 if(d.exists) { 
                     const data = d.data();
                     let status = data.status || "Free";
-                    const now = new Date();
+                    // VIP Expiry Check
                     if(status === "VIP" && data.expiryDate) {
-                        if(now > data.expiryDate.toDate()) {
+                        if(new Date() > data.expiryDate.toDate()) {
                             status = "Free";
                             db.collection("users").doc(u.uid).update({ status: "Free", expiryDate: null });
+                            alert("VIP Expired. Please renew.");
                         }
                     }
                     userStatus = status;
                     document.getElementById('pts').innerText = data.points || 0;
                     document.getElementById('tier').innerText = userStatus;
-                    document.getElementById('crown').style.color = (status === "VIP") ? "#fbbf24" : "#94a3b8";
+                    document.getElementById('crown').className = (status === "VIP") ? "fas fa-crown text-amber-500 text-sm" : "fas fa-crown text-slate-400 text-sm";
                 }
             });
         });
 
-        // --- LOGIC ---
+        // --- 4. SIGNAL & ADS ---
         function handleSignal(id) {
             currentId = id;
             if(userStatus === "VIP") { startWait(2); } else {
@@ -234,7 +291,10 @@
                 document.getElementById('ad-overlay').style.display = 'flex';
                 document.body.classList.add('no-scroll');
                 let t = Math.floor(Math.random() * (30 - 10 + 1)) + 10;
-                const int = setInterval(() => { t--; document.getElementById('timer-text').innerText = `ADS: ${t}s`; if(t <= 0) { clearInterval(int); document.getElementById('ad-x-icon').style.display = 'block'; } }, 1000);
+                const int = setInterval(() => { 
+                    t--; document.getElementById('timer-text').innerText = `VERIFYING: ${t}s`; 
+                    if(t <= 0) { clearInterval(int); document.getElementById('ad-x-icon').style.display = 'block'; document.getElementById('timer-text').innerText = "VERIFIED ✅"; } 
+                }, 1000);
             }
         }
 
@@ -242,44 +302,72 @@
         
         function startWait(time) {
             document.body.classList.remove('no-scroll');
-            const btn = document.getElementById(`btn-${currentId}`); btn.innerText = "SMC SCANNING..."; btn.disabled = true;
+            const btn = document.getElementById(`btn-${currentId}`); btn.innerText = "SCANNING MARKET..."; btn.disabled = true;
             let lt = time; const int = setInterval(() => { lt--; if(lt <= 0) { clearInterval(int); reveal(); } }, 1000);
         }
 
         function reveal() {
             const el = document.getElementById(currentId); const btn = document.getElementById(`btn-${currentId}`);
             const isBuy = Math.random() > 0.45;
-            el.classList.remove('card-buy', 'card-sell');
-            db.collection("users").doc(auth.currentUser.uid).update({ points: firebase.firestore.FieldValue.increment(50) });
             
+            // 1 Ad = 1 Point Logic
+            if(userStatus !== "VIP") {
+                db.collection("users").doc(auth.currentUser.uid).update({ points: firebase.firestore.FieldValue.increment(1) });
+            }
+            
+            el.classList.remove('card-buy', 'card-sell');
             if(isBuy) { el.classList.add('card-buy'); btn.innerText = "1 MIN BUY ↑"; btn.className = "btn-3d w-full !py-4 mt-6 bg-[#22c55e] border-[#166534] text-white shadow-xl animate-pulse"; }
             else { el.classList.add('card-sell'); btn.innerText = "1 MIN SELL ↓"; btn.className = "btn-3d w-full !py-4 mt-6 bg-[#ef4444] border-[#991b1b] text-white shadow-xl animate-pulse"; }
             
             if(userStatus === "VIP") {
                 document.getElementById(`stat-${currentId}`).style.opacity = "1";
-                document.getElementById(`rsi-${currentId}`).innerText = isBuy ? "28.5 (OS)" : "72.4 (OB)";
-                document.getElementById(`vol-${currentId}`).innerText = "94% HIGH";
+                document.getElementById(`rsi-${currentId}`).innerText = isBuy ? "28.5 (OVERSOLD)" : "72.4 (OVERBOUGHT)";
+                document.getElementById(`vol-${currentId}`).innerText = "94% HIGH VOL";
             }
 
-            let cd = 60; const cool = setInterval(() => { cd--; btn.innerText = `WAIT ${cd}s`; btn.disabled = true; if(cd <= 0) { clearInterval(cool); btn.disabled = false; btn.innerText = "GET SIGNAL"; btn.className = "btn-3d btn-blue w-full !py-4 mt-6 shadow-xl uppercase"; document.getElementById(`stat-${currentId}`).style.opacity = "0"; } }, 1000);
+            let cd = 60; const cool = setInterval(() => { cd--; btn.innerText = `WAIT ${cd}s`; btn.disabled = true; if(cd <= 0) { clearInterval(cool); btn.disabled = false; btn.innerText = "GET SIGNAL"; btn.className = "btn-3d w-full bg-slate-900 border-slate-700 text-white shadow-xl uppercase"; document.getElementById(`stat-${currentId}`).style.opacity = "0"; } }, 1000);
         }
 
+        // --- 5. HELPERS & FORMS ---
         function pickPlan(fee, growth) { recPlan = `$${fee} Plan (${growth})`; document.getElementById('rec-payment').classList.remove('hidden'); }
         function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
+        function openWithdraw() { document.getElementById('withdraw-modal').style.display='flex'; }
+        
         function switchTerminal(b) {
             document.getElementById('qx-grid').classList.toggle('hidden', b !== 'qx'); document.getElementById('po-grid').classList.toggle('hidden', b !== 'po');
             document.getElementById('sw-qx').className = b === 'qx' ? 'btn-tab tab-active' : 'btn-tab tab-inactive'; document.getElementById('sw-po').className = b === 'po' ? 'btn-tab tab-active' : 'btn-tab tab-inactive';
         }
+
+        // --- 6. SUBMISSIONS ---
         function submitVip() {
             const tx = document.getElementById('vip-txid').value; if(tx.length < 5) return alert("Enter TxID!");
             db.collection("vip_requests").add({ uid: auth.currentUser.uid, email: auth.currentUser.email, tid: tx, status: "pending", time: new Date() });
-            alert("Sent! Wait 1-12h for verification."); closeModals();
+            
+            // Send Email
+            emailjs.send("service_cps9vge", "template_z0z0grc", {
+                from_name: "Bot User", message: `New VIP Request! TID: ${tx}, Email: ${auth.currentUser.email}`
+            }).then(() => { alert("Request Sent! Admin will verify."); closeModals(); });
         }
+
         function submitRec() {
             const tid = document.getElementById('rec-tid').value; if(tid.length < 5) return alert("Enter TID!");
             const wa = `https://wa.me/923064391353?text=Hello Admin, I paid for Recovery.%0APlan: ${recPlan}%0ATID: ${tid}%0AEmail: ${auth.currentUser.email}`;
             window.open(wa, '_blank'); closeModals();
         }
+
+        function submitWithdraw() {
+            const addr = document.getElementById('wd-address').value;
+            const amt = parseInt(document.getElementById('wd-amount').value);
+            const curr = parseInt(document.getElementById('pts').innerText);
+
+            if(amt < 5000) return alert("Minimum 5000 points required!");
+            if(amt > curr) return alert("Insufficient points!");
+            
+            db.collection("withdraw_requests").add({ uid: auth.currentUser.uid, email: auth.currentUser.email, address: addr, points: amt, status: "pending" });
+            db.collection("users").doc(auth.currentUser.uid).update({ points: firebase.firestore.FieldValue.increment(-amt) });
+            alert("Withdrawal Requested! Check points deducted."); closeModals();
+        }
+
         setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString(); }, 1000);
     </script>
 </body>
