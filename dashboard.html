@@ -26,7 +26,9 @@
         .no-scroll { overflow: hidden !important; height: 100vh; }
 
         /* PAIR CARDS & ANIMATIONS */
-        .pair-card { background: #ffffff; border: 3px solid #f1f5f9; border-radius: 35px; padding: 20px; margin-bottom: 12px; text-align: center; position: relative; }
+        /* Updated: Default Light Blue Background & Border */
+        .pair-card { background: #eff6ff; border: 3px solid #bfdbfe; border-radius: 35px; padding: 20px; margin-bottom: 12px; text-align: center; position: relative; transition: 0.3s; }
+        
         .inst-divider { width: 50px; height: 4px; background: #059669; margin: 8px auto 12px; border-radius: 10px; }
         
         .ai-chamber { width: 100%; height: 190px; background: #0f2a3f; border-radius: 30px; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 3px solid #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
@@ -39,23 +41,24 @@
         .white-chip { width: 60px; height: 60px; background: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 0 20px rgba(255,255,255,0.4); }
         .white-chip i { font-size: 28px; color: var(--royal); transition: 0.3s; }
 
-        /* Footer inside AI Chamber */
         .chamber-footer { width: 100%; padding: 0 15px; display: flex; justify-content: space-between; position: absolute; bottom: 12px; z-index: 20; }
         .stat-box { text-align: left; }
         .stat-box.right { text-align: right; }
         .stat-label { font-size: 8px; font-weight: 800; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
         .stat-val { font-size: 11px; font-weight: 800; color: white; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
-        .stat-val.win { color: #4ade80; } /* Green */
+        .stat-val.win { color: #4ade80; }
 
-        /* Signal Colors */
-        .card-buy { border-color: var(--green) !important; background: #f0fff4; }
-        .card-sell { border-color: var(--red) !important; background: #fff5f5; }
+        /* Signal Colors Overrides */
+        .card-buy { border-color: var(--green) !important; background: #f0fff4 !important; }
+        .card-sell { border-color: var(--red) !important; background: #fff5f5 !important; }
 
         /* UI ELEMENTS */
-        .switcher-container { display: flex; gap: 8px; margin-bottom: 20px; background: #f1f5f9; padding: 6px; border-radius: 24px; }
+        .section-divider { border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0; padding: 15px 0; margin: 25px 0; background: #f8fafc; }
+        
+        .switcher-container { display: flex; gap: 8px; padding: 6px; border-radius: 24px; }
         .btn-tab { flex: 1; padding: 14px; border-radius: 18px; font-weight: 800; font-size: 11px; text-transform: uppercase; transition: 0.3s; border-bottom: 4px solid rgba(0,0,0,0.1); }
         .tab-active { background: var(--royal) !important; color: white !important; border-bottom-color: #1e3a8a !important; }
-        .tab-inactive { background: transparent; color: #94a3b8; border-bottom-color: transparent; }
+        .tab-inactive { background: white; color: #94a3b8; border-bottom-color: #cbd5e1; border: 1px solid #cbd5e1; }
 
         .btn-3d { border-radius: 18px; font-weight: 800; font-size: 11px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; border-bottom: 5px solid rgba(0,0,0,0.15); padding: 15px; }
         .btn-3d:active { transform: translateY(3px); border-bottom-width: 1px; }
@@ -63,13 +66,12 @@
         .sidebar { position: fixed; left: -100%; top: 0; width: 85%; height: 100%; background: white; z-index: 200000; transition: 0.4s; padding: 25px; box-shadow: 30px 0 60px rgba(0,0,0,0.1); }
         .sidebar-active { left: 0 !important; }
         
-        /* Modal Styling for Long Text */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100000; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(5px); }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100000; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(5px); }
         .modal-box { background: white; width: 100%; max-width: 440px; border-radius: 35px; padding: 25px; max-height: 85vh; overflow-y: auto; border: 2px solid #f1f5f9; }
-        .policy-item { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+        .policy-item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f1f5f9; }
         .policy-item:last-child { border-bottom: none; }
-        .policy-title { font-size: 11px; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 4px; }
-        .policy-text { font-size: 10px; font-weight: 600; color: #64748b; line-height: 1.5; }
+        .policy-title { font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 6px; }
+        .policy-text { font-size: 10px; font-weight: 600; color: #64748b; line-height: 1.6; }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -95,7 +97,7 @@
 
     <div id="sidebar" class="sidebar">
         <div class="flex justify-between items-center mb-10">
-            <h2 class="text-xl font-black uppercase italic text-slate-900">SilverX Menu</h2>
+            <h2 class="text-xl font-black uppercase text-slate-900">SilverX Menu</h2>
             <i onclick="document.getElementById('sidebar').classList.remove('sidebar-active')" class="fas fa-times text-2xl text-slate-300 cursor-pointer"></i>
         </div>
         <div class="space-y-4">
@@ -106,7 +108,7 @@
             <a href="https://wa.me/923064391353" class="flex items-center gap-4 p-4 bg-white shadow-sm border border-slate-100 rounded-2xl font-bold"><i class="fab fa-whatsapp text-[#25D366] text-xl"></i> Help Center</a>
             <a href="https://www.tiktok.com/@kingtraderofficail" class="flex items-center gap-4 p-4 bg-white shadow-sm border border-slate-100 rounded-2xl font-bold"><i class="fab fa-tiktok text-black text-xl"></i> TikTok Bot</a>
             <a href="https://www.youtube.com/@kingtraderofficial45" class="flex items-center gap-4 p-4 bg-white shadow-sm border border-slate-100 rounded-2xl font-bold"><i class="fab fa-youtube text-red-600 text-xl"></i> YouTube</a>
-            <button onclick="document.getElementById('privacy-modal').style.display='flex'" class="w-full p-4 bg-blue-50 text-blue-600 rounded-2xl font-black text-xs uppercase text-left"><i class="fas fa-shield-halved mr-2"></i> Privacy Policy</button>
+            <button onclick="openModal('privacy-modal')" class="w-full p-4 bg-blue-50 text-blue-600 rounded-2xl font-black text-xs uppercase text-left"><i class="fas fa-shield-halved mr-2"></i> Privacy Policy</button>
             <button onclick="auth.signOut().then(()=>location.reload())" class="w-full mt-6 p-4 bg-red-50 text-red-500 rounded-2xl font-black uppercase text-xs">Sign Out</button>
         </div>
     </div>
@@ -119,7 +121,7 @@
             </div>
             <div class="relative z-10 text-right">
                 <p class="text-[9px] font-black text-white uppercase mb-2">5000 Pts = $5</p>
-                <button onclick="openWithdraw()" class="bg-white text-slate-900 text-[10px] font-black px-5 py-2 rounded-xl uppercase hover:bg-slate-100 transition-colors">Withdraw</button>
+                <button onclick="openModal('withdraw-modal')" class="bg-white text-slate-900 text-[10px] font-black px-5 py-2 rounded-xl uppercase hover:bg-slate-100 transition-colors">Withdraw</button>
             </div>
         </div>
 
@@ -129,13 +131,15 @@
         </div>
 
         <div class="grid grid-cols-2 gap-3 mb-6">
-            <button onclick="document.getElementById('vip-modal').style.display='flex'" class="btn-3d bg-amber-400 text-black shadow-lg shadow-amber-200"><i class="fas fa-gem"></i> VIP Access</button>
-            <button onclick="document.getElementById('rec-modal').style.display='flex'" class="btn-3d bg-orange-600 text-white shadow-lg shadow-orange-200"><i class="fas fa-heart-pulse"></i> Recovery</button>
+            <button onclick="openModal('vip-modal')" class="btn-3d bg-amber-400 text-black shadow-lg shadow-amber-200"><i class="fas fa-gem"></i> VIP Access</button>
+            <button onclick="openModal('rec-modal')" class="btn-3d bg-orange-600 text-white shadow-lg shadow-orange-200"><i class="fas fa-heart-pulse"></i> Recovery</button>
         </div>
 
-        <div class="switcher-container">
-            <button onclick="switchTerminal('qx')" id="sw-qx" class="btn-tab tab-active">Quotex Bot</button>
-            <button onclick="switchTerminal('po')" id="sw-po" class="btn-tab tab-inactive">Pocket Bot</button>
+        <div class="section-divider">
+            <div class="switcher-container px-5">
+                <button onclick="switchTerminal('qx')" id="sw-qx" class="btn-tab tab-active">Quotex Bot</button>
+                <button onclick="switchTerminal('po')" id="sw-po" class="btn-tab tab-inactive">Pocket Bot</button>
+            </div>
         </div>
 
         <div id="qx-grid" class="space-y-4 mb-10"></div>
@@ -143,22 +147,28 @@
     </main>
 
     <footer class="bg-white py-8 text-center border-t border-slate-100 mb-20">
-        <h3 class="font-black text-xl text-slate-900 uppercase italic mb-1">SilverX <span class="text-blue-600">AI Logic</span></h3>
+        <h3 class="font-black text-xl text-slate-900 uppercase mb-1">SilverX <span class="text-blue-600">AI Logic</span></h3>
         <p class="text-[8px] font-bold text-slate-400 uppercase tracking-[2px]">Institutional Trading System &copy; 2026</p>
     </footer>
 
     <div id="vip-modal" class="modal-overlay">
         <div class="modal-box text-center">
-            <h2 class="text-3xl font-black text-slate-900 uppercase italic tracking-tighter mb-1">VIP ACCESS</h2>
+            <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-1">VIP ACCESS</h2>
             <p class="text-[10px] font-bold text-amber-500 mb-4 uppercase tracking-widest">30 Days Membership</p>
             
-            <div class="bg-slate-50 p-4 rounded-2xl mb-6 text-left border border-slate-100 h-48 overflow-y-auto">
-                <div class="policy-item"><p class="policy-title">1. No Ad Interruption</p><p class="policy-text">VIP members experience a completely ad-free interface. Signals are generated instantly with zero delay, ensuring you catch every market move on time.</p></div>
-                <div class="policy-item"><p class="policy-title">2. Institutional SMC Logic</p><p class="policy-text">Our VIP algorithm uses 'Smart Money Concepts' to detect institutional order blocks and liquidity sweeps, providing higher accuracy than basic indicators.</p></div>
-                <div class="policy-item"><p class="policy-title">3. High Probability Signals</p><p class="policy-text">The filter logic is tightened to 90-99% accuracy. Risky markets are automatically filtered out to protect your capital.</p></div>
-                <div class="policy-item"><p class="policy-title">4. 30-Day Validity</p><p class="policy-text">Your membership is valid for exactly 30 days from the moment of activation. Automatic expiry will revert the status to Free after this period.</p></div>
-                <div class="policy-item"><p class="policy-title">5. Priority Support</p><p class="policy-text">Get direct access to our administration team for account setups, payment issues, and trading guidance via WhatsApp.</p></div>
-                <div class="policy-item"><p class="policy-title">6. Multi-Device Login</p><p class="policy-text">VIP access is linked to your account, allowing you to log in from up to 2 devices simultaneously without security lockouts.</p></div>
+            <div class="bg-slate-50 p-4 rounded-2xl mb-6 text-left border border-slate-100 h-64 overflow-y-auto">
+                <div class="policy-item">
+                    <p class="policy-title">1. Advanced Institutional Filtering</p>
+                    <p class="policy-text">Gain exclusive access to our backend algorithm that filters out fake market movements. This system identifies 'Stop Hunts' and 'Liquidity Grabs' ensuring you only enter trades when big banks are moving the price, increasing win rates to over 90%.</p>
+                </div>
+                <div class="policy-item">
+                    <p class="policy-title">2. Zero Latency & No Ads</p>
+                    <p class="policy-text">VIP members experience a completely ad-free environment. Signals are generated instantly (Real-time) without the 60-second delay found in the free version. This speed is critical for 1-minute binary options trading success.</p>
+                </div>
+                <div class="policy-item">
+                    <p class="policy-title">3. Multi-Device & Priority Support</p>
+                    <p class="policy-text">Your VIP license key works on up to 2 devices simultaneously (Mobile & PC). Additionally, you get a dedicated WhatsApp support line for instant account resolution and trading setup guidance from our expert team.</p>
+                </div>
             </div>
 
             <div class="bg-slate-900 text-white p-5 rounded-3xl mb-6">
@@ -178,15 +188,21 @@
 
     <div id="rec-modal" class="modal-overlay">
         <div class="modal-box">
-            <h2 class="text-2xl font-black text-orange-600 uppercase text-center italic mb-4">Recovery Hub</h2>
+            <h2 class="text-2xl font-black text-orange-600 uppercase text-center mb-4">Recovery Hub</h2>
             
-            <div class="bg-orange-50 p-4 rounded-3xl mb-6 border border-orange-100 h-48 overflow-y-auto text-left">
-                <div class="policy-item"><p class="policy-title">1. Balance Requirement</p><p class="policy-text">To participate in recovery sessions, you must have a minimum active balance of $10 to $1000 in your broker account to manage drawdowns.</p></div>
-                <div class="policy-item"><p class="policy-title">2. Live Session Format</p><p class="policy-text">Recovery is conducted via live WhatsApp sessions or Zoom calls where the admin provides real-time entry and exit points.</p></div>
-                <div class="policy-item"><p class="policy-title">3. Money Management</p><p class="policy-text">Strict money management rules apply. We typically use 2-5% risk per trade to ensure long-term sustainability and capital protection.</p></div>
-                <div class="policy-item"><p class="policy-title">4. Fee Structure</p><p class="policy-text">The upfront fee ($10-$100) is for the service and analysis time. This fee is non-refundable unless the recovery target fails completely.</p></div>
-                <div class="policy-item"><p class="policy-title">5. Refund Guarantee</p><p class="policy-text">If we fail to recover your initial loss target within the agreed timeframe, your service fee will be refunded to your Binance wallet.</p></div>
-                <div class="policy-item"><p class="policy-title">6. Scheduling</p><p class="policy-text">Once payment is verified, you will be assigned a slot within 24 hours. Please ensure you are available online during the assigned time.</p></div>
+            <div class="bg-orange-50 p-4 rounded-3xl mb-6 border border-orange-100 h-64 overflow-y-auto text-left">
+                <div class="policy-item">
+                    <p class="policy-title">1. Capital & Risk Management</p>
+                    <p class="policy-text">To participate, your trading account must have a balance between $10 and $1000. We strictly follow a Compounding strategy where we risk only 2-5% of the capital per trade to ensure long-term sustainability and prevent blowing the account.</p>
+                </div>
+                <div class="policy-item">
+                    <p class="policy-title">2. Live Session Protocol</p>
+                    <p class="policy-text">Recovery is done via live Zoom or WhatsApp calls. You must be available online at the assigned slot. Our analyst will tell you exactly when to click Buy or Sell. Any trade taken without our instruction is your own responsibility.</p>
+                </div>
+                <div class="policy-item">
+                    <p class="policy-title">3. Refund & Guarantee Policy</p>
+                    <p class="policy-text">We charge an upfront fee for the analyst's time. However, if we fail to achieve the agreed recovery target within the session, your full service fee will be refunded to your Binance Pay ID within 24 hours. No questions asked.</p>
+                </div>
             </div>
 
             <div class="grid grid-cols-2 gap-2 mb-6 font-black text-[10px] uppercase">
@@ -209,18 +225,18 @@
         <div class="modal-box text-left">
             <h2 class="text-xl font-black text-blue-600 mb-6 uppercase text-center">Institutional Policy</h2>
             <div class="h-80 overflow-y-auto pr-2">
-                <div class="policy-item"><p class="policy-title">1. General Disclaimer</p><p class="policy-text">SilverX Elite AI is a technical analysis tool designed to assist traders. It does not provide financial advice, and all trading decisions are the sole responsibility of the user.</p></div>
-                <div class="policy-item"><p class="policy-title">2. Risk Disclosure</p><p class="policy-text">Trading binary options, forex, and cryptocurrency involves a high level of risk and may not be suitable for all investors. You can lose some or all of your invested capital.</p></div>
-                <div class="policy-item"><p class="policy-title">3. AI & Algorithm Limitations</p><p class="policy-text">Our AI analyzes historical data and current market conditions. However, past performance is not indicative of future results, and market volatility can affect accuracy.</p></div>
-                <div class="policy-item"><p class="policy-title">4. User Responsibility</p><p class="policy-text">Users must verify all signals with their own analysis before placing trades. SilverX is not liable for any financial losses incurred while using this bot.</p></div>
-                <div class="policy-item"><p class="policy-title">5. Data Privacy</p><p class="policy-text">We collect your email address and unique user ID (UID) solely for login authentication and points tracking. We do not store your banking or credit card details.</p></div>
-                <div class="policy-item"><p class="policy-title">6. Third-Party Links & Ads</p><p class="policy-text">This application contains advertisements and affiliate links to third-party brokers. We are not responsible for the content or practices of these external sites.</p></div>
-                <div class="policy-item"><p class="policy-title">7. Payment Policy</p><p class="policy-text">Payments for VIP access and Recovery plans are processed manually via Binance/Crypto. Please ensure you send funds to the correct ID. Wrong transfers cannot be reversed.</p></div>
-                <div class="policy-item"><p class="policy-title">8. Refund Policy</p><p class="policy-text">VIP subscriptions are non-refundable once activated. Recovery fees are only refundable if the administration fails to meet the agreed recovery targets.</p></div>
-                <div class="policy-item"><p class="policy-title">9. Account Security</p><p class="policy-text">You are responsible for maintaining the confidentiality of your login credentials. Sharing accounts may lead to permanent suspension of your SilverX access.</p></div>
-                <div class="policy-item"><p class="policy-title">10. Service Availability</p><p class="policy-text">We strive for 99.9% uptime, but we do not guarantee uninterrupted access. Maintenance or server issues may cause temporary downtime.</p></div>
-                <div class="policy-item"><p class="policy-title">11. Modification of Terms</p><p class="policy-text">SilverX reserves the right to modify these terms, pricing, and policies at any time without prior notice. Continued use implies acceptance of the new terms.</p></div>
-                <div class="policy-item"><p class="policy-title">12. Verification Process</p><p class="policy-text">All transaction IDs (TxIDs) submitted for VIP or Recovery are manually verified. This process takes between 1 to 12 hours depending on volume.</p></div>
+                <div class="policy-item"><p class="policy-title">1. General Disclaimer</p><p class="policy-text">SilverX Elite AI is strictly a technical analysis tool designed to assist traders in decision-making. It does not provide financial advice, and all trading decisions are the sole responsibility of the user. We do not manage funds directly.</p></div>
+                <div class="policy-item"><p class="policy-title">2. High Risk Warning</p><p class="policy-text">Trading binary options, forex, and cryptocurrency involves a substantial level of risk and may not be suitable for all investors. You should not invest money that you cannot afford to lose. Past performance is not indicative of future results.</p></div>
+                <div class="policy-item"><p class="policy-title">3. Algorithm Limitations</p><p class="policy-text">Our AI analyzes historical data, price action, and market volume. However, market volatility due to economic news (NFP, CPI) can affect signal accuracy. We recommend avoiding trading during major news events.</p></div>
+                <div class="policy-item"><p class="policy-title">4. User Responsibility</p><p class="policy-text">Users must verify all signals with their own analysis before placing trades. SilverX is not liable for any financial losses, damages, or missed opportunities incurred while using this bot or its signals.</p></div>
+                <div class="policy-item"><p class="policy-title">5. Data Collection & Privacy</p><p class="policy-text">We collect your email address and unique user ID (UID) solely for login authentication, points tracking, and account security. We never store your banking passwords, credit card details, or broker credentials.</p></div>
+                <div class="policy-item"><p class="policy-title">6. Third-Party Ads & Links</p><p class="policy-text">This application generates revenue through advertisements and affiliate links to third-party brokers (like Quotex/Pocket Option). We are not responsible for the content, privacy practices, or security of these external websites.</p></div>
+                <div class="policy-item"><p class="policy-title">7. Payment Processing</p><p class="policy-text">Payments for VIP access and Recovery plans are processed manually via Binance Pay or USDT (TRC20). Please ensure you send funds to the correct ID provided. We cannot reverse transactions sent to wrong addresses.</p></div>
+                <div class="policy-item"><p class="policy-title">8. Refund Policy</p><p class="policy-text">VIP subscriptions are digital goods and are non-refundable once activated. Recovery service fees are only refundable if the administration fails to meet the agreed recovery targets during the live session.</p></div>
+                <div class="policy-item"><p class="policy-title">9. Account Security</p><p class="policy-text">You are responsible for maintaining the confidentiality of your login credentials. Sharing accounts or selling your access to others is strictly prohibited and will lead to a permanent ban without refund.</p></div>
+                <div class="policy-item"><p class="policy-title">10. Withdrawal System</p><p class="policy-text">Points earned by watching ads can be withdrawn as USDT. Withdrawals are processed manually. Any attempt to use bots, scripts, or emulators to farm points will result in an immediate account freeze.</p></div>
+                <div class="policy-item"><p class="policy-title">11. Service Availability</p><p class="policy-text">We strive for 99.9% uptime, but we do not guarantee uninterrupted access. Maintenance, server updates, or internet connectivity issues may cause temporary downtime of the signal service.</p></div>
+                <div class="policy-item"><p class="policy-title">12. Policy Updates</p><p class="policy-text">SilverX reserves the right to modify these terms, pricing, and policies at any time without prior notice. Continued use of the application implies your full acceptance of the updated terms and conditions.</p></div>
             </div>
             <button onclick="closeModals()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase mt-6 shadow-xl">I Have Read & Agree</button>
         </div>
@@ -238,7 +254,7 @@
     </div>
 
     <script>
-        // --- 1. FIREBASE CONFIG ---
+        // --- 1. CONFIGURATION ---
         const firebaseConfig = { apiKey: "AIzaSyAyXzJ1UUdtWe96NjiQbVCqnWdIv8XakhA", authDomain: "silverxtrader.firebaseapp.com", projectId: "silverxtrader", storageBucket: "silverxtrader.firebasestorage.app", messagingSenderId: "46330013690", appId: "1:46330013690:web:c2aad241ad7abd49e0e643" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore(); const auth = firebase.auth();
@@ -255,10 +271,9 @@
             "https://www.effectivegatecpm.com/p85rfz3v8?key=b50205713bdb8a8e9b85dc14013c31f7"
         ];
         
-        // 16 Pairs (10 Forex + 6 Crypto)
         const pairs = [
-            "EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "EUR/GBP", "NZD/USD", "USD/CHF", "EUR/JPY", "GBP/JPY", // Forex
-            "BTC/USD", "ETH/USD", "SOL/USD", "XRP/USD", "LTC/USD", "DOGE/USD" // Crypto
+            "EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "EUR/GBP", "NZD/USD", "USD/CHF", "EUR/JPY", "GBP/JPY", 
+            "BTC/USD", "ETH/USD", "SOL/USD", "XRP/USD", "LTC/USD", "DOGE/USD" 
         ];
 
         // --- 2. RENDER TERMINALS ---
@@ -269,7 +284,7 @@
                 const card = document.createElement('div');
                 card.className = 'pair-card'; card.id = `${broker}-${i}`;
                 card.innerHTML = `
-                    <h3 class="text-lg font-black text-slate-800 uppercase mb-1 italic">${name} <span class="text-[9px] ${isCrypto ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} px-2 rounded tracking-widest ml-1">${isCrypto ? 'CRYPTO' : 'OTC'}</span></h3>
+                    <h3 class="text-lg font-black text-slate-800 uppercase mb-1">${name} <span class="text-[9px] ${isCrypto ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} px-2 rounded tracking-widest ml-1">${isCrypto ? 'CRYPTO' : 'OTC'}</span></h3>
                     <div class="inst-divider"></div>
                     <div class="ai-chamber mx-auto mb-4">
                         <div class="matrix-scan"></div>
@@ -296,7 +311,6 @@
                 if(d.exists) { 
                     const data = d.data();
                     let status = data.status || "Free";
-                    // VIP Expiry Check
                     if(status === "VIP" && data.expiryDate) {
                         if(new Date() > data.expiryDate.toDate()) {
                             status = "Free";
@@ -339,8 +353,13 @@
             const el = document.getElementById(currentId); const btn = document.getElementById(`btn-${currentId}`);
             const isBuy = Math.random() > 0.45;
             
+            // --- UPDATED POINTS LOGIC: Safer Method ---
             if(userStatus !== "VIP") {
-                db.collection("users").doc(auth.currentUser.uid).update({ points: firebase.firestore.FieldValue.increment(1) });
+                const userRef = db.collection("users").doc(auth.currentUser.uid);
+                // Using set with merge to ensure document exists
+                userRef.set({
+                    points: firebase.firestore.FieldValue.increment(1)
+                }, { merge: true }); 
             }
             
             el.classList.remove('card-buy', 'card-sell');
@@ -350,10 +369,19 @@
             let cd = 60; const cool = setInterval(() => { cd--; btn.innerText = `WAIT ${cd}s`; btn.disabled = true; if(cd <= 0) { clearInterval(cool); btn.disabled = false; btn.innerText = "GET SIGNAL"; btn.className = "btn-3d w-full bg-slate-900 border-slate-700 text-white shadow-xl uppercase"; } }, 1000);
         }
 
-        // --- 5. HELPERS & FORMS ---
+        // --- 5. HELPERS & MODALS ---
         function pickPlan(fee, growth) { recPlan = `$${fee} Plan (${growth})`; document.getElementById('rec-payment').classList.remove('hidden'); }
-        function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
-        function openWithdraw() { document.getElementById('withdraw-modal').style.display='flex'; }
+        
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Stop Background Scroll
+            document.getElementById('sidebar').classList.remove('sidebar-active'); // Auto Close Sidebar
+        }
+
+        function closeModals() { 
+            document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); 
+            document.body.style.overflow = 'auto'; // Resume Scroll
+        }
         
         function switchTerminal(b) {
             document.getElementById('qx-grid').classList.toggle('hidden', b !== 'qx'); document.getElementById('po-grid').classList.toggle('hidden', b !== 'po');
