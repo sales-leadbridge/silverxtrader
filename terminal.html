@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SilverX Elite AI | Bot Terminal</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+<body class="bg-slate-50/20">
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyAyXzJ1UUdtWe96NjiQbVCqnWdIv8XakhA", authDomain: "silverxtrader.firebaseapp.com", projectId: "silverxtrader", storageBucket: "silverxtrader.firebasestorage.app", messagingSenderId: "46330013690", appId: "1:46330013690:web:c2aad241ad7abd49e0e643" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        const adLinks = ["https://www.effectivegatecpm.com/zu9fwwufi?key=5c01f6e26f4b9943913f0d36bfa48f6d", "https://www.effectivegatecpm.com/m3re02atee?key=cebdb997452acac01a6d39d48dcb0e68"];
+        let userStatus = "Free";
+
+        // --- AUTOMATION: AUTO-PROFILE & SYNC ---
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = 'index.html';
+            } else {
+                const userRef = db.collection("users").doc(user.uid);
+                userRef.onSnapshot(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        document.getElementById('pts').innerText = data.points || 0;
+                        document.getElementById('tier').innerText = data.status || "Free";
+                        userStatus = data.status || "Free";
+                        if(userStatus === "VIP") document.getElementById('crown').style.color = "#fbbf24";
+                    } else {
+                        // AUTO CREATE PROFILE
+                        userRef.set({ email: user.email, points: 0, status: "Free", created: new Date() });
+                    }
+                });
+            }
+        });
+
+        // --- AUTOMATION: AD & POINT SYSTEM ---
+        function handleSignal(id) {
+            currentId = id;
+            if (userStatus === "VIP") {
+                startWait(3);
+            } else {
+                document.getElementById('ad-frame').src = adLinks[Math.floor(Math.random() * adLinks.length)];
+                document.getElementById('ad-overlay').style.display = 'flex';
+                let t = 15;
+                const int = setInterval(() => {
+                    t--;
+                    document.getElementById('timer-text').innerText = `ADS: ${t}s (Earn 1 PT)`;
+                    if (t <= 0) {
+                        clearInterval(int);
+                        document.getElementById('ad-x-icon').style.display = 'block';
+                    }
+                }, 1000);
+            }
+        }
+
+        function closeAdPopup() {
+            document.getElementById('ad-overlay').style.display = 'none';
+            // AUTO ADD POINT IN FIREBASE
+            db.collection("users").doc(auth.currentUser.uid).update({
+                points: firebase.firestore.FieldValue.increment(1)
+            });
+            startWait(5);
+        }
+
+        // [Baki render, switchTerminal aur reveal functions same rahenge]
+    </script>
+</body>
+</html>
