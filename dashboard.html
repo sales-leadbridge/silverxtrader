@@ -18,44 +18,44 @@
         :root { --royal: #2563eb; --cyan: #00d2ff; --gold: #fbbf24; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #ffffff; color: #0f172a; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
 
-        /* AD OVERLAY FIX */
+        /* AD OVERLAY */
         #ad-overlay { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 9999999; flex-direction: column; }
         .ad-nav { width: 100%; padding: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; background: white; }
         .ad-timer-label { font-size: 13px; font-weight: 800; color: var(--royal); background: #f0f7ff; padding: 4px 12px; border-radius: 10px; }
         .ad-close { font-size: 24px; color: #000; display: none; cursor: pointer; padding: 10px; }
         .no-scroll { overflow: hidden !important; }
 
-        /* ORIGINAL CHIP ANIMATION & BOXES */
-        .pair-card { background: #eff6ff; border: 3px solid #bfdbfe; border-radius: 35px; padding: 20px; margin-bottom: 12px; text-align: center; transition: 0.3s; }
+        /* PAIR CARDS & CHIP ANIMATION (MATCHING YOUR STYLE) */
+        .pair-card { background: #eff6ff; border: 3px solid #bfdbfe; border-radius: 35px; padding: 20px; margin-bottom: 12px; text-align: center; }
         .card-buy { border-color: #22c55e !important; background: #f0fff4 !important; }
         .card-sell { border-color: #ef4444 !important; background: #fff5f5 !important; }
 
-        .ai-chamber { width: 100%; height: 190px; background: #0f2a3f; border-radius: 30px; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 3px solid #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .matrix-scan { position: absolute; inset: 0; opacity: 0.2; background: repeating-linear-gradient(0deg, transparent, transparent 38px, #000 40px, transparent 42px); animation: scanDown 8s linear infinite; }
+        .ai-chamber { width: 100%; height: 190px; background: #0f2a3f; border-radius: 30px; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 4px solid #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 15px; }
+        .matrix-scan { position: absolute; inset: 0; opacity: 0.15; background: repeating-linear-gradient(0deg, transparent, transparent 38px, #000 40px, transparent 42px); animation: scanDown 8s linear infinite; }
         @keyframes scanDown { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
 
         .chip-orbit { position: relative; width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; }
-        .neon-swirl { position: absolute; inset: 0; border: 3px solid var(--cyan); border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; box-shadow: 0 0 15px var(--cyan); animation: spinRing 6s linear infinite; }
+        .neon-swirl { position: absolute; inset: 0; border: 4px solid var(--cyan); border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; box-shadow: 0 0 20px var(--cyan); animation: spinRing 5s linear infinite; }
         @keyframes spinRing { to { transform: rotate(360deg); } }
-        .white-chip { width: 60px; height: 60px; background: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 0 20px rgba(255,255,255,0.4); }
-        .white-chip i { font-size: 28px; color: var(--royal); }
+        .white-chip { width: 60px; height: 60px; background: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 0 25px rgba(255,255,255,0.5); }
+        .white-chip i { font-size: 30px; color: var(--royal); }
 
-        /* UI ELEMENTS */
-        .section-divider { border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0; padding: 15px 0; margin: 25px 0; background: #f8fafc; }
-        .btn-3d { border-radius: 18px; font-weight: 800; font-size: 11px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; border-bottom: 5px solid rgba(0,0,0,0.15); padding: 15px; transition: 0.2s; }
-        .btn-3d:active { transform: translateY(2px); border-bottom-width: 2px; }
-        .tab-active { background: var(--royal) !important; color: white !important; }
+        /* BUTTON STYLES (MATCHING SCREENSHOT) */
+        .btn-3d { border-radius: 20px; font-weight: 800; font-size: 11px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 16px; transition: 0.2s; border-bottom: 6px solid rgba(0,0,0,0.15); }
+        .btn-3d:active { transform: translateY(3px); border-bottom-width: 2px; }
+        .tab-active { background: var(--royal) !important; color: white !important; border-color: var(--royal); }
 
-        /* SIDEBAR & MODALS */
+        /* MODALS & SIDEBAR */
         .sidebar { position: fixed; left: -100%; top: 0; width: 85%; height: 100%; background: white; z-index: 200000; transition: 0.4s; padding: 25px; box-shadow: 30px 0 60px rgba(0,0,0,0.1); }
         .sidebar-active { left: 0 !important; }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100000; align-items: center; justify-content: center; padding: 15px; }
         .modal-box { background: white; width: 100%; max-width: 440px; border-radius: 35px; padding: 25px; max-height: 85vh; overflow-y: auto; }
         
-        /* CONTENT STYLING */
+        /* CONTENT LISTS */
         .policy-item { margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
-        .policy-title { font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; }
-        .policy-text { font-size: 10.5px; font-weight: 600; color: #64748b; line-height: 1.6; }
+        .policy-title { font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 4px; }
+        .policy-text { font-size: 10px; font-weight: 600; color: #64748b; line-height: 1.6; }
+        .section-divider { border-top: 2px solid #f1f5f9; border-bottom: 2px solid #f1f5f9; padding: 15px 0; margin: 25px 0; background: #fafafa; }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -68,115 +68,118 @@
         <iframe id="ad-frame" src="" style="width:100%; height:100%; border:none;"></iframe>
     </div>
 
-    <header class="sticky top-0 z-[50000] bg-white border-b px-5 py-3 flex justify-between items-center shadow-sm">
+    <header class="sticky top-0 z-[50000] bg-white border-b px-5 py-4 flex justify-between items-center">
         <div class="flex items-center gap-2">
             <div class="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center border-2 border-amber-400">
                 <i class="fas fa-crown text-slate-400 text-sm" id="crown"></i>
             </div>
-            <h1 class="font-black text-base uppercase">SilverX <span class="text-blue-600">Pro</span></h1>
+            <h1 class="font-black text-lg uppercase tracking-tight">SilverX <span class="text-blue-600">Pro</span></h1>
         </div>
         <div class="flex items-center gap-3">
-            <p id="live-clock" class="bg-blue-50 px-3 py-1 rounded-lg font-bold text-[10px] text-blue-600 uppercase">00:00:00</p>
-            <i onclick="document.getElementById('sidebar').classList.add('sidebar-active')" class="fas fa-bars-staggered text-xl text-slate-800 cursor-pointer"></i>
+            <p id="live-clock" class="bg-blue-50 px-3 py-1 rounded-lg font-bold text-[10px] text-blue-600">00:00:00</p>
+            <i onclick="openSidebar()" class="fas fa-bars-staggered text-xl cursor-pointer"></i>
         </div>
     </header>
 
     <div id="sidebar" class="sidebar">
         <div class="flex justify-between items-center mb-10">
-            <h2 class="text-xl font-black uppercase">Menu</h2>
-            <i onclick="document.getElementById('sidebar').classList.remove('sidebar-active')" class="fas fa-times text-2xl text-slate-300"></i>
+            <h2 class="text-xl font-black uppercase">SilverX Menu</h2>
+            <i onclick="closeSidebar()" class="fas fa-times text-2xl text-slate-300"></i>
         </div>
         <div class="space-y-4">
             <div class="bg-slate-50 p-4 rounded-2xl border">
-                <p class="text-[10px] uppercase font-bold text-slate-400">Account</p>
+                <p class="text-[10px] uppercase font-bold text-slate-400">User Account</p>
                 <p class="text-sm font-black text-slate-900 truncate" id="user-email">Loading...</p>
             </div>
-            <button onclick="openModal('privacy-modal')" class="w-full p-4 bg-blue-50 text-blue-600 rounded-2xl font-black text-xs uppercase text-left"><i class="fas fa-shield-halved mr-2"></i> Privacy Policy</button>
-            <a href="https://wa.me/923064391353" class="flex items-center gap-4 p-4 bg-white border rounded-2xl font-bold"><i class="fab fa-whatsapp text-green-500"></i> WhatsApp Support</a>
-            <button onclick="auth.signOut().then(()=>location.reload())" class="w-full mt-10 p-4 bg-red-50 text-red-500 rounded-2xl font-black uppercase text-xs">Sign Out</button>
+            <button onclick="openModal('privacy-modal')" class="w-full p-4 bg-blue-50 text-blue-600 rounded-2xl font-black text-xs text-left uppercase">Privacy Policy</button>
+            <a href="https://wa.me/923064391353" class="flex items-center gap-4 p-4 bg-white border rounded-2xl font-bold"><i class="fab fa-whatsapp text-green-500 text-xl"></i> Help Center</a>
+            <button onclick="auth.signOut().then(()=>location.reload())" class="w-full mt-10 p-4 bg-red-50 text-red-500 rounded-2xl font-black text-xs uppercase">Sign Out Account</button>
         </div>
     </div>
 
-    <main class="px-5 py-4 pb-20">
-        <div class="bg-slate-900 text-white p-6 mb-5 border-b-8 border-orange-500 rounded-[40px] shadow-2xl flex justify-between items-center">
-            <div>
-                <p class="text-[10px] font-black text-amber-400 uppercase">Status: <span id="tier">Checking...</span></p>
-                <h4 class="text-3xl font-black"><span id="pts">0</span> <span class="text-xs text-white/40">Points</span></h4>
+    <main class="px-5 py-4">
+        <div class="bg-[#0f172a] text-white p-7 mb-6 border-b-8 border-orange-500 rounded-[45px] shadow-2xl flex justify-between items-center relative overflow-hidden">
+            <div class="relative z-10">
+                <p class="text-[11px] font-black text-amber-400 uppercase mb-1">Status: <span id="tier">Checking...</span></p>
+                <div class="flex items-baseline gap-2">
+                    <span id="pts" class="text-5xl font-black">0</span>
+                    <span class="text-xs font-bold text-slate-400 uppercase">Points</span>
+                </div>
             </div>
-            <button onclick="openModal('withdraw-modal')" class="bg-white text-slate-900 text-[10px] font-black px-5 py-2 rounded-xl uppercase">Withdraw</button>
+            <button onclick="openModal('withdraw-modal')" class="bg-white text-slate-900 text-[11px] font-black px-6 py-3 rounded-2xl shadow-lg relative z-10 uppercase">Withdraw</button>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 mb-6">
-            <button onclick="openModal('vip-modal')" class="btn-3d bg-amber-400 text-black shadow-lg shadow-amber-100"><i class="fas fa-gem"></i> VIP Access</button>
-            <button onclick="openModal('rec-modal')" class="btn-3d bg-orange-600 text-white shadow-lg shadow-orange-100"><i class="fas fa-heart-pulse"></i> Recovery</button>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <button onclick="openModal('vip-modal')" class="btn-3d bg-amber-400 text-black border-amber-500"><i class="fas fa-gem"></i> VIP Access</button>
+            <button onclick="openModal('rec-modal')" class="btn-3d bg-orange-600 text-white border-orange-700"><i class="fas fa-heart-pulse"></i> Recovery</button>
         </div>
 
         <div class="section-divider">
-            <div class="flex gap-2 px-4">
+            <div class="flex gap-3 px-4">
                 <button onclick="switchTerminal('qx')" id="sw-qx" class="btn-3d flex-1 bg-white border border-slate-200 tab-active">Quotex Bot</button>
                 <button onclick="switchTerminal('po')" id="sw-po" class="btn-3d flex-1 bg-white border border-slate-200">Pocket Bot</button>
             </div>
         </div>
 
-        <div id="qx-grid" class="space-y-4"></div>
-        <div id="po-grid" class="hidden space-y-4"></div>
+        <div id="qx-grid" class="space-y-4 mb-20"></div>
+        <div id="po-grid" class="hidden space-y-4 mb-20"></div>
     </main>
+
+    <div id="privacy-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="text-xl font-black text-blue-600 mb-6 uppercase text-center">Institutional Policy</h2>
+            <div id="policy-list" class="h-80 overflow-y-auto pr-2">
+                </div>
+            <button onclick="closeModals()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black mt-6">I Agree & Accept</button>
+        </div>
+    </div>
 
     <div id="vip-modal" class="modal-overlay">
         <div class="modal-box">
             <h2 class="text-2xl font-black text-center mb-1">VIP ACCESS</h2>
-            <p class="text-[10px] text-center text-amber-500 font-bold mb-4 uppercase">Institutional Membership</p>
-            <div class="bg-slate-50 p-4 rounded-2xl mb-4 h-48 overflow-y-auto">
-                <div class="policy-item"><p class="policy-title">1. Priority Signals</p><p class="policy-text">VIP members receive signals with zero latency and no 60-second cooldown period between trades.</p></div>
-                <div class="policy-item"><p class="policy-title">2. Ad-Free Interface</p><p class="policy-text">Enjoy a completely clean trading experience without any video or banner advertisements.</p></div>
-                <div class="policy-item"><p class="policy-title">3. Advanced Filtering</p><p class="policy-text">Our backend filters out news-based volatility for VIP accounts to maintain a 92%+ win rate.</p></div>
+            <p class="text-[10px] text-center text-amber-500 font-bold mb-4 uppercase">Unlock Elite Features</p>
+            <div class="bg-slate-50 p-4 rounded-3xl mb-5 space-y-4">
+                <div class="policy-item"><p class="policy-title">1. No Ad Delay</p><p class="policy-text">VIP users get signals instantly without watching any video ads or waiting for the 60-second cooldown timer between trades.</p></div>
+                <div class="policy-item"><p class="policy-title">2. Higher Accuracy (95%+)</p><p class="policy-text">Elite members gain access to our deep-filtering server that removes volatile market noise and fake breakouts for better win rates.</p></div>
+                <div class="policy-item"><p class="policy-title">3. Priority Support</p><p class="policy-text">Get a direct line to our lead analysts for account management tips and recovery strategies available 24/7 for VIP members only.</p></div>
             </div>
-            <div class="bg-slate-900 text-white p-5 rounded-3xl mb-4 text-center">
-                <p class="text-[10px] text-slate-400 uppercase">Binance Pay ID</p>
-                <p class="text-xl font-black select-all">403009858</p>
+            <div class="bg-slate-900 text-white p-6 rounded-[30px] mb-5 text-center">
+                <p class="text-[10px] text-slate-400 uppercase mb-1">Binance Pay ID</p>
+                <p class="text-xl font-black select-all tracking-widest">403009858</p>
             </div>
-            <input type="text" id="vip-txid" placeholder="Transaction ID (TxID)" class="w-full p-4 bg-slate-100 rounded-xl mb-4 font-bold outline-none border-2 focus:border-amber-400">
+            <input type="text" id="vip-txid" placeholder="Paste TxID (Transaction ID)" class="w-full p-4 bg-slate-100 rounded-2xl mb-4 font-bold outline-none border-2 focus:border-amber-400">
             <button onclick="submitVip()" class="w-full py-4 bg-amber-400 text-black rounded-2xl font-black uppercase shadow-xl">Activate VIP</button>
             <button onclick="closeModals()" class="w-full mt-4 text-slate-400 font-bold text-xs uppercase">Close</button>
-        </div>
-    </div>
-
-    <div id="privacy-modal" class="modal-overlay">
-        <div class="modal-box">
-            <h2 class="text-xl font-black text-blue-600 mb-6 uppercase text-center">Privacy & Policy</h2>
-            <div id="policy-list" class="h-80 overflow-y-auto pr-2">
-                </div>
-            <button onclick="closeModals()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black mt-6 shadow-xl">I Agree & Continue</button>
-        </div>
-    </div>
-
-    <div id="withdraw-modal" class="modal-overlay">
-        <div class="modal-box text-center">
-            <h2 class="text-2xl font-black uppercase mb-2">Withdraw</h2>
-            <p class="text-[10px] font-bold text-slate-400 mb-6 uppercase">Minimum 5000 Points = $5</p>
-            <input type="text" id="wd-address" placeholder="Binance Pay ID / USDT Address" class="w-full p-4 bg-slate-100 rounded-xl mb-3 font-bold border-2 focus:border-blue-500 outline-none">
-            <input type="number" id="wd-amount" placeholder="Points to Withdraw" class="w-full p-4 bg-slate-100 rounded-xl mb-6 font-bold border-2 focus:border-blue-500 outline-none">
-            <button onclick="submitWithdraw()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase shadow-xl">Request Payout</button>
-            <button onclick="closeModals()" class="mt-4 text-slate-400 font-bold text-xs uppercase">Cancel</button>
         </div>
     </div>
 
     <div id="rec-modal" class="modal-overlay">
         <div class="modal-box">
             <h2 class="text-2xl font-black text-orange-600 uppercase text-center mb-4">Recovery Hub</h2>
-            <div class="bg-orange-50 p-4 rounded-3xl mb-6 border border-orange-100 h-48 overflow-y-auto">
-                <div class="policy-item"><p class="policy-title">1. Portfolio Management</p><p class="policy-text">Recovery is only available for accounts with balances between $50 and $2000 to ensure proper risk-reward ratio.</p></div>
-                <div class="policy-item"><p class="policy-title">2. Execution Policy</p><p class="policy-text">Signals will be given live via voice or chat. You must execute within 1 second of our analyst's command.</p></div>
-                <div class="policy-item"><p class="policy-title">3. Profit Sharing</p><p class="policy-text">The analyst fee is upfront. If we fail to hit the target, your service fee is 100% refundable to your Binance ID.</p></div>
+            <div class="bg-orange-50 p-4 rounded-3xl mb-6 border border-orange-100 space-y-4">
+                <div class="policy-item"><p class="policy-title">1. Balance Requirement</p><p class="policy-text">To join the recovery session, your broker account must have a balance between $50 and $1000 for proper risk management setup.</p></div>
+                <div class="policy-item"><p class="policy-title">2. Manual Execution</p><p class="policy-text">Signals will be shared live. You must be online and ready to execute trades within 1-2 seconds of our analyst's instruction.</p></div>
+                <div class="policy-item"><p class="policy-title">3. Fee Guarantee</p><p class="policy-text">Our recovery service fee is upfront. If we fail to achieve the profit target, your service fee will be 100% refunded within 24 hours.</p></div>
             </div>
-            <input type="text" id="rec-tid" placeholder="Binance TxID After Payment" class="w-full p-4 bg-slate-100 rounded-xl mb-4 font-bold border-2 outline-none">
-            <button onclick="submitRec()" class="w-full py-4 bg-orange-600 text-white rounded-2xl font-black uppercase shadow-xl">Submit & WhatsApp</button>
+            <input type="text" id="rec-tid" placeholder="Enter Payment TxID" class="w-full p-4 bg-slate-100 rounded-2xl mb-4 font-bold outline-none border-2 focus:border-orange-500">
+            <button onclick="submitRec()" class="w-full py-4 bg-orange-600 text-white rounded-2xl font-black uppercase shadow-xl">Contact Analyst</button>
             <button onclick="closeModals()" class="w-full mt-4 text-slate-400 font-bold text-xs uppercase text-center">Close</button>
         </div>
     </div>
 
+    <div id="withdraw-modal" class="modal-overlay">
+        <div class="modal-box text-center">
+            <h2 class="text-2xl font-black uppercase mb-2">Withdraw</h2>
+            <p class="text-[11px] font-bold text-slate-400 mb-6 uppercase">Min 5000 Points = $5 USDT</p>
+            <input type="text" id="wd-address" placeholder="Binance ID / USDT Address" class="w-full p-4 bg-slate-100 rounded-2xl mb-3 font-bold border-2 focus:border-blue-500 outline-none">
+            <input type="number" id="wd-amount" placeholder="Amount of Points" class="w-full p-4 bg-slate-100 rounded-2xl mb-6 font-bold border-2 focus:border-blue-500 outline-none">
+            <button onclick="submitWithdraw()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase">Request Payout</button>
+            <button onclick="closeModals()" class="mt-4 text-slate-400 font-bold text-xs uppercase">Cancel</button>
+        </div>
+    </div>
+
     <script>
-        // --- 1. CORE SETUP ---
+        // --- FIREBASE CONFIG ---
         const firebaseConfig = { apiKey: "AIzaSyAyXzJ1UUdtWe96NjiQbVCqnWdIv8XakhA", authDomain: "silverxtrader.firebaseapp.com", projectId: "silverxtrader", storageBucket: "silverxtrader.firebasestorage.app", messagingSenderId: "46330013690", appId: "1:46330013690:web:c2aad241ad7abd49e0e643" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore(); const auth = firebase.auth();
@@ -185,32 +188,32 @@
         const pairs = ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "EUR/GBP", "NZD/USD", "USD/CHF", "EUR/JPY", "GBP/JPY", "BTC/USD", "ETH/USD", "SOL/USD", "XRP/USD", "LTC/USD", "DOGE/USD"];
 
         const policyData = [
-            {t: "1. Disclaimer", p: "SilverX AI is a tool for technical analysis. We do not provide financial advice and are not responsible for market losses."},
-            {t: "2. High Risk", p: "Trading binary options involves high capital risk. Only trade with money you can afford to lose completely."},
-            {t: "3. Accuracy", p: "Our AI maintains 90%+ accuracy, but market news like NFP can impact results. Trade cautiously during news."},
-            {t: "4. User Conduct", p: "Users found using scripts, bots, or emulators to farm points will be permanently banned from the terminal."},
-            {t: "5. Data Usage", p: "We collect only your email for authentication. We do not store any broker passwords or financial credentials."},
-            {t: "6. Ad Revenue", p: "Free users must watch ads to earn points. This revenue helps maintain our expensive AI server infrastructure."},
-            {t: "7. Payments", p: "All VIP payments are manual. Ensure the Binance ID is correct. Transactions cannot be reversed once verified."},
-            {t: "8. Withdrawals", p: "Withdrawal requests are processed within 24-48 hours after manual verification of your point history."},
-            {t: "9. Account Ban", p: "Sharing VIP credentials with multiple people is prohibited and will lead to an immediate account freeze."},
-            {t: "10. Support", p: "Official support is only available via the WhatsApp link provided in the menu. Beware of impersonators."},
-            {t: "11. Service Uptime", p: "We strive for 100% uptime, but server maintenance may cause temporary signal delays occasionally."},
-            {t: "12. Agreement", p: "By using this bot, you agree to all the terms above. We reserve the right to change policies at any time."}
+            {t: "1. Accuracy Disclaimer", p: "SilverX AI uses advanced algorithms, but trading involves 100% risk. We do not guarantee profits and are not liable for losses."},
+            {t: "2. Market Volatility", p: "During major economic news like NFP or CPI, market behavior changes. Avoid trading during these times for safety."},
+            {t: "3. Point System", p: "Points are earned by free users via ads. Attempting to hack or script points will lead to a permanent account ban."},
+            {t: "4. Withdrawal Policy", p: "Withdrawals are processed manually within 48 hours after verifying that the points were earned through valid ad views."},
+            {t: "5. VIP Access", p: "VIP subscriptions are non-refundable. They provide faster signals and an ad-free experience for professional traders."},
+            {t: "6. Data Privacy", p: "We collect your email only for login. We never ask for your broker passwords or private keys. Stay safe from scammers."},
+            {t: "7. User Conduct", p: "Any user found sharing VIP credentials or using emulators will be blacklisted from our institutional servers immediately."},
+            {t: "8. Refund Policy", p: "Recovery service fees are only refundable if the target is not met during the session. VIP memberships are final sales."},
+            {t: "9. Signal Delay", p: "Free users have a 60-second cooldown timer to prevent server overload. VIP users enjoy real-time instant signal access."},
+            {t: "10. Support Protocol", p: "Official help is only provided via the WhatsApp link in the menu. We never DM you first for payments or funds."},
+            {t: "11. Affiliate Links", p: "Using our broker links helps keep the server running. We receive a small commission from the broker at no cost to you."},
+            {t: "12. Terms Agreement", p: "By using this bot, you agree to all institutional policies. SilverX Elite AI reserves the right to update terms anytime."}
         ];
 
-        // --- 2. RENDER GRIDS & POLICY ---
+        // --- RENDER FUNCTIONS ---
         function initApp() {
             const qx = document.getElementById('qx-grid'); const po = document.getElementById('po-grid');
             pairs.forEach((p, i) => {
                 const cardHtml = `
                     <div class="pair-card" id="card-{B}-${i}">
-                        <h3 class="text-lg font-black text-slate-800 uppercase mb-1">${p} <span class="text-[9px] bg-blue-100 text-blue-600 px-2 rounded ml-1">OTC</span></h3>
-                        <div class="ai-chamber mx-auto mb-4">
+                        <h3 class="text-lg font-black text-slate-800 uppercase mb-2">${p} <span class="text-[9px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded ml-1">OTC</span></h3>
+                        <div class="ai-chamber mx-auto">
                             <div class="matrix-scan"></div>
                             <div class="chip-orbit"><div class="neon-swirl"></div><div class="white-chip"><i class="fas fa-microchip"></i></div></div>
                         </div>
-                        <button onclick="handleSignal('{B}-${i}')" id="btn-{B}-${i}" class="btn-3d w-full bg-slate-900 text-white border-slate-700">GET SIGNAL</button>
+                        <button onclick="handleSignal('{B}-${i}')" id="btn-{B}-${i}" class="btn-3d w-full bg-slate-900 text-white border-slate-700">Analyze Market</button>
                     </div>`;
                 qx.innerHTML += cardHtml.replace(/{B}/g, 'qx');
                 po.innerHTML += cardHtml.replace(/{B}/g, 'po');
@@ -223,7 +226,7 @@
         }
         initApp();
 
-        // --- 3. CORE LOGIC ---
+        // --- AUTH & DATA SYNC ---
         let userPoints = 0; let userStatus = "Free"; let currentId = null;
 
         auth.onAuthStateChanged(u => {
@@ -240,29 +243,20 @@
             });
         });
 
+        // --- SIGNAL & AD SYSTEM ---
         function handleSignal(id) {
             currentId = id;
-            document.getElementById('ad-x-icon').style.display = 'none'; // RESET CROSS
+            document.getElementById('ad-x-icon').style.display = 'none'; // Reset X
             if(userStatus === "VIP") { revealSignal(); } else {
                 document.getElementById('ad-frame').src = "https://www.effectivegatecpm.com/zu9fwwufi?key=5c01f6e26f4b9943913f0d36bfa48f6d";
                 document.getElementById('ad-overlay').style.display = 'flex';
                 document.body.classList.add('no-scroll');
                 let t = 10;
                 const int = setInterval(() => {
-                    t--; document.getElementById('timer-text').innerText = `VERIFYING: ${t}s`;
-                    if(t <= 0) { clearInterval(int); document.getElementById('ad-x-icon').style.display = 'block'; document.getElementById('timer-text').innerText = "DONE ✅"; }
+                    t--; document.getElementById('timer-text').innerText = `VERIFYING MARKET: ${t}s`;
+                    if(t <= 0) { clearInterval(int); document.getElementById('ad-x-icon').style.display = 'block'; document.getElementById('timer-text').innerText = "DATA VERIFIED ✅"; }
                 }, 1000);
             }
         }
 
-        function closeAdPopup() {
-            document.getElementById('ad-overlay').style.display = 'none';
-            document.body.classList.remove('no-scroll');
-            // Points Update - Secure +1 logic
-            db.collection("users").doc(auth.currentUser.uid).set({ points: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-            revealSignal();
-        }
-
-        function revealSignal() {
-            const btn = document.getElementById(`btn-${currentId}`);
-            const card = document.getElementById(`c
+        function closeAdPopup()
