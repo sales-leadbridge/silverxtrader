@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SilverX Elite AI | Final Bot</title>
+    <title>SilverX Elite AI | Institutional Terminal</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -15,115 +15,168 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root { --royal: #2563eb; --cyan: #00d2ff; }
+        :root { --royal: #2563eb; --cyan: #00d2ff; --gold: #fbbf24; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #ffffff; color: #0f172a; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
-        
-        /* AD SYSTEM */
-        #ad-overlay { display: none; position: fixed; inset: 0; background: white; z-index: 9999999; flex-direction: column; }
-        .ad-nav { padding: 15px; display: flex; justify-content: space-between; border-bottom: 2px solid #f1f5f9; }
-        .ad-close { font-size: 24px; color: #cbd5e1; display: none; cursor: pointer; }
 
-        /* UI COMPONENTS */
-        .pair-card { background: #eff6ff; border: 3px solid #bfdbfe; border-radius: 35px; padding: 20px; margin-bottom: 12px; text-align: center; }
+        /* AD OVERLAY FIX */
+        #ad-overlay { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 9999999; flex-direction: column; }
+        .ad-nav { width: 100%; padding: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; background: white; }
+        .ad-timer-label { font-size: 13px; font-weight: 800; color: var(--royal); background: #f0f7ff; padding: 4px 12px; border-radius: 10px; }
+        .ad-close { font-size: 24px; color: #000; display: none; cursor: pointer; padding: 10px; }
+        .no-scroll { overflow: hidden !important; }
+
+        /* ORIGINAL CHIP ANIMATION & BOXES */
+        .pair-card { background: #eff6ff; border: 3px solid #bfdbfe; border-radius: 35px; padding: 20px; margin-bottom: 12px; text-align: center; transition: 0.3s; }
+        .card-buy { border-color: #22c55e !important; background: #f0fff4 !important; }
+        .card-sell { border-color: #ef4444 !important; background: #fff5f5 !important; }
+
+        .ai-chamber { width: 100%; height: 190px; background: #0f2a3f; border-radius: 30px; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 3px solid #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .matrix-scan { position: absolute; inset: 0; opacity: 0.2; background: repeating-linear-gradient(0deg, transparent, transparent 38px, #000 40px, transparent 42px); animation: scanDown 8s linear infinite; }
+        @keyframes scanDown { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
+
+        .chip-orbit { position: relative; width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; }
+        .neon-swirl { position: absolute; inset: 0; border: 3px solid var(--cyan); border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; box-shadow: 0 0 15px var(--cyan); animation: spinRing 6s linear infinite; }
+        @keyframes spinRing { to { transform: rotate(360deg); } }
+        .white-chip { width: 60px; height: 60px; background: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 0 20px rgba(255,255,255,0.4); }
+        .white-chip i { font-size: 28px; color: var(--royal); }
+
+        /* UI ELEMENTS */
         .section-divider { border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0; padding: 15px 0; margin: 25px 0; background: #f8fafc; }
-        .ai-chamber { width: 100%; height: 180px; background: #0f2a3f; border-radius: 30px; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 4px solid #fff; }
-        
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100000; align-items: center; justify-content: center; padding: 15px; }
-        .modal-box { background: white; width: 100%; max-width: 440px; border-radius: 35px; padding: 25px; max-height: 85vh; overflow-y: auto; }
-        
-        .btn-3d { border-radius: 18px; font-weight: 800; font-size: 11px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; border-bottom: 5px solid rgba(0,0,0,0.15); padding: 15px; }
+        .btn-3d { border-radius: 18px; font-weight: 800; font-size: 11px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; border-bottom: 5px solid rgba(0,0,0,0.15); padding: 15px; transition: 0.2s; }
+        .btn-3d:active { transform: translateY(2px); border-bottom-width: 2px; }
         .tab-active { background: var(--royal) !important; color: white !important; }
 
-        .sidebar { position: fixed; left: -100%; top: 0; width: 80%; height: 100%; background: white; z-index: 200000; transition: 0.4s; padding: 25px; box-shadow: 20px 0 50px rgba(0,0,0,0.1); }
+        /* SIDEBAR & MODALS */
+        .sidebar { position: fixed; left: -100%; top: 0; width: 85%; height: 100%; background: white; z-index: 200000; transition: 0.4s; padding: 25px; box-shadow: 30px 0 60px rgba(0,0,0,0.1); }
         .sidebar-active { left: 0 !important; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100000; align-items: center; justify-content: center; padding: 15px; }
+        .modal-box { background: white; width: 100%; max-width: 440px; border-radius: 35px; padding: 25px; max-height: 85vh; overflow-y: auto; }
+        
+        /* CONTENT STYLING */
+        .policy-item { margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        .policy-title { font-size: 12px; font-weight: 800; color: #0f172a; text-transform: uppercase; }
+        .policy-text { font-size: 10.5px; font-weight: 600; color: #64748b; line-height: 1.6; }
     </style>
 </head>
 <body class="bg-slate-50">
 
     <div id="ad-overlay">
         <div class="ad-nav">
-            <span id="timer-text" class="font-bold text-blue-600 bg-blue-50 px-4 py-1 rounded-full text-sm">CONNECTING...</span>
+            <span class="ad-timer-label" id="timer-text">INITIALIZING...</span>
             <i class="fas fa-times ad-close" id="ad-x-icon" onclick="closeAdPopup()"></i>
         </div>
         <iframe id="ad-frame" src="" style="width:100%; height:100%; border:none;"></iframe>
     </div>
 
-    <header class="sticky top-0 z-[50000] bg-white border-b px-5 py-3 flex justify-between items-center">
+    <header class="sticky top-0 z-[50000] bg-white border-b px-5 py-3 flex justify-between items-center shadow-sm">
         <div class="flex items-center gap-2">
-            <div class="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center border-2 border-amber-400"><i id="crown" class="fas fa-crown text-slate-400 text-sm"></i></div>
+            <div class="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center border-2 border-amber-400">
+                <i class="fas fa-crown text-slate-400 text-sm" id="crown"></i>
+            </div>
             <h1 class="font-black text-base uppercase">SilverX <span class="text-blue-600">Pro</span></h1>
         </div>
-        <i onclick="document.getElementById('sidebar').classList.add('sidebar-active')" class="fas fa-bars-staggered text-xl cursor-pointer"></i>
+        <div class="flex items-center gap-3">
+            <p id="live-clock" class="bg-blue-50 px-3 py-1 rounded-lg font-bold text-[10px] text-blue-600 uppercase">00:00:00</p>
+            <i onclick="document.getElementById('sidebar').classList.add('sidebar-active')" class="fas fa-bars-staggered text-xl text-slate-800 cursor-pointer"></i>
+        </div>
     </header>
 
     <div id="sidebar" class="sidebar">
         <div class="flex justify-between items-center mb-10">
-            <h2 class="text-xl font-black">SilverX Menu</h2>
+            <h2 class="text-xl font-black uppercase">Menu</h2>
             <i onclick="document.getElementById('sidebar').classList.remove('sidebar-active')" class="fas fa-times text-2xl text-slate-300"></i>
         </div>
-        <button onclick="openModal('privacy-modal')" class="w-full p-4 bg-blue-50 text-blue-600 rounded-2xl font-black text-xs text-left mb-4 uppercase">Privacy Policy</button>
-        <button onclick="auth.signOut().then(()=>location.reload())" class="w-full p-4 bg-red-50 text-red-500 rounded-2xl font-black text-xs uppercase">Sign Out</button>
+        <div class="space-y-4">
+            <div class="bg-slate-50 p-4 rounded-2xl border">
+                <p class="text-[10px] uppercase font-bold text-slate-400">Account</p>
+                <p class="text-sm font-black text-slate-900 truncate" id="user-email">Loading...</p>
+            </div>
+            <button onclick="openModal('privacy-modal')" class="w-full p-4 bg-blue-50 text-blue-600 rounded-2xl font-black text-xs uppercase text-left"><i class="fas fa-shield-halved mr-2"></i> Privacy Policy</button>
+            <a href="https://wa.me/923064391353" class="flex items-center gap-4 p-4 bg-white border rounded-2xl font-bold"><i class="fab fa-whatsapp text-green-500"></i> WhatsApp Support</a>
+            <button onclick="auth.signOut().then(()=>location.reload())" class="w-full mt-10 p-4 bg-red-50 text-red-500 rounded-2xl font-black uppercase text-xs">Sign Out</button>
+        </div>
     </div>
 
-    <main class="px-5 py-4">
-        <div class="bg-slate-900 text-white p-6 mb-5 border-b-8 border-orange-500 rounded-[40px] flex justify-between items-center shadow-2xl">
+    <main class="px-5 py-4 pb-20">
+        <div class="bg-slate-900 text-white p-6 mb-5 border-b-8 border-orange-500 rounded-[40px] shadow-2xl flex justify-between items-center">
             <div>
-                <p class="text-[10px] font-black text-amber-400 uppercase mb-1">Status: <span id="tier">Checking...</span></p>
-                <h4 class="text-3xl font-black"><span id="pts">0</span> <span class="text-xs text-white/50 uppercase">Pts</span></h4>
+                <p class="text-[10px] font-black text-amber-400 uppercase">Status: <span id="tier">Checking...</span></p>
+                <h4 class="text-3xl font-black"><span id="pts">0</span> <span class="text-xs text-white/40">Points</span></h4>
             </div>
-            <button onclick="openModal('withdraw-modal')" class="bg-white text-slate-900 text-[10px] font-black px-5 py-2 rounded-xl">WITHDRAW</button>
+            <button onclick="openModal('withdraw-modal')" class="bg-white text-slate-900 text-[10px] font-black px-5 py-2 rounded-xl uppercase">Withdraw</button>
         </div>
 
         <div class="grid grid-cols-2 gap-3 mb-6">
-            <button onclick="openModal('vip-modal')" class="btn-3d bg-amber-400 text-black shadow-lg"><i class="fas fa-gem"></i> VIP Access</button>
-            <button onclick="openModal('rec-modal')" class="btn-3d bg-orange-600 text-white shadow-lg"><i class="fas fa-heart-pulse"></i> Recovery</button>
+            <button onclick="openModal('vip-modal')" class="btn-3d bg-amber-400 text-black shadow-lg shadow-amber-100"><i class="fas fa-gem"></i> VIP Access</button>
+            <button onclick="openModal('rec-modal')" class="btn-3d bg-orange-600 text-white shadow-lg shadow-orange-100"><i class="fas fa-heart-pulse"></i> Recovery</button>
         </div>
 
         <div class="section-divider">
-            <div class="flex gap-2 px-5">
+            <div class="flex gap-2 px-4">
                 <button onclick="switchTerminal('qx')" id="sw-qx" class="btn-3d flex-1 bg-white border border-slate-200 tab-active">Quotex Bot</button>
                 <button onclick="switchTerminal('po')" id="sw-po" class="btn-3d flex-1 bg-white border border-slate-200">Pocket Bot</button>
             </div>
         </div>
 
-        <div id="qx-grid" class="space-y-4 mb-10"></div>
-        <div id="po-grid" class="hidden space-y-4 mb-10"></div>
+        <div id="qx-grid" class="space-y-4"></div>
+        <div id="po-grid" class="hidden space-y-4"></div>
     </main>
 
-    <div id="withdraw-modal" class="modal-overlay">
-        <div class="modal-box text-center">
-            <h2 class="text-2xl font-black mb-6 uppercase">Withdraw Funds</h2>
-            <input type="text" id="wd-address" placeholder="Binance Pay ID / USDT Address" class="w-full p-4 bg-slate-100 rounded-xl mb-3 font-bold">
-            <input type="number" id="wd-amount" placeholder="Min 5000 Points" class="w-full p-4 bg-slate-100 rounded-xl mb-6 font-bold">
-            <button onclick="submitWithdraw()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase shadow-xl">Request Payout</button>
-            <button onclick="closeModals()" class="mt-4 text-slate-400 font-bold uppercase text-xs">Cancel</button>
+    <div id="vip-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="text-2xl font-black text-center mb-1">VIP ACCESS</h2>
+            <p class="text-[10px] text-center text-amber-500 font-bold mb-4 uppercase">Institutional Membership</p>
+            <div class="bg-slate-50 p-4 rounded-2xl mb-4 h-48 overflow-y-auto">
+                <div class="policy-item"><p class="policy-title">1. Priority Signals</p><p class="policy-text">VIP members receive signals with zero latency and no 60-second cooldown period between trades.</p></div>
+                <div class="policy-item"><p class="policy-title">2. Ad-Free Interface</p><p class="policy-text">Enjoy a completely clean trading experience without any video or banner advertisements.</p></div>
+                <div class="policy-item"><p class="policy-title">3. Advanced Filtering</p><p class="policy-text">Our backend filters out news-based volatility for VIP accounts to maintain a 92%+ win rate.</p></div>
+            </div>
+            <div class="bg-slate-900 text-white p-5 rounded-3xl mb-4 text-center">
+                <p class="text-[10px] text-slate-400 uppercase">Binance Pay ID</p>
+                <p class="text-xl font-black select-all">403009858</p>
+            </div>
+            <input type="text" id="vip-txid" placeholder="Transaction ID (TxID)" class="w-full p-4 bg-slate-100 rounded-xl mb-4 font-bold outline-none border-2 focus:border-amber-400">
+            <button onclick="submitVip()" class="w-full py-4 bg-amber-400 text-black rounded-2xl font-black uppercase shadow-xl">Activate VIP</button>
+            <button onclick="closeModals()" class="w-full mt-4 text-slate-400 font-bold text-xs uppercase">Close</button>
         </div>
     </div>
 
     <div id="privacy-modal" class="modal-overlay">
         <div class="modal-box">
-            <h2 class="text-xl font-black text-blue-600 mb-4 text-center">Institutional Policy</h2>
-            <div id="policy-content" class="h-80 overflow-y-auto text-[10px] text-slate-500 leading-relaxed">
+            <h2 class="text-xl font-black text-blue-600 mb-6 uppercase text-center">Privacy & Policy</h2>
+            <div id="policy-list" class="h-80 overflow-y-auto pr-2">
                 </div>
-            <button onclick="closeModals()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black mt-6">I Agree</button>
+            <button onclick="closeModals()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black mt-6 shadow-xl">I Agree & Continue</button>
         </div>
     </div>
 
-    <div id="vip-modal" class="modal-overlay">
+    <div id="withdraw-modal" class="modal-overlay">
         <div class="modal-box text-center">
-            <h2 class="text-2xl font-black mb-1">VIP ACCESS</h2>
-            <div class="bg-slate-900 text-white p-5 rounded-3xl my-6">
-                <p class="text-[10px] text-slate-400">Binance Pay ID</p>
-                <p class="text-xl font-black select-all">403009858</p>
+            <h2 class="text-2xl font-black uppercase mb-2">Withdraw</h2>
+            <p class="text-[10px] font-bold text-slate-400 mb-6 uppercase">Minimum 5000 Points = $5</p>
+            <input type="text" id="wd-address" placeholder="Binance Pay ID / USDT Address" class="w-full p-4 bg-slate-100 rounded-xl mb-3 font-bold border-2 focus:border-blue-500 outline-none">
+            <input type="number" id="wd-amount" placeholder="Points to Withdraw" class="w-full p-4 bg-slate-100 rounded-xl mb-6 font-bold border-2 focus:border-blue-500 outline-none">
+            <button onclick="submitWithdraw()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase shadow-xl">Request Payout</button>
+            <button onclick="closeModals()" class="mt-4 text-slate-400 font-bold text-xs uppercase">Cancel</button>
+        </div>
+    </div>
+
+    <div id="rec-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="text-2xl font-black text-orange-600 uppercase text-center mb-4">Recovery Hub</h2>
+            <div class="bg-orange-50 p-4 rounded-3xl mb-6 border border-orange-100 h-48 overflow-y-auto">
+                <div class="policy-item"><p class="policy-title">1. Portfolio Management</p><p class="policy-text">Recovery is only available for accounts with balances between $50 and $2000 to ensure proper risk-reward ratio.</p></div>
+                <div class="policy-item"><p class="policy-title">2. Execution Policy</p><p class="policy-text">Signals will be given live via voice or chat. You must execute within 1 second of our analyst's command.</p></div>
+                <div class="policy-item"><p class="policy-title">3. Profit Sharing</p><p class="policy-text">The analyst fee is upfront. If we fail to hit the target, your service fee is 100% refundable to your Binance ID.</p></div>
             </div>
-            <input type="text" id="vip-txid" placeholder="Transaction ID (TxID)" class="w-full p-4 bg-slate-100 rounded-xl mb-4 font-bold">
-            <button onclick="submitVip()" class="w-full py-4 bg-amber-400 text-black rounded-2xl font-black uppercase shadow-xl">Activate VIP</button>
-            <button onclick="closeModals()" class="mt-4 text-slate-400 font-bold text-xs uppercase">Close</button>
+            <input type="text" id="rec-tid" placeholder="Binance TxID After Payment" class="w-full p-4 bg-slate-100 rounded-xl mb-4 font-bold border-2 outline-none">
+            <button onclick="submitRec()" class="w-full py-4 bg-orange-600 text-white rounded-2xl font-black uppercase shadow-xl">Submit & WhatsApp</button>
+            <button onclick="closeModals()" class="w-full mt-4 text-slate-400 font-bold text-xs uppercase text-center">Close</button>
         </div>
     </div>
 
     <script>
-        // --- CONFIG ---
+        // --- 1. CORE SETUP ---
         const firebaseConfig = { apiKey: "AIzaSyAyXzJ1UUdtWe96NjiQbVCqnWdIv8XakhA", authDomain: "silverxtrader.firebaseapp.com", projectId: "silverxtrader", storageBucket: "silverxtrader.firebasestorage.app", messagingSenderId: "46330013690", appId: "1:46330013690:web:c2aad241ad7abd49e0e643" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore(); const auth = firebase.auth();
@@ -131,126 +184,85 @@
 
         const pairs = ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "EUR/GBP", "NZD/USD", "USD/CHF", "EUR/JPY", "GBP/JPY", "BTC/USD", "ETH/USD", "SOL/USD", "XRP/USD", "LTC/USD", "DOGE/USD"];
 
-        // --- RENDER ---
-        function render(b) {
-            const grid = document.getElementById(`${b}-grid`);
+        const policyData = [
+            {t: "1. Disclaimer", p: "SilverX AI is a tool for technical analysis. We do not provide financial advice and are not responsible for market losses."},
+            {t: "2. High Risk", p: "Trading binary options involves high capital risk. Only trade with money you can afford to lose completely."},
+            {t: "3. Accuracy", p: "Our AI maintains 90%+ accuracy, but market news like NFP can impact results. Trade cautiously during news."},
+            {t: "4. User Conduct", p: "Users found using scripts, bots, or emulators to farm points will be permanently banned from the terminal."},
+            {t: "5. Data Usage", p: "We collect only your email for authentication. We do not store any broker passwords or financial credentials."},
+            {t: "6. Ad Revenue", p: "Free users must watch ads to earn points. This revenue helps maintain our expensive AI server infrastructure."},
+            {t: "7. Payments", p: "All VIP payments are manual. Ensure the Binance ID is correct. Transactions cannot be reversed once verified."},
+            {t: "8. Withdrawals", p: "Withdrawal requests are processed within 24-48 hours after manual verification of your point history."},
+            {t: "9. Account Ban", p: "Sharing VIP credentials with multiple people is prohibited and will lead to an immediate account freeze."},
+            {t: "10. Support", p: "Official support is only available via the WhatsApp link provided in the menu. Beware of impersonators."},
+            {t: "11. Service Uptime", p: "We strive for 100% uptime, but server maintenance may cause temporary signal delays occasionally."},
+            {t: "12. Agreement", p: "By using this bot, you agree to all the terms above. We reserve the right to change policies at any time."}
+        ];
+
+        // --- 2. RENDER GRIDS & POLICY ---
+        function initApp() {
+            const qx = document.getElementById('qx-grid'); const po = document.getElementById('po-grid');
             pairs.forEach((p, i) => {
-                const card = document.createElement('div');
-                card.className = 'pair-card'; card.id = `${b}-${i}`;
-                card.innerHTML = `<h3 class="text-lg font-black mb-1">${p}</h3><div class="ai-chamber mx-auto mb-4"><p class="text-[10px] text-green-400 font-bold">ACCURACY: 95%</p><p class="text-[10px] text-white">STATUS: WINNING</p></div><button onclick="handleSignal('${b}-${i}')" id="btn-${b}-${i}" class="btn-3d w-full bg-slate-900 text-white">GET SIGNAL</button>`;
-                grid.appendChild(card);
+                const cardHtml = `
+                    <div class="pair-card" id="card-{B}-${i}">
+                        <h3 class="text-lg font-black text-slate-800 uppercase mb-1">${p} <span class="text-[9px] bg-blue-100 text-blue-600 px-2 rounded ml-1">OTC</span></h3>
+                        <div class="ai-chamber mx-auto mb-4">
+                            <div class="matrix-scan"></div>
+                            <div class="chip-orbit"><div class="neon-swirl"></div><div class="white-chip"><i class="fas fa-microchip"></i></div></div>
+                        </div>
+                        <button onclick="handleSignal('{B}-${i}')" id="btn-{B}-${i}" class="btn-3d w-full bg-slate-900 text-white border-slate-700">GET SIGNAL</button>
+                    </div>`;
+                qx.innerHTML += cardHtml.replace(/{B}/g, 'qx');
+                po.innerHTML += cardHtml.replace(/{B}/g, 'po');
+            });
+
+            const pList = document.getElementById('policy-list');
+            policyData.forEach(item => {
+                pList.innerHTML += `<div class="policy-item"><p class="policy-title">${item.t}</p><p class="policy-text">${item.p}</p></div>`;
             });
         }
-        render('qx'); render('po');
+        initApp();
 
-        // --- LOGIC ---
-        let userPoints = 0; let userStatus = "Free";
+        // --- 3. CORE LOGIC ---
+        let userPoints = 0; let userStatus = "Free"; let currentId = null;
+
         auth.onAuthStateChanged(u => {
             if(!u) window.location.href = 'index.html';
+            document.getElementById('user-email').innerText = u.email;
             db.collection("users").doc(u.uid).onSnapshot(d => {
                 if(d.exists) {
                     const data = d.data();
-                    userPoints = data.points || 0;
-                    userStatus = data.status || "Free";
+                    userPoints = data.points || 0; userStatus = data.status || "Free";
                     document.getElementById('pts').innerText = userPoints;
                     document.getElementById('tier').innerText = userStatus;
-                    if(userStatus === "VIP") document.getElementById('crown').classList.replace('text-slate-400', 'text-amber-500');
+                    document.getElementById('crown').className = (userStatus === "VIP") ? "fas fa-crown text-amber-500" : "fas fa-crown text-slate-400";
                 }
             });
         });
 
-        // --- AD & SIGNAL ---
         function handleSignal(id) {
-            // Reset Ad State
-            document.getElementById('ad-x-icon').style.display = 'none';
-            document.getElementById('timer-text').innerText = "CONNECTING...";
-            
-            if(userStatus === "VIP") { revealSignal(id); } else {
+            currentId = id;
+            document.getElementById('ad-x-icon').style.display = 'none'; // RESET CROSS
+            if(userStatus === "VIP") { revealSignal(); } else {
                 document.getElementById('ad-frame').src = "https://www.effectivegatecpm.com/zu9fwwufi?key=5c01f6e26f4b9943913f0d36bfa48f6d";
                 document.getElementById('ad-overlay').style.display = 'flex';
+                document.body.classList.add('no-scroll');
                 let t = 10;
                 const int = setInterval(() => {
                     t--; document.getElementById('timer-text').innerText = `VERIFYING: ${t}s`;
-                    if(t <= 0) { clearInterval(int); document.getElementById('ad-x-icon').style.display = 'block'; document.getElementById('timer-text').innerText = "VERIFIED ✅"; }
+                    if(t <= 0) { clearInterval(int); document.getElementById('ad-x-icon').style.display = 'block'; document.getElementById('timer-text').innerText = "DONE ✅"; }
                 }, 1000);
-                window.currentSignalId = id;
             }
         }
 
         function closeAdPopup() {
             document.getElementById('ad-overlay').style.display = 'none';
-            revealSignal(window.currentSignalId);
-            // Points Logic
+            document.body.classList.remove('no-scroll');
+            // Points Update - Secure +1 logic
             db.collection("users").doc(auth.currentUser.uid).set({ points: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+            revealSignal();
         }
 
-        function revealSignal(id) {
-            const btn = document.getElementById(`btn-${id}`);
-            btn.innerText = "1 MIN BUY ↑"; btn.classList.add('bg-green-500');
-            setTimeout(() => { btn.innerText = "GET SIGNAL"; btn.classList.remove('bg-green-500'); }, 10000);
-        }
-
-        // --- SUBMISSIONS (FIREBASE + MAIL) ---
-        async function submitWithdraw() {
-            const addr = document.getElementById('wd-address').value;
-            const amt = parseInt(document.getElementById('wd-amount').value);
-            if(amt < 5000 || amt > userPoints) return alert("Invalid Points!");
-
-            try {
-                // 1. Save to Firebase
-                await db.collection("withdraw_requests").add({
-                    email: auth.currentUser.email,
-                    uid: auth.currentUser.uid,
-                    address: addr,
-                    points: amt,
-                    time: new Date()
-                });
-
-                // 2. Send Email
-                emailjs.send("service_sqtahae", "template_itgty5n", {
-                    from_email: auth.currentUser.email,
-                    points: amt,
-                    address: addr
-                });
-
-                alert("Withdrawal Request Sent Successfully!");
-                closeModals();
-            } catch (e) { alert("Error: " + e.message); }
-        }
-
-        async function submitVip() {
-            const tid = document.getElementById('vip-txid').value;
-            if(!tid) return alert("Enter TxID");
-
-            try {
-                await db.collection("vip_requests").add({
-                    email: auth.currentUser.email,
-                    uid: auth.currentUser.uid,
-                    txid: tid,
-                    time: new Date(),
-                    status: "pending"
-                });
-                alert("VIP Request Submitted! Admin will verify soon.");
-                closeModals();
-            } catch (e) { alert("Data save error!"); }
-        }
-
-        // --- UI HELPERS ---
-        function openModal(id) {
-            document.getElementById(id).style.display = 'flex';
-            document.getElementById('sidebar').classList.remove('sidebar-active');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeModals() {
-            document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-            document.body.style.overflow = 'auto';
-        }
-        function switchTerminal(b) {
-            document.getElementById('qx-grid').classList.toggle('hidden', b !== 'qx');
-            document.getElementById('po-grid').classList.toggle('hidden', b !== 'po');
-            document.getElementById('sw-qx').classList.toggle('tab-active', b === 'qx');
-            document.getElementById('sw-po').classList.toggle('tab-active', b === 'po');
-        }
-    </script>
-</body>
-</html>
+        function revealSignal() {
+            const btn = document.getElementById(`btn-${currentId}`);
+            const card = document.getElementById(`c
