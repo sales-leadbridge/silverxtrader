@@ -2,124 +2,156 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SilverX Trader | Official</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SilverX Pro | Institutional Access</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
-        body { background-color: #020617; color: white; font-family: sans-serif; }
-        .neon-glow { text-shadow: 0 0 20px rgba(59, 130, 246, 0.8); }
-        .glass-panel { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; }
-        .signal-box-demo { border: 2px solid #3b82f6; border-radius: 15px; padding: 20px; text-align: center; position: relative; overflow: hidden; }
-        .ring-anim { width: 60px; height: 60px; border: 3px dashed #3b82f6; border-radius: 50%; animation: spin 4s linear infinite; margin: 0 auto; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        :root { --neon-blue: #00f3ff; --neon-red: #ff003c; --dark-bg: #050505; --panel-bg: rgba(10, 10, 10, 0.85); }
+        body { background-color: var(--dark-bg); color: white; font-family: 'Rajdhani', sans-serif; overflow: hidden; height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; }
+        
+        #matrix-canvas { position: absolute; top: 0; left: 0; z-index: 0; opacity: 0.15; }
+        
+        .cyber-panel { position: relative; z-index: 10; width: 100%; max-width: 450px; padding: 40px; background: var(--panel-bg); border: 1px solid #333; box-shadow: 0 0 30px rgba(0, 243, 255, 0.1); backdrop-filter: blur(10px); border-radius: 4px; clip-path: polygon(0 0, 100% 0, 100% 85%, 95% 100%, 0 100%); }
+        .cyber-panel::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--neon-blue), transparent); animation: scanline 3s infinite linear; }
+        
+        .cyber-input-group { position: relative; margin-bottom: 25px; }
+        .cyber-input { width: 100%; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; color: var(--neon-blue); padding: 15px 15px 15px 45px; font-family: 'Source Code Pro', monospace; font-size: 14px; transition: 0.3s; outline: none; }
+        .cyber-input:focus { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 243, 255, 0.2); }
+        .cyber-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #555; transition: 0.3s; }
+        .cyber-input:focus + .cyber-icon { color: var(--neon-blue); }
+        
+        .cyber-btn { width: 100%; padding: 15px; background: var(--neon-blue); color: black; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; border: none; cursor: pointer; position: relative; overflow: hidden; transition: 0.3s; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+        .cyber-btn:hover { background: white; box-shadow: 0 0 20px var(--neon-blue); }
+        .google-btn { margin-top: 15px; background: transparent; border: 1px solid #333; color: white; }
+        .google-btn:hover { background: rgba(255,255,255,0.05); }
+        
+        .server-status { margin-top: 30px; border-top: 1px solid #333; padding-top: 20px; display: flex; justify-content: space-between; font-size: 10px; color: #555; font-family: 'Source Code Pro', monospace; }
+        .status-dot { width: 8px; height: 8px; background: #333; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .status-dot.active { background: #00ff41; box-shadow: 0 0 5px #00ff41; }
+        
+        @keyframes scanline { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .glitch-text { animation: glitch 3s infinite; }
+        @keyframes glitch { 0% { text-shadow: 0 0 0 transparent; } 2% { text-shadow: 2px 0 var(--neon-red), -2px 0 var(--neon-blue); } 4% { text-shadow: 0 0 0 transparent; } }
+        
+        #terminal-log { position: fixed; bottom: 20px; left: 20px; font-family: 'Source Code Pro', monospace; font-size: 10px; color: #00ff41; opacity: 0.7; pointer-events: none; }
     </style>
 </head>
-<body class="overflow-x-hidden">
+<body>
+    <canvas id="matrix-canvas"></canvas>
+    <div id="terminal-log"><div class="log-line">> SYSTEM_BOOT_SEQUENCE_INITIATED...</div></div>
 
-    <div class="min-h-screen flex flex-col items-center justify-center px-4 py-10">
-        
-        <h1 class="text-5xl font-black uppercase text-center mb-6 tracking-tighter">SilverX <span class="text-blue-500 neon-glow">Trader</span></h1>
-        
-        <div class="signal-box-demo w-64 bg-slate-900 mb-8 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
-            <h3 class="font-bold text-slate-300">EUR/USD <span class="text-[10px] text-green-400">92% ACC</span></h3>
-            <div class="my-4 relative flex justify-center items-center">
-                <div class="ring-anim"></div>
-                <i class="fas fa-microchip absolute text-blue-500 text-xl"></i>
+    <div class="cyber-panel">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold glitch-text mb-2">SILVERX <span class="text-cyan-400">PRO</span></h1>
+            <p class="text-xs text-slate-500 uppercase tracking-[0.3em]">Institutional Access Terminal</p>
+        </div>
+
+        <div id="error-box" class="hidden mb-4 p-3 bg-red-900/20 border border-red-500/50 text-red-400 text-xs font-mono">
+            <i class="fas fa-exclamation-triangle mr-2"></i> <span id="error-msg">Error</span>
+        </div>
+
+        <form onsubmit="event.preventDefault(); authManager.login();">
+            <div class="cyber-input-group">
+                <input type="email" id="email" class="cyber-input" placeholder="ACCESS_ID (EMAIL)" required>
+                <i class="fas fa-fingerprint cyber-icon"></i>
             </div>
-            <div class="text-[10px] uppercase font-bold text-blue-500 animate-pulse">AI Analysis Active...</div>
-        </div>
-
-        <div class="w-full max-w-sm space-y-3 mb-10">
-            <a href="https://broker-qx.pro/sign-up/?lid=1696715" target="_blank" class="block w-full py-4 bg-green-600 rounded-xl font-black text-center uppercase shadow-lg hover:scale-105 transition">Join Quotex</a>
-            <a href="https://po-ru4.click/register?utm_campaign=835777&utm_source=affiliate&utm_medium=sr&a=JbsX5mZ1ZchgeZ&ac=pak_users_2026" target="_blank" class="block w-full py-4 bg-blue-600 rounded-xl font-black text-center uppercase shadow-lg hover:scale-105 transition">Join Pocket Option</a>
-        </div>
-
-        <div class="glass-panel p-6 w-full max-w-lg mb-6">
-            <h2 class="text-xl font-bold text-blue-400 uppercase mb-2"><i class="fas fa-robot"></i> Bot Logic</h2>
-            <p class="text-sm text-slate-300 leading-relaxed">SilverX uses high-frequency institutional data. It analyzes candle patterns, volume, and volatility to predict the next 1-minute candle reversal with extreme precision.</p>
-        </div>
-
-        <div class="glass-panel p-6 w-full max-w-lg mb-6">
-            <h2 class="text-xl font-bold text-green-400 uppercase mb-2"><i class="fas fa-coins"></i> Earnings & Withdraw</h2>
-            <p class="text-sm text-slate-300 mb-2">Watch Ads to earn Points while you trade. Withdraw instantly via Crypto.</p>
-            <ul class="text-xs text-slate-400 list-disc pl-4">
-                <li>5000 Points = $5 USD</li>
-                <li>Binance Pay / USDT TRC20 Supported</li>
-                <li>Instant Pending Status & Email Confirmation</li>
-            </ul>
-        </div>
-
-        <div class="glass-panel p-6 w-full max-w-lg mb-6">
-            <h2 class="text-xl font-bold text-red-400 uppercase mb-2"><i class="fas fa-shield-halved"></i> Recovery Plans</h2>
-            <div class="grid grid-cols-2 gap-2 text-center">
-                <div class="bg-slate-800 p-2 rounded border border-slate-700 text-xs font-bold">$20 Fee = 5% Growth</div>
-                <div class="bg-slate-800 p-2 rounded border border-slate-700 text-xs font-bold">$50 Fee = 15% Growth</div>
-                <div class="bg-slate-800 p-2 rounded border border-slate-700 text-xs font-bold">$100 Fee = 40% Growth</div>
-                <div class="bg-slate-800 p-2 rounded border border-slate-700 text-xs font-bold">$200 Fee = 100% Growth</div>
+            <div class="cyber-input-group">
+                <input type="password" id="password" class="cyber-input" placeholder="SECURITY_KEY" required>
+                <i class="fas fa-key cyber-icon"></i>
             </div>
-            <p class="text-[10px] text-slate-500 mt-2 italic">*Includes Money Back Guarantee if target not hit.</p>
-        </div>
-
-        <div class="glass-panel p-6 w-full max-w-lg mb-6 border border-amber-500/30">
-            <h2 class="text-xl font-bold text-amber-400 uppercase mb-2"><i class="fas fa-crown"></i> VIP Access</h2>
-            <p class="text-sm text-slate-300">Unlock 24 Pairs, No Ads, Instant Signals, and 98% Accuracy.</p>
-            <p class="text-2xl font-black text-white mt-2">$250 / Month</p>
-        </div>
-
-        <div class="w-full max-w-lg text-center mb-10">
-            <p class="text-[10px] text-slate-500 uppercase font-mono tracking-widest">
-                Free Pairs: EUR/USD, GBP/USD, USD/JPY, BTC/USD, ETH/USD, AUD/CAD, NZD/USD, USD/CHF, EUR/JPY, GBP/JPY + 6 More
-            </p>
-        </div>
-
-        <div class="glass-panel p-8 w-full max-w-sm mb-12">
-            <h3 class="text-center font-bold text-lg mb-4">LOGIN TO TERMINAL</h3>
-            <button onclick="googleLogin()" class="w-full bg-white text-slate-900 py-3 rounded-lg font-bold flex items-center justify-center gap-2 mb-4 hover:bg-gray-200">
-                <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" class="w-5"> Google Login
+            <button type="submit" id="login-btn" class="cyber-btn">
+                <span id="btn-text">INITIALIZE SESSION</span>
+                <i class="fas fa-circle-notch fa-spin hidden" id="btn-loader"></i>
             </button>
-            <div class="text-center text-xs text-slate-500 mb-4">- OR -</div>
-            <input type="email" id="email" placeholder="Email" class="w-full bg-slate-900 border border-slate-700 p-3 rounded mb-2 text-sm text-white">
-            <input type="password" id="pass" placeholder="Password" class="w-full bg-slate-900 border border-slate-700 p-3 rounded mb-4 text-sm text-white">
-            <button onclick="emailLogin()" class="w-full bg-blue-600 py-3 rounded-lg font-bold uppercase text-xs">Login / Register</button>
-        </div>
+        </form>
 
-        <div class="flex gap-6 text-2xl text-slate-500 pb-10">
-            <a href="#"><i class="fab fa-whatsapp"></i></a>
-            <a href="#"><i class="fab fa-youtube"></i></a>
-            <a href="#"><i class="fab fa-tiktok"></i></a>
+        <button onclick="authManager.googleLogin()" class="cyber-btn google-btn"><i class="fab fa-google mr-2"></i> GOOGLE AUTH</button>
+
+        <div class="server-status">
+            <div><span class="status-dot active"></span> DATABASE: CONNECTED</div>
+            <div>LATENCY: <span id="latency-display">12ms</span></div>
         </div>
+        <div class="mt-4 text-[9px] text-center text-slate-600 font-mono">SECURE SERVER CONNECTION v5.2.1-alpha</div>
     </div>
 
     <script>
         const firebaseConfig = { apiKey: "AIzaSyAyXzJ1UUdtWe96NjiQbVCqnWdIv8XakhA", authDomain: "silverxtrader.firebaseapp.com", projectId: "silverxtrader", storageBucket: "silverxtrader.firebasestorage.app", messagingSenderId: "46330013690", appId: "1:46330013690:web:c2aad241ad7abd49e0e643" };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
 
-        function googleLogin() {
-            auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(checkProfile).catch(e=>alert(e.message));
+        class MatrixEffect {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId); this.ctx = this.canvas.getContext('2d'); this.resize();
+                this.characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*'; this.fontSize = 14; this.columns = this.canvas.width / this.fontSize;
+                this.drops = []; this.initDrops(); window.addEventListener('resize', () => this.resize()); this.animate();
+            }
+            resize() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; this.columns = this.canvas.width / 14; this.initDrops(); }
+            initDrops() { this.drops = []; for (let i = 0; i < this.columns; i++) this.drops[i] = 1; }
+            animate() {
+                this.ctx.fillStyle = 'rgba(5, 5, 5, 0.05)'; this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = '#00f3ff'; this.ctx.font = this.fontSize + 'px monospace';
+                for (let i = 0; i < this.drops.length; i++) {
+                    const text = this.characters.charAt(Math.floor(Math.random() * this.characters.length));
+                    this.ctx.fillText(text, i * this.fontSize, this.drops[i] * this.fontSize);
+                    if (this.drops[i] * this.fontSize > this.canvas.height && Math.random() > 0.975) this.drops[i] = 0;
+                    this.drops[i]++;
+                }
+                requestAnimationFrame(() => this.animate());
+            }
         }
-        function emailLogin() {
-            const e = document.getElementById('email').value;
-            const p = document.getElementById('pass').value;
-            auth.signInWithEmailAndPassword(e,p).then(checkProfile).catch(()=>{
-                auth.createUserWithEmailAndPassword(e,p).then(checkProfile).catch(err=>alert(err.message));
-            });
+
+        class AuthManager {
+            constructor() { firebase.initializeApp(firebaseConfig); this.auth = firebase.auth(); this.db = firebase.firestore(); this.initListener(); }
+            initListener() {
+                this.auth.onAuthStateChanged(user => {
+                    if (user) { logger.add("> USER_DETECTED: " + user.uid); this.verifyProfile(user); } 
+                    else { logger.add("> NO_ACTIVE_SESSION"); }
+                });
+            }
+            async verifyProfile(user) {
+                const userRef = this.db.collection('users').doc(user.uid);
+                try {
+                    const doc = await userRef.get();
+                    if (!doc.exists) {
+                        logger.add("> CREATING_DB_ENTRY");
+                        await userRef.set({ email: user.email, uid: user.uid, points: 0, status: "Free", createdAt: firebase.firestore.FieldValue.serverTimestamp(), lastLogin: firebase.firestore.FieldValue.serverTimestamp() });
+                    }
+                    setTimeout(() => window.location.href = "dashboard.html", 1000);
+                } catch (error) { ui.showError("DB_CONNECTION_FAILURE"); }
+            }
+            login() {
+                const email = document.getElementById('email').value; const pass = document.getElementById('password').value;
+                if (!email || !pass) return ui.showError("MISSING_CREDENTIALS");
+                ui.setLoading(true);
+                this.auth.signInWithEmailAndPassword(email, pass).catch(err => {
+                    if (err.code === 'auth/user-not-found') this.auth.createUserWithEmailAndPassword(email, pass);
+                    else { ui.setLoading(false); ui.showError(err.message); }
+                });
+            }
+            googleLogin() { this.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err => ui.showError(err.message)); }
         }
-        function checkProfile(res) {
-            const uid = res.user.uid;
-            db.collection('users').doc(uid).get().then(doc => {
-                if(!doc.exists) {
-                    db.collection('users').doc(uid).set({ points: 0, status: 'Free', email: res.user.email }).then(()=> window.location.href='terminal.html');
-                } else { window.location.href='terminal.html'; }
-            });
+
+        class UIManager {
+            constructor() { this.btnText = document.getElementById('btn-text'); this.loader = document.getElementById('btn-loader'); this.errorBox = document.getElementById('error-box'); this.errorMsg = document.getElementById('error-msg'); }
+            setLoading(l) { this.btnText.classList.toggle('hidden', l); this.loader.classList.toggle('hidden', !l); }
+            showError(m) { this.errorMsg.innerText = m; this.errorBox.classList.remove('hidden'); setTimeout(() => this.errorBox.classList.add('hidden'), 5000); }
         }
-        auth.onAuthStateChanged(u=>{if(u)window.location.href='terminal.html'});
+        class TerminalLogger {
+            constructor() { this.c = document.getElementById('terminal-log'); }
+            add(t) { const d = document.createElement('div'); d.className = 'log-line'; d.innerText = `${new Date().toLocaleTimeString()} ${t}`; this.c.appendChild(d); if(this.c.children.length>5) this.c.removeChild(this.c.firstChild); }
+        }
+
+        const matrix = new MatrixEffect('matrix-canvas');
+        const ui = new UIManager();
+        const logger = new TerminalLogger();
+        const authManager = new AuthManager();
+        setInterval(() => document.getElementById('latency-display').innerText = (Math.floor(Math.random() * 50) + 10) + "ms", 2000);
     </script>
 </body>
-</html></body>
 </html>
