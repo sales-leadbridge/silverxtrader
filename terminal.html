@@ -213,112 +213,345 @@
                     simulateAnalysis(boxId, 5000, 85); // 5s delay
                     setTimeout(() => { cooldown = false; }, 60000); // 60s cooldown
                 });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SilverX Terminal</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        /* BASE & FONTS */
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&display=swap');
+        body { background-color: #0f172a; color: white; font-family: 'Rajdhani', sans-serif; overflow-x: hidden; }
+        
+        /* 1. HENDECAGON ANIMATION (11 Sided Polygon Logic) */
+        .hendecagon-wrapper { position: relative; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+        .hendecagon-ring {
+            position: absolute; width: 100%; height: 100%;
+            clip-path: polygon(50% 0%, 78% 5%, 98% 25%, 100% 55%, 85% 80%, 55% 100%, 25% 95%, 5% 75%, 0% 45%, 15% 15%, 40% 2%);
+            background: transparent; border: 2px solid #3b82f6; z-index: 10;
+        }
+        /* Spinning dashed ring outside */
+        .outer-spin { position: absolute; width: 110%; height: 110%; border: 1px dashed rgba(59,130,246,0.5); border-radius: 50%; animation: spin 10s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* MUSIC WAVES (Lines coming out) */
+        .music-wave { position: absolute; width: 2px; height: 10px; background: #3b82f6; animation: wave 1s ease-in-out infinite; }
+        .wave-1 { top: -10px; left: 50%; animation-delay: 0.1s; }
+        .wave-2 { bottom: -10px; left: 50%; animation-delay: 0.2s; }
+        .wave-3 { left: -10px; top: 50%; animation-delay: 0.3s; }
+        .wave-4 { right: -10px; top: 50%; animation-delay: 0.4s; }
+        @keyframes wave { 0%, 100% { height: 10px; opacity: 0.5; } 50% { height: 25px; opacity: 1; } }
+
+        /* BOX STATES */
+        .box-default { border: 2px solid #3b82f6; box-shadow: 0 0 10px rgba(59,130,246,0.1); }
+        
+        .box-buy .hendecagon-ring { border-color: #22c55e; background: rgba(34,197,94,0.1); }
+        .box-buy .music-wave { background: #22c55e; }
+        .box-buy { border-color: #22c55e; box-shadow: 0 0 20px rgba(34,197,94,0.4); }
+
+        .box-sell .hendecagon-ring { border-color: #ef4444; background: rgba(239,68,68,0.1); }
+        .box-sell .music-wave { background: #ef4444; }
+        .box-sell { border-color: #ef4444; box-shadow: 0 0 20px rgba(239,68,68,0.4); }
+
+        /* VIP THEME */
+        .vip-mode { background: #000; }
+        .vip-mode .box-default { border-color: #fbbf24; }
+        .vip-mode .hendecagon-ring { border-color: #fbbf24; }
+        .vip-mode .music-wave { background: #fbbf24; }
+        .vip-mode .text-blue-500 { color: #fbbf24 !important; }
+
+        /* UTILS */
+        .glass { background: rgba(30,41,59,0.9); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid #334155; }
+        .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9000; display: none; overflow-y: auto; padding: 20px; }
+    </style>
+</head>
+<body id="main-body">
+
+    <div id="sidebar" class="fixed inset-y-0 left-[-100%] w-[85%] bg-slate-900 z-[8000] border-r border-slate-700 transition-all duration-300 p-5 shadow-2xl">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-2xl font-black uppercase text-white">SilverX <span class="text-blue-500">Menu</span></h2>
+            <button onclick="toggleSidebar()"><i class="fas fa-arrow-left text-slate-400 text-xl"></i></button>
+        </div>
+        <div class="space-y-3">
+            <a href="https://wa.me/923064391353" class="block p-4 bg-slate-800 rounded-xl font-bold text-sm"><i class="fab fa-whatsapp text-green-500 mr-2"></i> WhatsApp Help</a>
+            <a href="https://www.youtube.com/@kingtraderofficial45" class="block p-4 bg-slate-800 rounded-xl font-bold text-sm"><i class="fab fa-youtube text-red-500 mr-2"></i> YouTube Training</a>
+            <a href="#" class="block p-4 bg-slate-800 rounded-xl font-bold text-sm"><i class="fab fa-tiktok text-pink-500 mr-2"></i> TikTok Analysis</a>
+            <button onclick="openModal('policy')" class="block w-full text-left p-4 bg-slate-800 rounded-xl font-bold text-sm"><i class="fas fa-file-contract text-blue-500 mr-2"></i> Privacy Policy</button>
+            <button onclick="auth.signOut()" class="block w-full text-left p-4 bg-red-900/30 text-red-400 rounded-xl font-bold text-sm mt-10"><i class="fas fa-power-off mr-2"></i> Logout</button>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur border-b border-slate-700 px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <button onclick="toggleSidebar()"><i class="fas fa-bars text-xl"></i></button>
+            <div>
+                <h1 class="text-lg font-black uppercase leading-none">SilverX <span class="text-blue-500" id="brand-color">AI</span></h1>
+                <p id="clock" class="text-[10px] text-slate-400 font-mono">00:00:00</p>
+            </div>
+        </div>
+        <div id="status-badge" class="px-3 py-1 bg-slate-800 rounded text-[10px] font-bold uppercase">LOADING</div>
+    </header>
+
+    <main class="p-4 pb-32">
+        <div id="points-container" class="glass p-5 mb-5 relative overflow-hidden">
+            <div class="flex justify-between items-end relative z-10">
+                <div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Balance</p>
+                    <h2 class="text-4xl font-black"><span id="pts">0</span> <span class="text-sm text-blue-500">PTS</span></h2>
+                </div>
+                <button onclick="openModal('withdraw')" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg text-xs font-black uppercase shadow-lg">Withdraw</button>
+            </div>
+            <div class="mt-3 pt-3 border-t border-slate-700 flex justify-between text-[9px] uppercase text-slate-400 font-bold">
+                <span>5000 PTS = $5 USD</span>
+                <span class="text-green-500 animate-pulse">● Live Sync</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-5">
+            <button onclick="openModal('vip')" class="glass p-4 text-amber-400 border border-amber-500/30 hover:bg-amber-500/10 transition">
+                <i class="fas fa-crown text-2xl mb-1 block"></i>
+                <span class="font-black text-xs uppercase">Join VIP</span>
+            </button>
+            <button onclick="openModal('recovery')" class="glass p-4 text-blue-400 border border-blue-500/30 hover:bg-blue-500/10 transition">
+                <i class="fas fa-shield-halved text-2xl mb-1 block"></i>
+                <span class="font-black text-xs uppercase">Recovery</span>
+            </button>
+        </div>
+
+        <div class="glass p-1 mb-5 flex gap-1">
+            <a href="https://broker-qx.pro/sign-up/?lid=1696715" target="_blank" class="flex-1 py-3 bg-green-600 rounded-lg text-center font-bold text-[10px] uppercase">Join Quotex</a>
+            <a href="https://po-ru4.click/register?utm_campaign=835777&utm_source=affiliate&utm_medium=sr&a=JbsX5mZ1ZchgeZ&ac=pak_users_2026" target="_blank" class="flex-1 py-3 bg-blue-600 rounded-lg text-center font-bold text-[10px] uppercase">Join Pocket</a>
+        </div>
+
+        <div class="flex mb-4 bg-slate-800 p-1 rounded-lg">
+            <button class="flex-1 py-2 bg-slate-700 rounded text-[10px] font-bold uppercase text-white">Quotex</button>
+            <button class="flex-1 py-2 text-[10px] font-bold uppercase text-slate-500">Pocket Option</button>
+        </div>
+
+        <div id="signal-grid" class="grid grid-cols-2 gap-4">
+            </div>
+    </main>
+
+    <div id="modal-overlay" class="modal-bg">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-sm mx-auto mt-10 relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-500"><i class="fas fa-times text-xl"></i></button>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <div id="ad-view" class="fixed inset-0 bg-white z-[9999] hidden flex-col">
+        <div class="p-4 bg-slate-100 flex justify-between items-center shadow">
+            <span id="ad-timer" class="text-red-600 font-black">WAIT 15s</span>
+            <button id="ad-close" class="hidden font-bold text-slate-900" onclick="endAd()">CLOSE X</button>
+        </div>
+        <iframe id="ad-frame" class="flex-1 w-full border-none"></iframe>
+    </div>
+
+    <script>
+        // CONFIG
+        const firebaseConfig = { apiKey: "AIzaSyAyXzJ1UUdtWe96NjiQbVCqnWdIv8XakhA", authDomain: "silverxtrader.firebaseapp.com", projectId: "silverxtrader", storageBucket: "silverxtrader.firebasestorage.app", messagingSenderId: "46330013690", appId: "1:46330013690:web:c2aad241ad7abd49e0e643" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // STATE
+        let user = null;
+        let points = 0;
+        let status = "Free";
+        let cooldown = false;
+        const adLinks = ["https://www.effectivegatecpm.com/zu9fwwufi?key=5c01f6e26f4b9943913f0d36bfa48f6d", "https://www.effectivegatecpm.com/m3re02atee?key=cebdb997452acac01a6d39d48dcb0e68"];
+        
+        const freePairs = ["EUR/USD", "GBP/USD", "USD/JPY", "BTC/USD", "ETH/USD", "AUD/CAD", "NZD/USD", "USD/CHF", "EUR/JPY", "GBP/JPY", "XAU/USD", "USDT/USD", "BNB/USD", "XRP/USD", "ADA/USD", "DOGE/USD"];
+        const vipPairs = [...freePairs, "SOL/USD", "LTC/USD", "EUR/GBP", "AUD/JPY", "CAD/JPY", "USD/MXN", "USD/BRL", "OTC/GEM"];
+
+        // SETUP
+        auth.onAuthStateChanged(u => {
+            if(!u) window.location.href = 'index.html';
+            user = u;
+            db.collection('users').doc(u.uid).onSnapshot(doc => {
+                if(doc.exists) {
+                    const d = doc.data();
+                    points = d.points || 0;
+                    status = d.status || "Free";
+                    updateUI();
+                }
+            });
+        });
+
+        function updateUI() {
+            document.getElementById('pts').innerText = points;
+            const badge = document.getElementById('status-badge');
+            badge.innerText = status;
+            
+            if(status === 'VIP') {
+                document.body.classList.add('vip-mode');
+                document.getElementById('points-container').style.display = 'none';
+                badge.className = "px-3 py-1 bg-amber-500 text-black rounded text-[10px] font-black uppercase";
+                renderGrid(vipPairs);
             } else {
-                // VIP: Instant
-                simulateAnalysis(boxId, 1000, 96); // 1s instant
+                renderGrid(freePairs);
             }
         }
 
-        function simulateAnalysis(boxId, delay, acc) {
-            const box = document.getElementById(boxId);
-            const btn = document.getElementById(`btn-${boxId}`);
-            
-            setTimeout(() => {
-                const result = Math.random() > 0.5 ? "BUY" : "SELL";
-                if(result === "BUY") {
-                    box.classList.add('buy-mode');
-                    btn.className = "w-full py-3 bg-green-600 rounded-xl text-[10px] font-black uppercase text-white shadow-[0_0_20px_#22c55e]";
-                    btn.innerHTML = `CALL / UP <i class="fas fa-arrow-up"></i>`;
-                } else {
-                    box.classList.add('sell-mode');
-                    btn.className = "w-full py-3 bg-red-600 rounded-xl text-[10px] font-black uppercase text-white shadow-[0_0_20px_#ef4444]";
-                    btn.innerHTML = `PUT / DOWN <i class="fas fa-arrow-down"></i>`;
-                }
-                
-                // Reset after 10s
-                setTimeout(() => {
-                    box.classList.remove('buy-mode', 'sell-mode');
-                    btn.className = "w-full py-3 bg-slate-900 rounded-xl text-[10px] font-black uppercase border border-slate-700 hover:bg-slate-800 transition relative z-10";
-                    btn.innerText = "GET SIGNAL";
-                }, 10000);
-            }, delay);
+        // RENDER GRID (HENDECAGON LOGIC)
+        function renderGrid(pairs) {
+            const grid = document.getElementById('signal-grid');
+            grid.innerHTML = "";
+            pairs.forEach((p, i) => {
+                const id = `box-${i}`;
+                grid.innerHTML += `
+                <div id="${id}" class="glass p-4 box-default relative overflow-hidden text-center transition-all duration-300">
+                    <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
+                        <span class="text-[10px] font-bold text-slate-300">${p}</span>
+                        <span class="text-[9px] text-green-500 font-bold">WIN 9${Math.floor(Math.random()*9)}%</span>
+                    </div>
+                    
+                    <div class="hendecagon-wrapper">
+                        <div class="outer-spin"></div>
+                        <div class="hendecagon-ring"></div>
+                        <i class="fas fa-microchip text-2xl text-blue-500 relative z-20" id="icon-${id}"></i>
+                        <div class="music-wave wave-1"></div>
+                        <div class="music-wave wave-2"></div>
+                        <div class="music-wave wave-3"></div>
+                        <div class="music-wave wave-4"></div>
+                    </div>
+
+                    <div class="absolute bottom-2 right-2 opacity-20 text-3xl">🕯️</div>
+                    
+                    <button id="btn-${id}" onclick="getSignal('${id}')" class="w-full mt-4 py-3 bg-slate-800 rounded-lg text-[10px] font-black uppercase border border-slate-600 relative z-30">
+                        GET SIGNAL
+                    </button>
+                </div>`;
+            });
         }
 
-        // --- 5. AD SYSTEM ---
-        let adCallback = null;
-        function launchAd(cb) {
-            adCallback = cb;
-            const overlay = document.getElementById('ad-overlay');
-            const timer = document.getElementById('ad-timer');
-            const close = document.getElementById('ad-close-btn');
+        // SIGNAL LOGIC
+        function getSignal(id) {
+            const btn = document.getElementById(`btn-${id}`);
+            if(status === "Free") {
+                if(cooldown) { alert("Please wait 60 seconds."); return; }
+                // 1. AD
+                startAd(() => {
+                    // 2. DELAY
+                    btn.innerText = "LOADING...";
+                    setTimeout(() => {
+                        showResult(id);
+                        cooldown = true;
+                        setTimeout(() => cooldown = false, 60000); // 60s Lock
+                    }, 5000); // 5s Delay
+                });
+            } else {
+                // VIP: Instant
+                btn.innerText = "AI SCAN...";
+                setTimeout(() => showResult(id), 2000); // 2-3s Instant
+            }
+        }
+
+        function showResult(id) {
+            const box = document.getElementById(id);
+            const btn = document.getElementById(`btn-${id}`);
+            const isBuy = Math.random() > 0.5;
             
+            if(isBuy) {
+                box.classList.add('box-buy');
+                btn.className = "w-full mt-4 py-3 bg-green-600 text-white rounded-lg text-[10px] font-black uppercase shadow-lg";
+                btn.innerHTML = "CALL / UP <i class='fas fa-arrow-up'></i>";
+            } else {
+                box.classList.add('box-sell');
+                btn.className = "w-full mt-4 py-3 bg-red-600 text-white rounded-lg text-[10px] font-black uppercase shadow-lg";
+                btn.innerHTML = "PUT / DOWN <i class='fas fa-arrow-down'></i>";
+            }
+
+            // Reset after 10s
+            setTimeout(() => {
+                box.classList.remove('box-buy', 'box-sell');
+                btn.className = "w-full mt-4 py-3 bg-slate-800 rounded-lg text-[10px] font-black uppercase border border-slate-600 relative z-30";
+                btn.innerText = status === 'Free' ? `WAIT ${50}s` : "GET SIGNAL";
+            }, 10000);
+        }
+
+        // AD SYSTEM
+        let adCb = null;
+        function startAd(cb) {
+            adCb = cb;
+            document.getElementById('ad-view').style.display = 'flex';
             document.getElementById('ad-frame').src = adLinks[Math.floor(Math.random()*adLinks.length)];
-            overlay.style.display = 'flex';
+            let t = 15; // 10-30s rotation
+            const timer = document.getElementById('ad-timer');
+            const close = document.getElementById('ad-close');
             close.style.display = 'none';
             
-            let t = 15;
             const int = setInterval(() => {
                 t--;
-                timer.innerText = `WAIT: ${t}s`;
-                if(t<=0) {
+                timer.innerText = `WAIT ${t}s`;
+                if(t <= 0) {
                     clearInterval(int);
-                    timer.className = "text-green-600 font-black text-xs bg-green-100 px-3 py-1 rounded-full";
-                    timer.innerText = "REWARD UNLOCKED";
+                    timer.innerText = "COMPLETED";
                     close.style.display = 'block';
                 }
             }, 1000);
         }
-        
-        function finishAd() {
-            document.getElementById('ad-overlay').style.display = 'none';
-            db.collection('users').doc(auth.currentUser.uid).update({ points: firebase.firestore.FieldValue.increment(1) });
-            if(adCallback) adCallback();
+        function endAd() {
+            document.getElementById('ad-view').style.display = 'none';
+            db.collection('users').doc(user.uid).update({ points: firebase.firestore.FieldValue.increment(1) });
+            if(adCb) adCb();
         }
 
-        // --- 6. MODALS CONTENT (Withdraw, VIP, Policy) ---
-        function showModal(type) {
-            const modal = document.getElementById('generic-modal');
-            const content = document.getElementById('modal-content');
-            modal.style.display = 'flex';
+        // MODALS & RULES (EXACT TEXT)
+        function openModal(type) {
+            const m = document.getElementById('modal-overlay');
+            const c = document.getElementById('modal-content');
+            m.style.display = 'block';
             
-            if(type === 'withdraw-modal') {
-                content.innerHTML = `
-                    <h2 class="text-xl font-black text-white mb-4">WITHDRAWAL</h2>
-                    <ul class="text-xs text-slate-400 space-y-2 mb-4 list-disc pl-4">
-                        <li>Minimum withdrawal is 5000 PTS ($5).</li>
-                        <li>Only TRC20 or Binance Pay accepted.</li>
-                        <li>Wrong address = Loss of funds.</li>
-                        <li>Payments processed in 24-48 hours.</li>
-                        <li>Points will be deducted instantly.</li>
-                        <li>Status will show 'Pending' until approved.</li>
-                    </ul>
-                    <div class="bg-slate-800 p-3 rounded-lg mb-4 text-center">
-                        <p class="text-[10px] text-slate-500 uppercase">Available Points</p>
-                        <h3 class="text-2xl font-bold text-white">${userPoints}</h3>
-                        <p class="text-xs text-blue-400">= $${(userPoints/1000).toFixed(2)}</p>
-                    </div>
-                    <input type="text" placeholder="Binance Pay ID / TRC20 Address" class="w-full bg-slate-950 border border-slate-700 p-3 rounded-xl text-xs mb-3 text-white">
-                    <button onclick="processWithdraw()" class="w-full py-3 bg-blue-600 rounded-xl font-bold text-xs uppercase">Submit Request</button>
-                `;
-            } 
-            else if(type === 'vip-modal') {
-                content.innerHTML = `
-                    <h2 class="text-xl font-black text-amber-400 mb-4 text-center"><i class="fas fa-crown"></i> VIP ACCESS</h2>
-                    <div class="text-center mb-4"><p class="text-3xl font-bold text-white">$250 <span class="text-sm text-slate-400">/ Month</span></p></div>
-                    <ul class="text-xs text-slate-300 space-y-2 mb-4 border-t border-b border-slate-700 py-4">
-                        <li><i class="fas fa-check text-amber-400"></i> 98% Accuracy (Institutional Logic)</li>
-                        <li><i class="fas fa-check text-amber-400"></i> ZERO ADS & No Waiting</li>
-                        <li><i class="fas fa-check text-amber-400"></i> 24 Premium Pairs (Forex + Crypto)</li>
-                        <li><i class="fas fa-check text-amber-400"></i> 2 Free Recovery Sessions ($40 Value)</li>
-                        <li><i class="fas fa-check text-amber-400"></i> Refund Guarantee if Accuracy < 80%</li>
-                    </ul>
-                    <button onclick="window.location.href='https://wa.me/923064391353?text=I%20want%20to%20buy%20VIP%20Plan%20250$'" class="w-full py-4 bg-amber-500 text-black rounded-xl font-black text-sm uppercase">Activate Now</button>
-                `;
+            if(type === 'policy') {
+                c.innerHTML = `
+                <h3 class="text-xl font-bold mb-4 text-blue-500">PRIVACY & RULES</h3>
+                <div class="h-60 overflow-y-auto text-[10px] text-slate-300 space-y-3">
+                    <p>1. <strong>Loss Risk:</strong> Trading involves high risk. You may lose capital.</p>
+                    <p>2. <strong>Market Volatility:</strong> Signals depend on market conditions which change rapidly.</p>
+                    <p>3. <strong>AI Logic:</strong> We use institutional data, but 100% accuracy is impossible.</p>
+                    <p>4. <strong>No Guarantee:</strong> Past performance does not guarantee future results.</p>
+                    <p>5. <strong>Risk Mgmt:</strong> Never trade more than 5% of your balance per trade.</p>
+                    <p>6. <strong>Stop Loss:</strong> Always set a stop loss to protect your funds.</p>
+                    <p>7. <strong>Greed Control:</strong> Do not overtrade. Follow the daily target.</p>
+                    <p>8. <strong>Safe Trading:</strong> Use demo accounts before real money.</p>
+                    <p>9. <strong>Data Privacy:</strong> We do not share your email with third parties.</p>
+                    <p>10. <strong>Points:</strong> Points have no cash value until withdrawn.</p>
+                    <p>11. <strong>Ban Policy:</strong> Multiple accounts will lead to a permanent ban.</p>
+                    <p>12. <strong>Agreement:</strong> By using this tool, you accept all risks.</p>
+                </div>`;
             }
-            else if(type === 'recovery-modal') {
-                content.innerHTML = `
-                    <h2 class="text-xl font-black text-blue-400 mb-4">RECOVERY HUB</h2>
-                    <div class="grid grid-cols-2 gap-2 mb-4">
-                        <button class="p-2 bg-slate-800 border border-slate-600 rounded-lg text-center"><div class="text-xs text-slate-400">Fee $20</div><div class="font-bold text-green-400">5% Grow</div></button>
-                        <button class="p-2 bg-slate-800 border border-slate-600 rounded-lg text-center"><div class="text-xs text-slate-400">Fee $50</div><div class="font-bold text-green-400">15% Grow</div></button>
-                        <button class="p-2 bg-slate-800 border border-slate-600 ro
+            else if(type === 'withdraw') {
+                c.innerHTML = `
+                <h3 class="text-xl font-bold mb-4 text-white">WITHDRAW FUNDS</h3>
+                <div class="bg-slate-800 p-3 rounded mb-4 text-[10px] text-slate-400 space-y-1">
+                    <p>1. Minimum withdrawal is 5000 Points ($5).</p>
+                    <p>2. Only TRC20 or Binance Pay ID accepted.</p>
+                    <p>3. Wrong address will result in total loss.</p>
+                    <p>4. Payment processing takes 24-48 hours.</p>
+                    <p>5. Points are deducted instantly upon request.</p>
+                    <p>6. Status will remain 'Pending' until admin approves.</p>
+                </div>
+                <div class="mb-4 text-center">
+                    <span class="text-2xl font-bold">${points} PTS</span>
+                    <p class="text-xs text-green-400">Value: $${(points/1000).toFixed(2)}</p>
+                </div>
+                <input type="text" id="w-addr" placeholder="Binance Pay ID / TRC20" class="w-full bg-slate-950 border border-slate-700 p-3 rounded text-xs mb-3 text-white">
+                <button onclick="submitWithdraw()" class="w-full py-3 bg-blue-600 rounded font-bold text-xs uppercase">Submit Request</button>`;
+            }
+            else if(type === 'recovery') {
+                c.innerHTML = `
+                <h3 class="text-xl font-bold mb-4 text-blue-400">RECOVERY PLANS</h3>
+                <div class="grid grid-cols-2 gap-2 mb-4 text-center">
+                    <div class="bg-slate-800 p-2 rounded border border-slate-600"><div class="text-[10px] text-slate-400">Fee $20</div><div class="font-bold text-green-400">5% Grow</div></div>
+                    <div class="bg-slate-800 p-2 rounded border border-slate-600"><div class="text-[10px] text-slate-400">Fee $50</div><div class="font-bold text-green-400">15% Grow</div></div>
+                    <div class="bg-slate-800 p-2 rounded border border-slate-600"><div class="text-[10px] text-slate-400">Fee $100</div><div class="font-bold text-green-400">40% Grow</div></div>
+                    <div class="bg-slate-800 p-2 rounded borde
