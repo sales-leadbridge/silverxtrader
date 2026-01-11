@@ -3,155 +3,513 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SilverX Pro | Institutional Access</title>
+    <title>SilverX Pro | Secure Gateway</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
     <style>
-        :root { --neon-blue: #00f3ff; --neon-red: #ff003c; --dark-bg: #050505; --panel-bg: rgba(10, 10, 10, 0.85); }
-        body { background-color: var(--dark-bg); color: white; font-family: 'Rajdhani', sans-serif; overflow: hidden; height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; }
-        
-        #matrix-canvas { position: absolute; top: 0; left: 0; z-index: 0; opacity: 0.15; }
-        
-        .cyber-panel { position: relative; z-index: 10; width: 100%; max-width: 450px; padding: 40px; background: var(--panel-bg); border: 1px solid #333; box-shadow: 0 0 30px rgba(0, 243, 255, 0.1); backdrop-filter: blur(10px); border-radius: 4px; clip-path: polygon(0 0, 100% 0, 100% 85%, 95% 100%, 0 100%); }
-        .cyber-panel::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--neon-blue), transparent); animation: scanline 3s infinite linear; }
-        
-        .cyber-input-group { position: relative; margin-bottom: 25px; }
-        .cyber-input { width: 100%; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; color: var(--neon-blue); padding: 15px 15px 15px 45px; font-family: 'Source Code Pro', monospace; font-size: 14px; transition: 0.3s; outline: none; }
-        .cyber-input:focus { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 243, 255, 0.2); }
-        .cyber-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #555; transition: 0.3s; }
-        .cyber-input:focus + .cyber-icon { color: var(--neon-blue); }
-        
-        .cyber-btn { width: 100%; padding: 15px; background: var(--neon-blue); color: black; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; border: none; cursor: pointer; position: relative; overflow: hidden; transition: 0.3s; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
-        .cyber-btn:hover { background: white; box-shadow: 0 0 20px var(--neon-blue); }
-        .google-btn { margin-top: 15px; background: transparent; border: 1px solid #333; color: white; }
-        .google-btn:hover { background: rgba(255,255,255,0.05); }
-        
-        .server-status { margin-top: 30px; border-top: 1px solid #333; padding-top: 20px; display: flex; justify-content: space-between; font-size: 10px; color: #555; font-family: 'Source Code Pro', monospace; }
-        .status-dot { width: 8px; height: 8px; background: #333; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .status-dot.active { background: #00ff41; box-shadow: 0 0 5px #00ff41; }
-        
-        @keyframes scanline { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-        .glitch-text { animation: glitch 3s infinite; }
-        @keyframes glitch { 0% { text-shadow: 0 0 0 transparent; } 2% { text-shadow: 2px 0 var(--neon-red), -2px 0 var(--neon-blue); } 4% { text-shadow: 0 0 0 transparent; } }
-        
-        #terminal-log { position: fixed; bottom: 20px; left: 20px; font-family: 'Source Code Pro', monospace; font-size: 10px; color: #00ff41; opacity: 0.7; pointer-events: none; }
+        /* --- CORE VARIABLES --- */
+        :root {
+            --primary-neon: #00f3ff;
+            --secondary-neon: #bc13fe;
+            --alert-red: #ff003c;
+            --bg-black: #020202;
+            --panel-glass: rgba(15, 23, 42, 0.85);
+            --border-color: rgba(0, 243, 255, 0.3);
+        }
+
+        /* --- BODY & RESET --- */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-black);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        /* --- BACKGROUND FX --- */
+        #matrix-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        /* --- LOGIN CONTAINER --- */
+        .secure-panel {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 480px;
+            padding: 50px 40px;
+            background: var(--panel-glass);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.05), inset 0 0 20px rgba(0,0,0,0.8);
+            backdrop-filter: blur(15px);
+            border-radius: 8px;
+            transform-style: preserve-3d;
+            animation: panelEntrance 1s ease-out forwards;
+        }
+
+        @keyframes panelEntrance {
+            0% { transform: translateY(50px) rotateX(10deg); opacity: 0; }
+            100% { transform: translateY(0) rotateX(0deg); opacity: 1; }
+        }
+
+        /* --- DECORATIVE LINES --- */
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary-neon);
+            box-shadow: 0 0 15px var(--primary-neon);
+            animation: scanning 4s infinite linear;
+            opacity: 0.5;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        @keyframes scanning {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* --- TYPOGRAPHY --- */
+        .brand-title {
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+
+        .brand-subtitle {
+            text-align: center;
+            color: #94a3b8;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 4px;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+
+        /* --- FORMS --- */
+        .input-group {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .cyber-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #334155;
+            border-left: 4px solid #334155;
+            color: var(--primary-neon);
+            padding: 18px 20px 18px 50px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .cyber-input:focus {
+            border-color: var(--primary-neon);
+            border-left-color: var(--primary-neon);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
+            background: rgba(0, 243, 255, 0.02);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            transition: 0.3s;
+        }
+
+        .cyber-input:focus + .input-icon {
+            color: var(--primary-neon);
+        }
+
+        /* --- BUTTONS --- */
+        .action-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.1), transparent);
+            border: 1px solid var(--primary-neon);
+            color: var(--primary-neon);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-neon);
+            color: #000;
+            box-shadow: 0 0 30px var(--primary-neon);
+        }
+
+        .google-btn {
+            margin-top: 15px;
+            border-color: #ef4444;
+            color: #ef4444;
+            background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.1), transparent);
+        }
+
+        .google-btn:hover {
+            background: #ef4444;
+            color: white;
+            box-shadow: 0 0 30px #ef4444;
+        }
+
+        /* --- STATUS FOOTER --- */
+        .system-status {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #1e293b;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: #64748b;
+        }
+
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+
+        /* --- LOADING OVERLAY --- */
+        #boot-sequence {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 40px;
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--primary-neon);
+            font-size: 12px;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
-    <canvas id="matrix-canvas"></canvas>
-    <div id="terminal-log"><div class="log-line">> SYSTEM_BOOT_SEQUENCE_INITIATED...</div></div>
 
-    <div class="cyber-panel">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold glitch-text mb-2">SILVERX <span class="text-cyan-400">PRO</span></h1>
-            <p class="text-xs text-slate-500 uppercase tracking-[0.3em]">Institutional Access Terminal</p>
+    <canvas id="matrix-bg"></canvas>
+
+    <div id="boot-sequence">
+        <div id="boot-log"></div>
+    </div>
+
+    <div class="secure-panel" id="main-panel" style="opacity: 0;">
+        <div class="scan-line"></div>
+        
+        <div class="brand-section">
+            <h1 class="brand-title">SILVERX <span style="color:white">PRO</span></h1>
+            <p class="brand-subtitle">Authorized Personnel Only // v5.2.0</p>
         </div>
 
-        <div id="error-box" class="hidden mb-4 p-3 bg-red-900/20 border border-red-500/50 text-red-400 text-xs font-mono">
-            <i class="fas fa-exclamation-triangle mr-2"></i> <span id="error-msg">Error</span>
+        <div id="auth-message" class="hidden mb-6 p-4 border border-red-500 bg-red-900/20 text-red-400 text-xs font-mono text-center">
+            ACCESS DENIED: INVALID CREDENTIALS
         </div>
 
-        <form onsubmit="event.preventDefault(); authManager.login();">
-            <div class="cyber-input-group">
-                <input type="email" id="email" class="cyber-input" placeholder="ACCESS_ID (EMAIL)" required>
-                <i class="fas fa-fingerprint cyber-icon"></i>
+        <form onsubmit="event.preventDefault(); system.executeLogin();">
+            <div class="input-group">
+                <input type="email" id="email" class="cyber-input" placeholder="OPERATOR ID" required autocomplete="off">
+                <i class="fas fa-user-astronaut input-icon"></i>
             </div>
-            <div class="cyber-input-group">
-                <input type="password" id="password" class="cyber-input" placeholder="SECURITY_KEY" required>
-                <i class="fas fa-key cyber-icon"></i>
+
+            <div class="input-group">
+                <input type="password" id="password" class="cyber-input" placeholder="ACCESS CODE" required>
+                <i class="fas fa-shield-alt input-icon"></i>
             </div>
-            <button type="submit" id="login-btn" class="cyber-btn">
-                <span id="btn-text">INITIALIZE SESSION</span>
-                <i class="fas fa-circle-notch fa-spin hidden" id="btn-loader"></i>
+
+            <button type="submit" id="btn-login" class="action-btn">
+                <span>Initiate Handshake</span>
             </button>
         </form>
 
-        <button onclick="authManager.googleLogin()" class="cyber-btn google-btn"><i class="fab fa-google mr-2"></i> GOOGLE AUTH</button>
+        <button onclick="system.executeGoogleLogin()" class="action-btn google-btn">
+            <span><i class="fab fa-google"></i> Biometric Auth</span>
+        </button>
 
-        <div class="server-status">
-            <div><span class="status-dot active"></span> DATABASE: CONNECTED</div>
-            <div>LATENCY: <span id="latency-display">12ms</span></div>
+        <div class="system-status">
+            <div>
+                <span class="text-green-500 blink">●</span> SERVER: ONLINE
+            </div>
+            <div id="ip-display">
+                IP: DETECTING...
+            </div>
+            <div>
+                ENC: AES-256
+            </div>
         </div>
-        <div class="mt-4 text-[9px] text-center text-slate-600 font-mono">SECURE SERVER CONNECTION v5.2.1-alpha</div>
     </div>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyAyXzJ1UUdtWe96NjiQbVCqnWdIv8XakhA", authDomain: "silverxtrader.firebaseapp.com", projectId: "silverxtrader", storageBucket: "silverxtrader.firebasestorage.app", messagingSenderId: "46330013690", appId: "1:46330013690:web:c2aad241ad7abd49e0e643" };
+        // --- 1. FIREBASE CONFIGURATION (CRITICAL) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAyXzJ1UUdtWe96NjiQbVCqnWdIv8XakhA",
+            authDomain: "silverxtrader.firebaseapp.com",
+            projectId: "silverxtrader",
+            storageBucket: "silverxtrader.firebasestorage.app",
+            messagingSenderId: "46330013690",
+            appId: "1:46330013690:web:c2aad241ad7abd49e0e643"
+        };
 
-        class MatrixEffect {
+        // --- 2. MATRIX RAIN ENGINE ---
+        class MatrixEngine {
             constructor(canvasId) {
-                this.canvas = document.getElementById(canvasId); this.ctx = this.canvas.getContext('2d'); this.resize();
-                this.characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*'; this.fontSize = 14; this.columns = this.canvas.width / this.fontSize;
-                this.drops = []; this.initDrops(); window.addEventListener('resize', () => this.resize()); this.animate();
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.width = window.innerWidth;
+                this.height = window.innerHeight;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+                this.letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*';
+                this.letters = this.letters.split('');
+                this.fontSize = 14;
+                this.columns = this.width / this.fontSize;
+                this.drops = [];
+                
+                for(let x = 0; x < this.columns; x++) {
+                    this.drops[x] = 1;
+                }
+
+                window.addEventListener('resize', () => this.resize());
+                this.draw();
             }
-            resize() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; this.columns = this.canvas.width / 14; this.initDrops(); }
-            initDrops() { this.drops = []; for (let i = 0; i < this.columns; i++) this.drops[i] = 1; }
-            animate() {
-                this.ctx.fillStyle = 'rgba(5, 5, 5, 0.05)'; this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-                this.ctx.fillStyle = '#00f3ff'; this.ctx.font = this.fontSize + 'px monospace';
-                for (let i = 0; i < this.drops.length; i++) {
-                    const text = this.characters.charAt(Math.floor(Math.random() * this.characters.length));
+
+            resize() {
+                this.width = window.innerWidth;
+                this.height = window.innerHeight;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+                this.columns = this.width / this.fontSize;
+                this.drops = [];
+                for(let x = 0; x < this.columns; x++) this.drops[x] = 1;
+            }
+
+            draw() {
+                this.ctx.fillStyle = 'rgba(2, 2, 2, 0.05)';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+                this.ctx.fillStyle = '#00f3ff';
+                this.ctx.font = this.fontSize + 'px monospace';
+
+                for(let i = 0; i < this.drops.length; i++) {
+                    const text = this.letters[Math.floor(Math.random() * this.letters.length)];
                     this.ctx.fillText(text, i * this.fontSize, this.drops[i] * this.fontSize);
-                    if (this.drops[i] * this.fontSize > this.canvas.height && Math.random() > 0.975) this.drops[i] = 0;
+
+                    if(this.drops[i] * this.fontSize > this.height && Math.random() > 0.975) {
+                        this.drops[i] = 0;
+                    }
                     this.drops[i]++;
                 }
-                requestAnimationFrame(() => this.animate());
+                requestAnimationFrame(() => this.draw());
             }
         }
 
-        class AuthManager {
-            constructor() { firebase.initializeApp(firebaseConfig); this.auth = firebase.auth(); this.db = firebase.firestore(); this.initListener(); }
-            initListener() {
-                this.auth.onAuthStateChanged(user => {
-                    if (user) { logger.add("> USER_DETECTED: " + user.uid); this.verifyProfile(user); } 
-                    else { logger.add("> NO_ACTIVE_SESSION"); }
-                });
+        // --- 3. SYSTEM AUTHENTICATION CORE ---
+        class SystemAuth {
+            constructor() {
+                // Initialize Firebase
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                this.auth = firebase.auth();
+                this.db = firebase.firestore();
+                
+                // Elements
+                this.loginBtn = document.getElementById('btn-login');
+                this.msgBox = document.getElementById('auth-message');
+                
+                this.init();
             }
-            async verifyProfile(user) {
+
+            init() {
+                // Check Session
+                this.auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        console.log("User detected: " + user.uid);
+                        this.handleExistingUser(user);
+                    } else {
+                        console.log("No active session.");
+                    }
+                });
+
+                // Display Fake IP
+                this.generateFakeIP();
+            }
+
+            generateFakeIP() {
+                const ip = Math.floor(Math.random() * 255) + "." + Math.floor(Math.random() * 255) + ".1.42";
+                document.getElementById('ip-display').innerText = "IP: " + ip;
+            }
+
+            async handleExistingUser(user) {
+                // Validate Database Entry
                 const userRef = this.db.collection('users').doc(user.uid);
                 try {
                     const doc = await userRef.get();
                     if (!doc.exists) {
-                        logger.add("> CREATING_DB_ENTRY");
-                        await userRef.set({ email: user.email, uid: user.uid, points: 0, status: "Free", createdAt: firebase.firestore.FieldValue.serverTimestamp(), lastLogin: firebase.firestore.FieldValue.serverTimestamp() });
+                        // Create Profile if missing
+                        await userRef.set({
+                            email: user.email,
+                            uid: user.uid,
+                            points: 0,
+                            status: "Free",
+                            joined: new Date().toISOString(),
+                            lastLogin: new Date().toISOString()
+                        });
+                    } else {
+                        await userRef.update({
+                            lastLogin: new Date().toISOString()
+                        });
                     }
-                    setTimeout(() => window.location.href = "dashboard.html", 1000);
-                } catch (error) { ui.showError("DB_CONNECTION_FAILURE"); }
+                    window.location.href = "dashboard.html";
+                } catch (error) {
+                    this.showError("DATABASE SYNC ERROR: " + error.message);
+                }
             }
-            login() {
-                const email = document.getElementById('email').value; const pass = document.getElementById('password').value;
-                if (!email || !pass) return ui.showError("MISSING_CREDENTIALS");
-                ui.setLoading(true);
-                this.auth.signInWithEmailAndPassword(email, pass).catch(err => {
-                    if (err.code === 'auth/user-not-found') this.auth.createUserWithEmailAndPassword(email, pass);
-                    else { ui.setLoading(false); ui.showError(err.message); }
-                });
+
+            executeLogin() {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                if (!email || !password) {
+                    this.showError("MISSING CREDENTIALS DETECTED");
+                    return;
+                }
+
+                this.setLoading(true);
+
+                this.auth.signInWithEmailAndPassword(email, password)
+                    .then(() => {
+                        // Success handled by onAuthStateChanged
+                    })
+                    .catch((error) => {
+                        if (error.code === 'auth/user-not-found') {
+                            // Auto-Register Logic
+                            return this.auth.createUserWithEmailAndPassword(email, password);
+                        } else {
+                            throw error;
+                        }
+                    })
+                    .catch((error) => {
+                        this.setLoading(false);
+                        this.showError(error.code.toUpperCase().replace('AUTH/', ''));
+                    });
             }
-            googleLogin() { this.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err => ui.showError(err.message)); }
+
+            executeGoogleLogin() {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                this.auth.signInWithPopup(provider)
+                    .catch((error) => {
+                        this.showError("OAUTH FAILED: " + error.message);
+                    });
+            }
+
+            setLoading(isLoading) {
+                if(isLoading) {
+                    this.loginBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> ESTABLISHING CONNECTION...';
+                    this.loginBtn.disabled = true;
+                    this.loginBtn.style.opacity = "0.7";
+                } else {
+                    this.loginBtn.innerHTML = '<span>Initiate Handshake</span>';
+                    this.loginBtn.disabled = false;
+                    this.loginBtn.style.opacity = "1";
+                }
+            }
+
+            showError(msg) {
+                this.msgBox.innerText = "⚠ ERROR: " + msg;
+                this.msgBox.classList.remove('hidden');
+                
+                // Shake Animation
+                const panel = document.getElementById('main-panel');
+                panel.style.transform = "translateX(10px)";
+                setTimeout(() => panel.style.transform = "translateX(-10px)", 50);
+                setTimeout(() => panel.style.transform = "translateX(5px)", 100);
+                setTimeout(() => panel.style.transform = "translateX(0px)", 150);
+            }
         }
 
-        class UIManager {
-            constructor() { this.btnText = document.getElementById('btn-text'); this.loader = document.getElementById('btn-loader'); this.errorBox = document.getElementById('error-box'); this.errorMsg = document.getElementById('error-msg'); }
-            setLoading(l) { this.btnText.classList.toggle('hidden', l); this.loader.classList.toggle('hidden', !l); }
-            showError(m) { this.errorMsg.innerText = m; this.errorBox.classList.remove('hidden'); setTimeout(() => this.errorBox.classList.add('hidden'), 5000); }
-        }
-        class TerminalLogger {
-            constructor() { this.c = document.getElementById('terminal-log'); }
-            add(t) { const d = document.createElement('div'); d.className = 'log-line'; d.innerText = `${new Date().toLocaleTimeString()} ${t}`; this.c.appendChild(d); if(this.c.children.length>5) this.c.removeChild(this.c.firstChild); }
+        // --- 4. BOOT SEQUENCE SIMULATION ---
+        function runBootSequence() {
+            const logContainer = document.getElementById('boot-log');
+            const overlay = document.getElementById('boot-sequence');
+            const panel = document.getElementById('main-panel');
+            
+            const logs = [
+                "INITIALIZING KERNEL...",
+                "LOADING SECURITY MODULES...",
+                "CONNECTING TO FIREBASE NODES...",
+                "VERIFYING ENCRYPTION KEYS...",
+                "CHECKING INTEGRITY...",
+                "SYSTEM READY."
+            ];
+
+            let delay = 0;
+            logs.forEach((log, index) => {
+                setTimeout(() => {
+                    const p = document.createElement('div');
+                    p.innerText = `> ${log}`;
+                    logContainer.appendChild(p);
+                }, delay);
+                delay += Math.floor(Math.random() * 300) + 200;
+            });
+
+            setTimeout(() => {
+                overlay.style.transition = "opacity 0.5s";
+                overlay.style.opacity = "0";
+                setTimeout(() => {
+                    overlay.style.display = "none";
+                    panel.style.opacity = "1";
+                }, 500);
+            }, delay + 500);
         }
 
-        const matrix = new MatrixEffect('matrix-canvas');
-        const ui = new UIManager();
-        const logger = new TerminalLogger();
-        const authManager = new AuthManager();
-        setInterval(() => document.getElementById('latency-display').innerText = (Math.floor(Math.random() * 50) + 10) + "ms", 2000);
+        // --- INITIALIZATION ---
+        const matrix = new MatrixEngine('matrix-bg');
+        runBootSequence();
+        const system = new SystemAuth();
+
     </script>
 </body>
 </html>
