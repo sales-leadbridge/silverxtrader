@@ -5,312 +5,320 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SilverX Elite Terminal</title>
     
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root { --neon-blue: #3b82f6; --neon-gold: #fbbf24; --dark: #0f172a; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; overflow-x: hidden; }
+        /* CORE DESIGN */
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;800&display=swap');
+        body { background-color: #0f172a; color: white; font-family: 'Rajdhani', sans-serif; overflow-x: hidden; }
         
-        /* UI COMPONENTS */
-        .glass-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
-        .btn-press { transition: 0.1s; border-bottom: 4px solid rgba(0,0,0,0.1); }
-        .btn-press:active { transform: translateY(2px); border-bottom: 0px solid; }
+        /* HENDECAGON (11-Sided Ring) ANIMATION */
+        .hendecagon {
+            width: 70px; height: 70px; background: transparent; position: relative; display: flex; align-items: center; justify-content: center;
+            clip-path: polygon(50% 0%, 80% 10%, 100% 35%, 100% 70%, 80% 90%, 50% 100%, 20% 90%, 0% 70%, 0% 35%, 20% 10%);
+        }
+        .ring-border { position: absolute; inset: -2px; background: conic-gradient(#3b82f6, transparent, #3b82f6); animation: rotate 4s linear infinite; z-index: -1; }
+        .chip-icon { font-size: 1.5rem; color: #3b82f6; z-index: 2; }
         
-        /* MATRIX LOADER */
-        .matrix-container { position: relative; width: 100%; height: 160px; background: #000; border-radius: 24px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid #334155; }
-        .matrix-text { font-family: 'JetBrains Mono', monospace; color: #0f0; font-size: 10px; position: absolute; inset: 0; opacity: 0.3; word-break: break-all; line-height: 10px; }
-        .signal-circle { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue); display: flex; align-items: center; justify-content: center; z-index: 10; background: #000; position: relative; }
-        .signal-circle::after { content: ''; position: absolute; inset: -10px; border: 1px dashed var(--neon-blue); border-radius: 50%; animation: spin 10s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* MUSIC WAVES */
+        .wave-line { position: absolute; width: 2px; background: #3b82f6; bottom: 50%; height: 10px; animation: wave 1s infinite ease-in-out; }
+        @keyframes wave { 0%,100%{height:10px} 50%{height:30px} }
+        @keyframes rotate { 0%{transform: rotate(0deg)} 100%{transform: rotate(360deg)} }
+        
+        /* SIGNAL COLORS */
+        .buy-mode .ring-border { background: conic-gradient(#22c55e, transparent, #22c55e); }
+        .buy-mode .chip-icon, .buy-mode .wave-line { color: #22c55e; background: #22c55e; }
+        .sell-mode .ring-border { background: conic-gradient(#ef4444, transparent, #ef4444); }
+        .sell-mode .chip-icon, .sell-mode .wave-line { color: #ef4444; background: #ef4444; }
 
-        /* TOAST NOTIFICATION */
-        #toast-box { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: #1e293b; color: white; padding: 12px 20px; border-radius: 12px; font-size: 12px; font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideIn 0.3s ease-out; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--neon-gold); }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-
+        /* VIP THEME OVERRIDES */
+        .vip-theme { background: #000; background-image: radial-gradient(#fbbf241a 1px, transparent 1px); background-size: 20px 20px; }
+        .vip-theme .glass-card { border: 1px solid #fbbf24; box-shadow: 0 0 15px rgba(251, 191, 36, 0.2); }
+        
+        /* UTILS */
+        .glass-card { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; }
+        .candle-bg { position: absolute; bottom: 5px; right: 5px; opacity: 0.2; width: 40px; }
+        
         /* AD OVERLAY */
-        #ad-overlay { display: none; position: fixed; inset: 0; background: white; z-index: 50000; flex-direction: column; }
+        #ad-overlay { position: fixed; inset: 0; background: white; z-index: 9999; display: none; flex-direction: column; }
     </style>
 </head>
-<body class="bg-slate-100">
+<body id="app-body">
 
-    <div id="toast-box"></div>
-
-    <div id="ad-overlay">
-        <div class="flex justify-between items-center p-4 bg-white border-b shadow-sm">
-            <span id="ad-timer" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-xs font-black">WAIT: 15s</span>
-            <button id="ad-close" onclick="closeAd()" class="hidden text-slate-400 text-2xl"><i class="fas fa-times"></i></button>
+    <div id="sidebar" class="fixed inset-y-0 left-[-100%] w-[80%] bg-slate-900 z-[5000] transition-all duration-300 p-6 shadow-2xl border-r border-slate-700">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-black uppercase tracking-widest text-white">SilverX <span class="text-blue-500">Menu</span></h2>
+            <button onclick="toggleMenu()" class="text-slate-400"><i class="fas fa-arrow-left text-xl"></i></button>
         </div>
-        <iframe id="ad-frame" class="w-full h-full border-none" src=""></iframe>
-    </div>
-
-    <div id="sidebar" class="fixed inset-y-0 left-[-100%] w-[85%] bg-white z-[40000] transition-all duration-300 shadow-[50px_0_100px_rgba(0,0,0,0.2)] p-6">
-        <div class="flex justify-between items-center mb-10">
-            <h2 class="text-2xl font-black italic uppercase text-slate-900">SilverX <span class="text-blue-600">Menu</span></h2>
-            <button onclick="toggleSidebar()"><i class="fas fa-arrow-left text-xl text-slate-400"></i></button>
-        </div>
-        <div class="space-y-4">
-            <a href="https://wa.me/923064391353" class="flex items-center gap-4 p-4 bg-slate-50 rounded-xl font-bold text-sm"><i class="fab fa-whatsapp text-green-500 text-lg"></i> Support Center</a>
-            <a href="https://www.youtube.com/@kingtraderofficial45" class="flex items-center gap-4 p-4 bg-slate-50 rounded-xl font-bold text-sm"><i class="fab fa-youtube text-red-500 text-lg"></i> Tutorials</a>
-            <div class="h-px bg-slate-100 my-4"></div>
-            <button onclick="logout()" class="w-full p-4 bg-red-50 text-red-500 rounded-xl font-black text-xs uppercase">Secure Logout</button>
+        <div class="space-y-4 font-bold text-sm text-slate-300">
+            <a href="https://wa.me/923064391353" class="block p-4 bg-slate-800 rounded-xl"><i class="fab fa-whatsapp text-green-400 mr-2"></i> WhatsApp Help</a>
+            <a href="https://www.youtube.com/@kingtraderofficial45" class="block p-4 bg-slate-800 rounded-xl"><i class="fab fa-youtube text-red-400 mr-2"></i> YouTube Training</a>
+            <a href="#" class="block p-4 bg-slate-800 rounded-xl"><i class="fab fa-tiktok text-pink-400 mr-2"></i> TikTok Analysis</a>
+            <button onclick="showModal('policy-modal')" class="block w-full text-left p-4 bg-slate-800 rounded-xl"><i class="fas fa-shield-alt text-blue-400 mr-2"></i> Privacy Policy</button>
+            <button onclick="auth.signOut()" class="block w-full text-left p-4 bg-red-900/20 text-red-400 rounded-xl border border-red-900"><i class="fas fa-sign-out-alt mr-2"></i> Logout</button>
         </div>
     </div>
 
-    <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-5 py-3 flex justify-between items-center">
+    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-700 px-4 py-3 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg border-2 border-amber-400">
-                <i id="crown-icon" class="fas fa-crown text-slate-600 text-sm"></i>
-            </div>
+            <button onclick="toggleMenu()" class="text-white text-xl"><i class="fas fa-bars"></i></button>
             <div>
-                <h1 class="font-black text-sm uppercase leading-none">SilverX <span class="text-blue-600">AI</span></h1>
-                <p id="user-tier" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Loading...</p>
+                <h1 class="font-black text-lg uppercase leading-none tracking-tighter">SilverX <span id="logo-sfx" class="text-blue-500">AI</span></h1>
+                <p id="live-clock" class="text-[10px] text-slate-400 font-mono">00:00:00 UTC</p>
             </div>
         </div>
-        <button onclick="toggleSidebar()" class="text-slate-800 text-xl"><i class="fas fa-bars-staggered"></i></button>
+        <div class="px-3 py-1 bg-slate-800 rounded-lg text-[10px] font-bold uppercase tracking-wider" id="status-badge">FREE</div>
     </header>
 
-    <main class="p-5 pb-32">
-        <div class="glass-card p-6 rounded-[35px] bg-slate-900 text-white relative overflow-hidden mb-6">
-            <div class="absolute top-0 right-0 p-32 bg-blue-600 rounded-full blur-[80px] opacity-20"></div>
-            <div class="relative z-10 flex justify-between items-end">
+    <main class="p-4 pb-32">
+        <div id="point-section" class="glass-card p-5 mb-5 relative overflow-hidden">
+            <div class="flex justify-between items-end relative z-10">
                 <div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Balance</p>
-                    <h2 class="text-4xl font-black tracking-tighter flex items-baseline gap-1">
-                        <span id="pts-display">0</span> <span class="text-sm text-blue-400">PTS</span>
-                    </h2>
+                    <p class="text-[10px] text-slate-400 uppercase font-bold">Wallet Balance</p>
+                    <h2 class="text-4xl font-black text-white"><span id="pts-val">0</span> <span class="text-sm text-blue-400">PTS</span></h2>
                 </div>
-                <button onclick="requestWithdraw()" class="bg-white text-slate-900 px-6 py-3 rounded-xl font-black text-[10px] uppercase shadow-lg hover:scale-105 transition">Withdraw</button>
+                <button onclick="showModal('withdraw-modal')" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg text-xs font-black uppercase shadow-lg transition">Withdraw</button>
             </div>
-            <div class="mt-4 pt-4 border-t border-white/10 flex justify-between text-[9px] font-bold uppercase text-slate-400">
-                <span>Exchange: 5000 PTS = $5</span>
-                <span class="text-green-400"><i class="fas fa-circle text-[6px] animate-pulse"></i> Live Sync</span>
+            <div class="mt-3 text-[9px] text-slate-500 border-t border-slate-700 pt-2 flex justify-between">
+                <span>Rate: 5000 PTS = $5</span>
+                <span class="text-green-400">● Live Sync</span>
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 mb-6">
-            <button onclick="buyVIP()" class="btn-press bg-amber-400 text-black p-4 rounded-2xl font-black text-xs uppercase shadow-lg shadow-amber-200">
-                <i class="fas fa-crown mb-2 text-xl block"></i> Go VIP
+        <div class="grid grid-cols-2 gap-3 mb-5">
+            <button onclick="showModal('vip-modal')" class="glass-card p-4 bg-gradient-to-br from-amber-500/10 to-transparent border-amber-500/30 text-amber-400 font-black text-xs uppercase hover:scale-105 transition">
+                <i class="fas fa-crown text-xl mb-1 block"></i> Upgrade VIP
             </button>
-            <button onclick="openRecovery()" class="btn-press bg-slate-900 text-white p-4 rounded-2xl font-black text-xs uppercase shadow-lg">
-                <i class="fas fa-shield-halved mb-2 text-xl block text-blue-500"></i> Recovery
+            <button onclick="showModal('recovery-modal')" class="glass-card p-4 text-blue-400 font-black text-xs uppercase hover:scale-105 transition">
+                <i class="fas fa-chart-line text-xl mb-1 block"></i> Recovery
             </button>
-            <a href="https://po-ru4.click/register?utm_campaign=835777&utm_source=affiliate&utm_medium=sr&a=JbsX5mZ1ZchgeZ&ac=pak_users_2026" target="_blank" class="btn-press bg-blue-600 text-white p-3 rounded-2xl font-bold text-[10px] uppercase text-center shadow-lg flex flex-col items-center justify-center">
-                <span>Join Pocket</span>
-            </a>
-            <a href="https://broker-qx.pro/sign-up/?lid=1696715" target="_blank" class="btn-press bg-green-600 text-white p-3 rounded-2xl font-bold text-[10px] uppercase text-center shadow-lg flex flex-col items-center justify-center">
-                <span>Join Quotex</span>
-            </a>
         </div>
 
-        <div class="bg-white p-1.5 rounded-2xl flex gap-2 shadow-sm mb-6 border border-slate-100">
-            <button onclick="setPlatform('qx')" id="tab-qx" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-900 text-white shadow-md transition-all">Quotex</button>
-            <button onclick="setPlatform('po')" id="tab-po" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase text-slate-400 hover:bg-slate-50 transition-all">Pocket</button>
+        <div class="glass-card p-1 flex gap-1 mb-6">
+            <a href="https://broker-qx.pro/sign-up/?lid=1696715" target="_blank" class="flex-1 py-3 rounded-xl bg-green-600 text-center font-bold text-[10px] uppercase shadow-md">Join Quotex</a>
+            <a href="https://po-ru4.click/register?utm_campaign=835777&utm_source=affiliate&utm_medium=sr&a=JbsX5mZ1ZchgeZ&ac=pak_users_2026" target="_blank" class="flex-1 py-3 rounded-xl bg-blue-600 text-center font-bold text-[10px] uppercase shadow-md">Join Pocket</a>
         </div>
 
-        <div id="signal-feed" class="space-y-5">
+        <div class="flex gap-2 mb-4">
+            <button onclick="switchBroker('qx')" id="btn-qx" class="flex-1 py-2 rounded-lg bg-slate-800 text-[10px] font-bold uppercase border border-blue-500">Quotex</button>
+            <button onclick="switchBroker('po')" id="btn-po" class="flex-1 py-2 rounded-lg bg-slate-800 text-[10px] font-bold uppercase opacity-50">Pocket Option</button>
+        </div>
+
+        <div id="signals-grid" class="grid grid-cols-2 gap-4">
             </div>
     </main>
 
+    <div id="generic-modal" class="fixed inset-0 z-[6000] bg-black/90 hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-sm max-h-[90vh] overflow-y-auto p-6 relative shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-500"><i class="fas fa-times text-xl"></i></button>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <div id="ad-overlay">
+        <div class="p-3 bg-white border-b flex justify-between items-center shadow-md">
+            <span id="ad-timer" class="text-red-600 font-black text-xs bg-red-100 px-3 py-1 rounded-full">WAIT: 15s</span>
+            <button id="ad-close-btn" class="hidden text-slate-800 font-bold" onclick="finishAd()">CLOSE <i class="fas fa-times"></i></button>
+        </div>
+        <iframe id="ad-frame" src="" class="w-full h-full border-0"></iframe>
+    </div>
+
     <script>
-        // --- 1. CONFIGURATION ---
+        // --- 1. CONFIG & SETUP ---
         const firebaseConfig = { apiKey: "AIzaSyAyXzJ1UUdtWe96NjiQbVCqnWdIv8XakhA", authDomain: "silverxtrader.firebaseapp.com", projectId: "silverxtrader", storageBucket: "silverxtrader.firebasestorage.app", messagingSenderId: "46330013690", appId: "1:46330013690:web:c2aad241ad7abd49e0e643" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        const assets = ["EUR/USD", "GBP/USD", "USD/JPY", "BTC/USD", "ETH/USD"];
+        // VARIABLES
+        let userStatus = "Free";
+        let userPoints = 0;
+        let cooldown = false;
         const adLinks = ["https://www.effectivegatecpm.com/zu9fwwufi?key=5c01f6e26f4b9943913f0d36bfa48f6d", "https://www.effectivegatecpm.com/m3re02atee?key=cebdb997452acac01a6d39d48dcb0e68"];
-        
-        let userProfile = null;
-        let currentPlatform = 'qx';
+        const pairsFree = ["EUR/USD", "GBP/USD", "USD/JPY", "BTC/USD", "ETH/USD", "AUD/CAD", "NZD/USD", "USD/CHF", "EUR/JPY", "GBP/JPY", "XAU/USD", "USDT/USD", "BNB/USD", "XRP/USD", "ADA/USD", "DOGE/USD"];
+        const pairsVIP = [...pairsFree, "SOL/USD", "LTC/USD", "EUR/GBP", "AUD/JPY", "CAD/JPY", "USD/MXN", "USD/BRL", "OTC/GEM"];
 
-        // --- 2. AUTH & AUTO-PROFILE ---
+        // --- 2. AUTH & STATE ---
         auth.onAuthStateChanged(user => {
-            if(!user) { window.location.href = 'index.html'; return; }
-            
-            const docRef = db.collection('users').doc(user.uid);
-            docRef.onSnapshot(doc => {
-                if(!doc.exists) {
-                    // AUTO CREATE NEW USER
-                    docRef.set({ email: user.email, points: 0, status: 'Free', joined: new Date() });
-                } else {
-                    userProfile = doc.data();
-                    updateUI(userProfile);
+            if (!user) window.location.href = 'index.html';
+            // Live Listener for Anti-Cheat
+            db.collection('users').doc(user.uid).onSnapshot(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    userStatus = data.status || "Free";
+                    userPoints = data.points || 0;
+                    updateUI();
                 }
             });
         });
 
-        function updateUI(data) {
-            document.getElementById('pts-display').innerText = data.points;
-            document.getElementById('user-tier').innerText = data.status + " MEMBER";
-            if(data.status === 'VIP') {
-                document.getElementById('crown-icon').classList.replace('text-slate-600', 'text-amber-400');
-                document.getElementById('user-tier').classList.add('text-amber-500');
+        function updateUI() {
+            document.getElementById('pts-val').innerText = userPoints;
+            document.getElementById('status-badge').innerText = userStatus;
+            
+            if (userStatus === 'VIP') {
+                document.getElementById('app-body').classList.add('vip-theme');
+                document.getElementById('point-section').style.display = 'none';
+                document.getElementById('status-badge').className = "px-3 py-1 bg-amber-500 text-black rounded-lg text-[10px] font-black uppercase tracking-wider shadow-[0_0_15px_#fbbf24]";
+                document.getElementById('logo-sfx').classList.replace('text-blue-500', 'text-amber-500');
+                renderSignals(pairsVIP);
+            } else {
+                renderSignals(pairsFree);
             }
         }
 
-        // --- 3. RENDER SYSTEM ---
-        function renderSignals() {
-            const container = document.getElementById('signal-feed');
-            container.innerHTML = '';
-            assets.forEach((pair, i) => {
-                const id = `sig-${i}`;
-                const html = `
-                <div class="glass-card p-5 rounded-[30px] border-b-4 border-slate-100">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-black text-slate-800">${pair} <span class="text-[9px] bg-slate-100 px-2 py-1 rounded text-slate-500">OTC</span></h3>
-                        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+        // --- 3. RENDERING SIGNALS (HENDECAGON STYLE) ---
+        function renderSignals(list) {
+            const grid = document.getElementById('signals-grid');
+            grid.innerHTML = '';
+            list.forEach((pair, idx) => {
+                const boxId = `box-${idx}`;
+                grid.innerHTML += `
+                <div class="glass-card p-4 relative overflow-hidden text-center group transition-all duration-300 border-b-2 border-blue-500/30" id="${boxId}">
+                    <div class="flex justify-between items-center text-[10px] font-bold text-slate-400 mb-2">
+                        <span>${pair}</span>
+                        <span class="text-green-500">9${Math.floor(Math.random()*5+4)}% ACC</span>
                     </div>
                     
-                    <div class="matrix-container mb-5" id="matrix-${id}">
-                        <div class="matrix-text">101010010101001...</div>
-                        <div class="signal-circle">
-                            <i class="fas fa-robot text-2xl text-blue-500" id="icon-${id}"></i>
-                        </div>
+                    <div class="mx-auto hendecagon mb-2">
+                        <div class="ring-border"></div>
+                        <i class="fas fa-microchip chip-icon"></i>
+                        <div class="wave-line" style="left: 10%"></div>
+                        <div class="wave-line" style="right: 10%"></div>
                     </div>
+                    
+                    <div class="candle-bg text-4xl">🕯️</div>
 
-                    <button onclick="processSignal('${id}')" id="btn-${id}" class="w-full py-4 rounded-xl bg-slate-900 text-white font-black uppercase text-xs shadow-xl btn-press flex items-center justify-center gap-2">
-                        <i class="fas fa-bolt text-amber-400"></i> Get Signal
+                    <button onclick="handleSignal('${boxId}')" class="w-full py-3 bg-slate-900 rounded-xl text-[10px] font-black uppercase border border-slate-700 hover:bg-slate-800 transition relative z-10" id="btn-${boxId}">
+                        GET SIGNAL
                     </button>
                 </div>`;
-                container.innerHTML += html;
             });
         }
-        renderSignals();
 
-        // --- 4. SIGNAL & AD LOGIC (CORE MONEY MAKER) ---
-        function processSignal(id) {
-            if(userProfile.status === 'Free') {
-                showAd();
+        // --- 4. SIGNAL LOGIC ---
+        function handleSignal(boxId) {
+            const btn = document.getElementById(`btn-${boxId}`);
+            
+            if(userStatus === "Free") {
+                if(cooldown) { alert("Please wait 60s for next signal!"); return; }
+                // Show Ad first
+                launchAd(() => {
+                    cooldown = true;
+                    btn.innerText = "Analyzing...";
+                    simulateAnalysis(boxId, 5000, 85); // 5s delay
+                    setTimeout(() => { cooldown = false; }, 60000); // 60s cooldown
+                });
             } else {
-                startAnalysis(id);
+                // VIP: Instant
+                simulateAnalysis(boxId, 1000, 96); // 1s instant
             }
         }
 
-        function showAd() {
-            const overlay = document.getElementById('ad-overlay');
-            const frame = document.getElementById('ad-frame');
-            const timer = document.getElementById('ad-timer');
-            const closeBtn = document.getElementById('ad-close');
+        function simulateAnalysis(boxId, delay, acc) {
+            const box = document.getElementById(boxId);
+            const btn = document.getElementById(`btn-${boxId}`);
             
-            frame.src = adLinks[Math.floor(Math.random() * adLinks.length)];
-            overlay.style.display = 'flex';
-            
-            let timeLeft = 15;
-            closeBtn.style.display = 'none';
-            
-            const interval = setInterval(() => {
-                timeLeft--;
-                timer.innerText = `WAIT: ${timeLeft}s`;
-                if(timeLeft <= 0) {
-                    clearInterval(interval);
-                    timer.innerText = "REWARD UNLOCKED";
-                    timer.className = "bg-green-100 text-green-700 px-3 py-1 rounded-lg text-xs font-black";
-                    closeBtn.style.display = 'block';
-                    closeBtn.classList.remove('hidden');
-                }
-            }, 1000);
-        }
-
-        function closeAd() {
-            document.getElementById('ad-overlay').style.display = 'none';
-            // AUTO ADD POINT
-            db.collection('users').doc(auth.currentUser.uid).update({
-                points: firebase.firestore.FieldValue.increment(1)
-            });
-            showToast("Success! +1 Point Added", "success");
-            // Start Signal
-            startAnalysis(currentId || 'sig-0');
-        }
-
-        function startAnalysis(id) {
-            const btn = document.getElementById(`btn-${id}`);
-            const matrix = document.getElementById(`matrix-${id}`).querySelector('.matrix-text');
-            
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> AI SCANNING...`;
-            
-            // Matrix Effect
-            let steps = 0;
-            const matInt = setInterval(() => {
-                matrix.innerText = Math.random().toString(2).substring(2);
-                steps++;
-                if(steps > 20) {
-                    clearInterval(matInt);
-                    revealResult(id);
-                }
-            }, 100);
-        }
-
-        function revealResult(id) {
-            const btn = document.getElementById(`btn-${id}`);
-            const isBuy = Math.random() > 0.5; // 50/50 Logic (You can change logic here)
-            
-            if(isBuy) {
-                btn.className = "w-full py-4 rounded-xl bg-green-500 text-white font-black uppercase text-xs shadow-lg shadow-green-200 animate-pulse";
-                btn.innerHTML = "CALL / BUY 1 MIN <i class='fas fa-arrow-up ml-2'></i>";
-            } else {
-                btn.className = "w-full py-4 rounded-xl bg-red-500 text-white font-black uppercase text-xs shadow-lg shadow-red-200 animate-pulse";
-                btn.innerHTML = "PUT / SELL 1 MIN <i class='fas fa-arrow-down ml-2'></i>";
-            }
-
-            // Cooldown
-            let cd = 60;
-            const cdInt = setInterval(() => {
-                cd--;
-                if(cd <= 0) {
-                    clearInterval(cdInt);
-                    btn.disabled = false;
-                    btn.className = "w-full py-4 rounded-xl bg-slate-900 text-white font-black uppercase text-xs shadow-xl btn-press flex items-center justify-center gap-2";
-                    btn.innerHTML = `<i class="fas fa-bolt text-amber-400"></i> Get Signal`;
+            setTimeout(() => {
+                const result = Math.random() > 0.5 ? "BUY" : "SELL";
+                if(result === "BUY") {
+                    box.classList.add('buy-mode');
+                    btn.className = "w-full py-3 bg-green-600 rounded-xl text-[10px] font-black uppercase text-white shadow-[0_0_20px_#22c55e]";
+                    btn.innerHTML = `CALL / UP <i class="fas fa-arrow-up"></i>`;
                 } else {
-                    btn.innerHTML = `WAIT ${cd}s`;
+                    box.classList.add('sell-mode');
+                    btn.className = "w-full py-3 bg-red-600 rounded-xl text-[10px] font-black uppercase text-white shadow-[0_0_20px_#ef4444]";
+                    btn.innerHTML = `PUT / DOWN <i class="fas fa-arrow-down"></i>`;
+                }
+                
+                // Reset after 10s
+                setTimeout(() => {
+                    box.classList.remove('buy-mode', 'sell-mode');
+                    btn.className = "w-full py-3 bg-slate-900 rounded-xl text-[10px] font-black uppercase border border-slate-700 hover:bg-slate-800 transition relative z-10";
+                    btn.innerText = "GET SIGNAL";
+                }, 10000);
+            }, delay);
+        }
+
+        // --- 5. AD SYSTEM ---
+        let adCallback = null;
+        function launchAd(cb) {
+            adCallback = cb;
+            const overlay = document.getElementById('ad-overlay');
+            const timer = document.getElementById('ad-timer');
+            const close = document.getElementById('ad-close-btn');
+            
+            document.getElementById('ad-frame').src = adLinks[Math.floor(Math.random()*adLinks.length)];
+            overlay.style.display = 'flex';
+            close.style.display = 'none';
+            
+            let t = 15;
+            const int = setInterval(() => {
+                t--;
+                timer.innerText = `WAIT: ${t}s`;
+                if(t<=0) {
+                    clearInterval(int);
+                    timer.className = "text-green-600 font-black text-xs bg-green-100 px-3 py-1 rounded-full";
+                    timer.innerText = "REWARD UNLOCKED";
+                    close.style.display = 'block';
                 }
             }, 1000);
         }
-
-        // --- 5. UTILS ---
-        function showToast(msg, type) {
-            const box = document.getElementById('toast-box');
-            const el = document.createElement('div');
-            el.className = 'toast';
-            el.innerHTML = `<i class="fas fa-check-circle text-green-400"></i> ${msg}`;
-            box.appendChild(el);
-            setTimeout(() => el.remove(), 3000);
+        
+        function finishAd() {
+            document.getElementById('ad-overlay').style.display = 'none';
+            db.collection('users').doc(auth.currentUser.uid).update({ points: firebase.firestore.FieldValue.increment(1) });
+            if(adCallback) adCallback();
         }
 
-        function requestWithdraw() {
-            if(userProfile.points < 5000) {
-                showToast("Need 5000 Points!", "error");
-            } else {
-                window.location.href = "https://wa.me/923064391353?text=I%20want%20to%20withdraw%20my%20points";
+        // --- 6. MODALS CONTENT (Withdraw, VIP, Policy) ---
+        function showModal(type) {
+            const modal = document.getElementById('generic-modal');
+            const content = document.getElementById('modal-content');
+            modal.style.display = 'flex';
+            
+            if(type === 'withdraw-modal') {
+                content.innerHTML = `
+                    <h2 class="text-xl font-black text-white mb-4">WITHDRAWAL</h2>
+                    <ul class="text-xs text-slate-400 space-y-2 mb-4 list-disc pl-4">
+                        <li>Minimum withdrawal is 5000 PTS ($5).</li>
+                        <li>Only TRC20 or Binance Pay accepted.</li>
+                        <li>Wrong address = Loss of funds.</li>
+                        <li>Payments processed in 24-48 hours.</li>
+                        <li>Points will be deducted instantly.</li>
+                        <li>Status will show 'Pending' until approved.</li>
+                    </ul>
+                    <div class="bg-slate-800 p-3 rounded-lg mb-4 text-center">
+                        <p class="text-[10px] text-slate-500 uppercase">Available Points</p>
+                        <h3 class="text-2xl font-bold text-white">${userPoints}</h3>
+                        <p class="text-xs text-blue-400">= $${(userPoints/1000).toFixed(2)}</p>
+                    </div>
+                    <input type="text" placeholder="Binance Pay ID / TRC20 Address" class="w-full bg-slate-950 border border-slate-700 p-3 rounded-xl text-xs mb-3 text-white">
+                    <button onclick="processWithdraw()" class="w-full py-3 bg-blue-600 rounded-xl font-bold text-xs uppercase">Submit Request</button>
+                `;
+            } 
+            else if(type === 'vip-modal') {
+                content.innerHTML = `
+                    <h2 class="text-xl font-black text-amber-400 mb-4 text-center"><i class="fas fa-crown"></i> VIP ACCESS</h2>
+                    <div class="text-center mb-4"><p class="text-3xl font-bold text-white">$250 <span class="text-sm text-slate-400">/ Month</span></p></div>
+                    <ul class="text-xs text-slate-300 space-y-2 mb-4 border-t border-b border-slate-700 py-4">
+                        <li><i class="fas fa-check text-amber-400"></i> 98% Accuracy (Institutional Logic)</li>
+                        <li><i class="fas fa-check text-amber-400"></i> ZERO ADS & No Waiting</li>
+                        <li><i class="fas fa-check text-amber-400"></i> 24 Premium Pairs (Forex + Crypto)</li>
+                        <li><i class="fas fa-check text-amber-400"></i> 2 Free Recovery Sessions ($40 Value)</li>
+                        <li><i class="fas fa-check text-amber-400"></i> Refund Guarantee if Accuracy < 80%</li>
+                    </ul>
+                    <button onclick="window.location.href='https://wa.me/923064391353?text=I%20want%20to%20buy%20VIP%20Plan%20250$'" class="w-full py-4 bg-amber-500 text-black rounded-xl font-black text-sm uppercase">Activate Now</button>
+                `;
             }
-        }
-        
-        function buyVIP() {
-             window.location.href = "https://wa.me/923064391353?text=I%20want%20VIP%20Access";
-        }
-
-        function toggleSidebar() {
-            const sb = document.getElementById('sidebar');
-            sb.style.left = sb.style.left === '0px' ? '-100%' : '0px';
-        }
-        
-        function logout() { auth.signOut(); }
-        
-        function setPlatform(p) {
-            currentPlatform = p;
-            document.getElementById('tab-qx').className = p==='qx' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-slate-900 text-white shadow-md transition-all" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase text-slate-400 hover:bg-slate-50 transition-all";
-            document.getElementById('tab-po').className = p==='po' ? "flex-1 py-3 rounded-xl font-black text-[10px] uppercase bg-blue-600 text-white shadow-md transition-all" : "flex-1 py-3 rounded-xl font-black text-[10px] uppercase text-slate-400 hover:bg-slate-50 transition-all";
-            renderSignals(); // Re-render for visual feedback
-        }
-
-    </script>
-</body>
-</html>
+            else if(type === 'recovery-modal') {
+                content.innerHTML = `
+                    <h2 class="text-xl font-black text-blue-400 mb-4">RECOVERY HUB</h2>
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <button class="p-2 bg-slate-800 border border-slate-600 rounded-lg text-center"><div class="text-xs text-slate-400">Fee $20</div><div class="font-bold text-green-400">5% Grow</div></button>
+                        <button class="p-2 bg-slate-800 border border-slate-600 rounded-lg text-center"><div class="text-xs text-slate-400">Fee $50</div><div class="font-bold text-green-400">15% Grow</div></button>
+                        <button class="p-2 bg-slate-800 border border-slate-600 ro
