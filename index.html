@@ -2,298 +2,134 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS PRIME | Institutional Terminal</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal | Nexus Prime</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --bg-deep: #050505;
-            --glass-panel: rgba(20, 20, 20, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --accent-gold: #D4AF37;
-            --accent-blue: #3b82f6;
-            --neon-green: #00ff9d;
-            --danger-red: #ff3b30;
-        }
-
-        body {
-            background-color: var(--bg-deep);
-            background-image: radial-gradient(circle at 50% 0%, #1a1a2e 0%, #050505 60%);
-            color: #ffffff;
-            font-family: 'Space Grotesk', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-        }
-
-        /* --- GLASSMORPHISM CARD --- */
-        .glass-card {
-            background: var(--glass-panel);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .glass-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 15px 40px 0 rgba(0, 0, 0, 0.5);
-        }
-
-        /* --- GOLDEN GLOW TEXT --- */
-        .text-gold-gradient {
-            background: linear-gradient(135deg, #D4AF37 0%, #F2D06B 50%, #B68D1E 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
-        }
-
-        /* --- SIDEBAR --- */
-        .sidebar {
-            position: fixed;
-            left: 0; top: 0; bottom: 0;
-            width: 80px;
-            background: rgba(10, 10, 10, 0.8);
-            backdrop-filter: blur(15px);
-            border-right: 1px solid var(--glass-border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 30px 0;
-            z-index: 50;
-            transition: width 0.3s ease;
-        }
-
-        .sidebar:hover { width: 240px; align-items: flex-start; padding-left: 20px; }
-        .sidebar-icon { font-size: 20px; color: #666; transition: 0.3s; width: 40px; text-align: center; }
-        .sidebar-text { opacity: 0; white-space: nowrap; margin-left: 15px; font-weight: 500; transition: 0.2s; pointer-events: none; }
-        .sidebar:hover .sidebar-text { opacity: 1; pointer-events: auto; }
-        .nav-item { display: flex; align-items: center; width: 100%; padding: 15px 10px; cursor: pointer; border-left: 3px solid transparent; transition: 0.3s; margin-bottom: 5px; }
-        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.05); border-left-color: var(--accent-gold); }
-        .nav-item:hover .sidebar-icon, .nav-item.active .sidebar-icon { color: var(--accent-gold); text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
-
-        /* --- SIGNAL BUTTON --- */
-        .scan-btn {
-            background: linear-gradient(90deg, #1e1e1e, #252525);
-            border: 1px solid #333;
-            color: #fff;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-        .scan-btn::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 0%; height: 100%;
-            background: linear-gradient(90deg, var(--accent-gold), #F2D06B);
-            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: -1;
-        }
-        .scan-btn:hover::before { width: 100%; }
-        .scan-btn:hover { color: #000; font-weight: 800; border-color: var(--accent-gold); }
-
-        /* --- TICKER --- */
-        .market-ticker {
-            background: rgba(0,0,0,0.8);
-            border-bottom: 1px solid var(--glass-border);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            color: var(--neon-green);
-        }
-
-        /* --- MODAL --- */
-        .premium-modal {
-            background: rgba(15, 15, 20, 0.95);
-            backdrop-filter: blur(30px);
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-            animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes modalPop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        /* --- UTILS --- */
-        .shimmer { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: shimmer 2s infinite; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        :root { --gold: #D4AF37; --dark: #050505; }
+        body { background: var(--dark); color: white; font-family: sans-serif; overflow-x: hidden; }
+        .glass { background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.08); }
+        .gold-text { background: linear-gradient(45deg, #D4AF37, #F2D06B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        /* Loader */
+        .loader-bar { width: 100%; height: 4px; background: #222; position: relative; overflow: hidden; }
+        .loader-bar::after { content:''; position: absolute; top:0; left:0; height:100%; width: 50%; background: linear-gradient(90deg, transparent, var(--gold), transparent); animation: load 1.5s infinite; }
+        @keyframes load { 0% {left: -50%} 100% {left: 100%} }
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
     </style>
 </head>
-<body class="pl-[80px]">
+<body class="pb-10">
 
-    <div class="market-ticker fixed top-0 left-[80px] right-0 z-40 h-[30px] flex items-center overflow-hidden">
-        <div class="animate-[ticker_20s_linear_infinite] whitespace-nowrap pl-4">
-            <span class="mx-4">BTC/USD <span class="text-white">$98,402</span> ▲ 2.4%</span>
-            <span class="mx-4 text-blue-400">ETH/USD <span class="text-white">$3,890</span> ▲ 1.1%</span>
-            <span class="mx-4 text-red-400">XAU/USD <span class="text-white">$2,034</span> ▼ 0.5%</span>
-            <span class="mx-4">EUR/USD <span class="text-white">1.0845</span> ▲ 0.2%</span>
-            <span class="mx-4 text-purple-400">SOL/USD <span class="text-white">$145</span> ▲ 5.6%</span>
+    <nav class="glass sticky top-0 z-50 p-4 flex justify-between items-center border-b border-white/5">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-cube text-xl text-yellow-500"></i>
+            <h1 class="font-bold text-lg tracking-wider">NEXUS <span class="text-xs align-top text-yellow-500">PRO</span></h1>
         </div>
-    </div>
-
-    <nav class="sidebar">
-        <div class="mb-8 w-full flex justify-center"><i class="fas fa-cube text-2xl text-gold-gradient"></i></div>
-        
-        <div class="nav-item active">
-            <i class="fas fa-chart-line sidebar-icon"></i>
-            <span class="sidebar-text">Terminal</span>
-        </div>
-        <div class="nav-item" onclick="openModal('vip')">
-            <i class="fas fa-crown sidebar-icon" style="color: #D4AF37;"></i>
-            <span class="sidebar-text text-[#D4AF37]">VIP Access</span>
-        </div>
-        <div class="nav-item" onclick="openModal('withdraw')">
-            <i class="fas fa-wallet sidebar-icon"></i>
-            <span class="sidebar-text">Wallet</span>
-        </div>
-        <div class="nav-item" onclick="openModal('history')">
-            <i class="fas fa-history sidebar-icon"></i>
-            <span class="sidebar-text">History</span>
-        </div>
-        
-        <div class="mt-auto nav-item text-red-500">
-            <i class="fas fa-power-off sidebar-icon hover:text-red-500"></i>
-            <span class="sidebar-text">Logout</span>
+        <div class="flex gap-4 text-xs font-mono">
+            <div class="text-right">
+                <p class="text-gray-500">BALANCE</p>
+                <p class="font-bold text-lg text-yellow-500">$<span id="bal">0.00</span></p>
+            </div>
+            <div onclick="logout()" class="cursor-pointer bg-red-900/20 p-2 rounded hover:bg-red-900/40 text-red-500">
+                <i class="fas fa-power-off"></i>
+            </div>
         </div>
     </nav>
 
-    <main class="p-6 pt-12 max-w-[1600px] mx-auto min-h-screen">
+    <main class="max-w-4xl mx-auto p-4 space-y-6">
         
-        <header class="flex justify-between items-end mb-8">
-            <div>
-                <h1 class="text-4xl font-bold tracking-tight mb-1">NEXUS <span class="text-gold-gradient">PRIME</span></h1>
-                <p class="text-xs text-gray-400 font-mono tracking-widest uppercase">Institutional Trading Environment v9.0</p>
-            </div>
-            <div class="flex gap-4">
-                <div class="glass-card px-6 py-3 flex items-center gap-4">
-                    <div class="text-right">
-                        <p class="text-[10px] text-gray-400 uppercase font-bold">Available Points</p>
-                        <p class="text-2xl font-bold font-mono" id="points-display">0.00</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center border border-yellow-500/50">
-                        <i class="fas fa-coins text-yellow-500"></i>
-                    </div>
-                </div>
-                <div class="glass-card px-6 py-3 flex items-center gap-4">
-                    <div class="text-right">
-                        <p class="text-[10px] text-gray-400 uppercase font-bold">Account Tier</p>
-                        <p class="text-xl font-bold text-gray-300" id="status-display">STANDARD</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-full bg-gray-700/50 flex items-center justify-center">
-                        <i class="fas fa-user-shield text-gray-400"></i>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-12 gap-6 h-[calc(100vh-180px)]">
-            
-            <div class="col-span-12 lg:col-span-3 space-y-4 overflow-y-auto pr-2 custom-scroll">
-                <div class="glass-card p-4">
-                    <h3 class="text-xs font-bold text-gray-500 uppercase mb-4 flex justify-between">
-                        Market Watch <i class="fas fa-filter cursor-pointer"></i>
-                    </h3>
-                    <div id="pairs-list" class="space-y-3">
-                        <div class="shimmer h-20 rounded-xl w-full"></div>
-                        <div class="shimmer h-20 rounded-xl w-full"></div>
-                        <div class="shimmer h-20 rounded-xl w-full"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-span-12 lg:col-span-6 flex flex-col gap-6">
-                <div class="glass-card flex-1 p-1 relative overflow-hidden border-t-2 border-t-blue-500">
-                    <div class="absolute top-4 left-4 z-10 flex gap-2">
-                        <span class="bg-black/60 backdrop-blur text-[10px] font-bold px-2 py-1 rounded border border-white/10" id="active-pair">EURUSD</span>
-                        <span class="bg-green-500/20 text-green-400 text-[10px] font-bold px-2 py-1 rounded border border-green-500/30 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> LIVE</span>
-                    </div>
-                    <div id="tradingview-widget" class="w-full h-full rounded-xl opacity-90"></div>
-                </div>
-
-                <div class="glass-card p-4 grid grid-cols-2 gap-4">
-                    <div class="flex flex-col justify-center">
-                        <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">AI Confidence</p>
-                        <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                            <div id="confidence-bar" class="h-full bg-gradient-to-r from-blue-600 to-purple-600 w-0 transition-all duration-1000"></div>
-                        </div>
-                        <p class="text-right text-[10px] mt-1 text-blue-400 font-mono" id="confidence-text">WAITING FOR SCAN...</p>
-                    </div>
-                    <button id="main-scan-btn" onclick="startAnalysis()" class="scan-btn w-full py-4 rounded-xl text-sm uppercase tracking-wider font-bold shadow-lg">
-                        <i class="fas fa-radar"></i> Initiate Analysis
-                    </button>
-                </div>
-            </div>
-
-            <div class="col-span-12 lg:col-span-3 space-y-6">
-                <div class="glass-card p-4 h-1/2 overflow-hidden flex flex-col">
-                    <h3 class="text-xs font-bold text-gray-500 uppercase mb-3">Institutional Order Flow</h3>
-                    <div class="flex justify-between text-[9px] text-gray-600 mb-2 font-mono">
-                        <span>SIZE (M)</span>
-                        <span>PRICE</span>
-                        <span>TIME</span>
-                    </div>
-                    <div id="order-book" class="space-y-1 font-mono text-[11px] overflow-hidden relative">
-                        <div class="absolute bottom-0 w-full h-10 bg-gradient-to-t from-[#141414] to-transparent"></div>
-                    </div>
-                </div>
-
-                <div class="glass-card p-4 h-1/2">
-                    <h3 class="text-xs font-bold text-gray-500 uppercase mb-3">Direct Execution</h3>
-                    <div class="grid grid-cols-1 gap-3">
-                        <a href="https://broker-qx.pro/sign-up/?lid=855720" target="_blank" class="block p-3 rounded-xl bg-[#1a1a2e] border border-white/5 hover:border-blue-500/50 transition group">
-                            <div class="flex justify-between items-center">
-                                <span class="font-bold text-sm">Quotex</span>
-                                <i class="fas fa-external-link-alt text-gray-600 group-hover:text-blue-500"></i>
-                            </div>
-                            <p class="text-[10px] text-gray-500 mt-1">Low Latency • Direct API</p>
-                        </a>
-                        <a href="https://pocketoption.com/register" target="_blank" class="block p-3 rounded-xl bg-[#1a1a2e] border border-white/5 hover:border-blue-500/50 transition group">
-                            <div class="flex justify-between items-center">
-                                <span class="font-bold text-sm">Pocket Option</span>
-                                <i class="fas fa-external-link-alt text-gray-600 group-hover:text-blue-500"></i>
-                            </div>
-                            <p class="text-[10px] text-gray-500 mt-1">High Frequency • Secure</p>
-                        </a>
-                    </div>
-                </div>
+        <div class="glass rounded-xl p-1 h-[400px] relative">
+            <div id="tv_chart_container" class="w-full h-full rounded-lg opacity-90"></div>
+            <div class="absolute top-4 left-4 bg-black/60 px-2 py-1 rounded border border-white/10 text-[10px] font-bold">
+                <span class="text-green-500 blink">●</span> LIVE FEED
             </div>
         </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <div class="glass rounded-xl p-6">
+                <h2 class="text-xs font-bold text-gray-500 uppercase mb-4">AI Prediction Engine</h2>
+                
+                <div class="flex justify-between mb-4">
+                    <select id="pair-select" class="bg-black border border-white/10 p-2 rounded text-sm w-full mr-2 outline-none focus:border-yellow-500" onchange="changeChart()">
+                        <option value="EURUSD">EUR/USD (92%)</option>
+                        <option value="BTCUSD">BTC/USD (89%)</option>
+                        <option value="XAUUSD">GOLD (95%)</option>
+                    </select>
+                    <select class="bg-black border border-white/10 p-2 rounded text-sm outline-none">
+                        <option>1 Min</option>
+                        <option>5 Min</option>
+                    </select>
+                </div>
+
+                <div id="analysis-box" class="hidden mb-4">
+                    <div class="flex justify-between text-[10px] mb-1">
+                        <span>ANALYZING VOLATILITY...</span>
+                        <span id="pct">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
+                        <div id="prog-bar" class="h-full bg-yellow-500 w-0 transition-all duration-300"></div>
+                    </div>
+                </div>
+
+                <div id="result-box" class="hidden mb-4 text-center p-4 border rounded-lg bg-black/40">
+                    <p class="text-gray-400 text-xs">RECOMMENDED ACTION</p>
+                    <h3 id="signal-text" class="text-2xl font-black mt-1">BUY</h3>
+                    <p class="text-[10px] text-gray-500 mt-2">CONFIDENCE: <span class="text-white">96.4%</span></p>
+                </div>
+
+                <button onclick="startSignal()" id="scan-btn" class="w-full py-4 bg-gradient-to-r from-yellow-600 to-yellow-500 text-black font-bold rounded-lg shadow-lg hover:scale-[1.02] transition uppercase tracking-widest">
+                    <i class="fas fa-radar"></i> Analyze Market
+                </button>
+            </div>
+
+            <div class="glass rounded-xl p-6 relative overflow-hidden">
+                <h2 class="text-xs font-bold text-gray-500 uppercase mb-4">Institutional Order Flow</h2>
+                <div class="flex justify-between text-[9px] text-gray-600 mb-2">
+                    <span>TYPE</span>
+                    <span>PRICE</span>
+                    <span>VOLUME</span>
+                </div>
+                <div id="order-book" class="space-y-2 text-xs font-mono h-[160px] overflow-hidden">
+                    </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <a href="https://broker-qx.pro/sign-up/?lid=855720" target="_blank" class="glass p-4 rounded-xl flex items-center justify-center gap-2 hover:bg-white/5 transition cursor-pointer border-l-4 border-green-500">
+                <i class="fas fa-external-link-alt"></i> <span class="font-bold text-sm">QUOTEX</span>
+            </a>
+            <a href="https://pocketoption.com/register" target="_blank" class="glass p-4 rounded-xl flex items-center justify-center gap-2 hover:bg-white/5 transition cursor-pointer border-l-4 border-blue-500">
+                <i class="fas fa-external-link-alt"></i> <span class="font-bold text-sm">POCKET</span>
+            </a>
+        </div>
+
     </main>
 
-    <div id="modal-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center">
-        <div id="modal-content" class="premium-modal w-full max-w-md p-6 rounded-2xl relative m-4">
-            </div>
-    </div>
-
     <script>
-        // --- CONFIGURATION ---
-        const config = {
-            pairs: [
-                { s: "EURUSD", n: "Euro / US Dollar", p: "92%" },
-                { s: "GBPUSD", n: "Great Britain Pound", p: "89%" },
-                { s: "XAUUSD", n: "Gold Spot", p: "95%", vip: true },
-                { s: "BTCUSD", n: "Bitcoin", p: "88%" },
-                { s: "USDJPY", n: "US Dollar / Yen", p: "91%" }
-            ]
-        };
+        // INIT
+        window.onload = function() {
+            // Check Login
+            const user = localStorage.getItem('nexus_user');
+            if(!user) console.log("Guest Mode");
+            
+            // Load Chart
+            initTv('EURUSD');
+            
+            // Start Fake Data
+            startOrderBook();
+            simulateBalance();
+        }
 
-        // --- RENDER FUNCTIONS ---
-        window.onload = () => {
-            initChart("EURUSD");
-            renderPairs();
-            startFakeOrderBook();
-            simulateData();
-        };
-
-        function initChart(symbol) {
+        // CHART
+        let widget;
+        function initTv(pair) {
+            document.getElementById('tv_chart_container').innerHTML = "";
             new TradingView.widget({
                 "autosize": true,
-                "symbol": "FX:" + symbol,
+                "symbol": "FX:" + pair,
                 "interval": "1",
                 "timezone": "Etc/UTC",
                 "theme": "dark",
@@ -304,95 +140,97 @@
                 "hide_top_toolbar": true,
                 "hide_legend": true,
                 "save_image": false,
-                "backgroundColor": "rgba(0, 0, 0, 1)", 
-                "container_id": "tradingview-widget"
-            });
-            document.getElementById('active-pair').innerText = symbol;
-        }
-
-        function renderPairs() {
-            const list = document.getElementById('pairs-list');
-            list.innerHTML = "";
-            config.pairs.forEach(p => {
-                const el = document.createElement('div');
-                el.className = "p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 cursor-pointer transition flex justify-between items-center group";
-                el.onclick = () => { initChart(p.s); };
-                
-                el.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center font-bold text-xs text-gray-400 group-hover:text-white group-hover:bg-blue-600 transition">
-                            ${p.s.substring(0,2)}
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-sm text-gray-200">${p.s}</h4>
-                            <p class="text-[10px] text-gray-500">${p.n}</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-xs font-bold text-green-400">${p.p}</span>
-                        ${p.vip ? '<i class="fas fa-crown text-[10px] text-yellow-500 ml-1"></i>' : ''}
-                    </div>
-                `;
-                list.appendChild(el);
+                "container_id": "tv_chart_container"
             });
         }
 
-        function startFakeOrderBook() {
-            const book = document.getElementById('order-book');
+        function changeChart() {
+            const pair = document.getElementById('pair-select').value;
+            initTv(pair);
+        }
+
+        // SIGNAL LOGIC
+        function startSignal() {
+            const btn = document.getElementById('scan-btn');
+            const box = document.getElementById('analysis-box');
+            const res = document.getElementById('result-box');
+            const bar = document.getElementById('prog-bar');
+            const pct = document.getElementById('pct');
+
+            // Reset
+            res.classList.add('hidden');
+            btn.classList.add('hidden');
+            box.classList.remove('hidden');
+            bar.style.width = "0%";
+
+            // Animate
+            let width = 0;
+            const timer = setInterval(() => {
+                width += Math.random() * 5;
+                if(width > 100) width = 100;
+                bar.style.width = width + "%";
+                pct.innerText = Math.floor(width) + "%";
+
+                if(width === 100) {
+                    clearInterval(timer);
+                    showResult();
+                }
+            }, 100);
+        }
+
+        function showResult() {
+            const box = document.getElementById('analysis-box');
+            const res = document.getElementById('result-box');
+            const btn = document.getElementById('scan-btn');
+            const txt = document.getElementById('signal-text');
+
+            box.classList.add('hidden');
+            res.classList.remove('hidden');
+
+            const isBuy = Math.random() > 0.5;
+            txt.innerText = isBuy ? "CALL (BUY) ⬆" : "PUT (SELL) ⬇";
+            txt.className = isBuy ? "text-3xl font-black mt-1 text-green-500" : "text-3xl font-black mt-1 text-red-500";
+            res.style.borderColor = isBuy ? "#22c55e" : "#ef4444";
+
+            // Cooldown
+            setTimeout(() => {
+                btn.innerHTML = "<i class='fas fa-sync'></i> NEW SCAN";
+                btn.classList.remove('hidden');
+            }, 2000);
+        }
+
+        // FAKE ORDER BOOK
+        function startOrderBook() {
+            const container = document.getElementById('order-book');
             setInterval(() => {
                 const type = Math.random() > 0.5 ? 'BID' : 'ASK';
                 const color = type === 'BID' ? 'text-green-500' : 'text-red-500';
                 const div = document.createElement('div');
-                div.className = "flex justify-between border-b border-white/5 pb-1 animate-[modalPop_0.3s]";
+                div.className = "flex justify-between border-b border-white/5 pb-1 animate-pulse";
                 div.innerHTML = `
-                    <span class="text-gray-400">${(Math.random()*5).toFixed(2)}M</span>
-                    <span class="${color}">${(1.08 + Math.random()*0.01).toFixed(4)}</span>
-                    <span class="text-gray-500">${new Date().toLocaleTimeString().split(' ')[0]}</span>
+                    <span class="${color} font-bold">${type}</span>
+                    <span>${(1.08 + Math.random()*0.01).toFixed(5)}</span>
+                    <span class="text-gray-500">${(Math.random()*5).toFixed(2)}M</span>
                 `;
-                book.prepend(div);
-                if(book.children.length > 8) book.lastElementChild.remove();
+                container.prepend(div);
+                if(container.children.length > 6) container.lastElementChild.remove();
             }, 800);
         }
 
-        // --- INTERACTION LOGIC ---
-        function startAnalysis() {
-            const btn = document.getElementById('main-scan-btn');
-            const bar = document.getElementById('confidence-bar');
-            const txt = document.getElementById('confidence-text');
-
-            // 1. Loading State
-            btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> CONNECTING NEURAL NET...`;
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
-            txt.innerText = "CALCULATING PROBABILITY...";
-            bar.style.width = "40%";
-
-            setTimeout(() => {
-                bar.style.width = "85%";
-                txt.innerText = "CHECKING VOLATILITY...";
-            }, 1500);
-
-            setTimeout(() => {
-                // 2. Result
-                const isBuy = Math.random() > 0.5;
-                const result = isBuy ? "STRONG BUY ⬆" : "STRONG SELL ⬇";
-                const color = isBuy ? "#00ff9d" : "#ff3b30";
-                
-                btn.innerHTML = `<span style="color:${color}; font-size:1.2em">${result}</span>`;
-                btn.style.borderColor = color;
-                bar.style.width = "100%";
-                bar.style.background = isBuy ? "linear-gradient(90deg, #00ff9d, #00cc7a)" : "linear-gradient(90deg, #ff3b30, #cc2f26)";
-                txt.innerText = "CONFIDENCE: 94.2%";
-
-                // 3. Reset
-                setTimeout(() => {
-                    btn.innerHTML = `<i class="fas fa-radar"></i> Initiate Analysis`;
-                    btn.style.borderColor = "#333";
-                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    bar.style.width = "0%";
-                    bar.style.background = "linear-gradient(to right, #2563eb, #9333ea)";
-                    txt.innerText = "WAITING FOR SCAN...";
-                }, 10000);
-            }, 3000);
+        // FAKE BALANCE ANIMATION
+        function simulateBalance() {
+            let bal = 0.00;
+            const el = document.getElementById('bal');
+            const timer = setInterval(() => {
+                bal += 5.25;
+                el.innerText = bal.toFixed(2);
+                if(bal > 250) clearInterval(timer);
+            }, 50);
         }
 
- 
+        function logout() {
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
