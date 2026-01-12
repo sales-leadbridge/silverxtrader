@@ -2,118 +2,194 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Gateway | Nexus Prime</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SilverX Elite AI | Login</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
-        .matrix-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.2; }
-        .glass-panel {
-            background: rgba(10, 20, 30, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 255, 255, 0.2);
-            box-shadow: 0 0 40px rgba(0, 255, 255, 0.1);
-            position: relative; z-index: 10;
+        body { font-family: 'Outfit', sans-serif; background: #f3f4f6; overflow-x: hidden; color: #1f2937; }
+        
+        /* CANDLE ANIMATION BACKGROUND */
+        .candles-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.15; pointer-events: none; }
+        .candle { position: absolute; width: 8px; border-radius: 2px; animation: candleFloat 3s infinite ease-in-out; }
+        .c-green { background: #10b981; bottom: 50%; }
+        .c-red { background: #ef4444; top: 50%; }
+        @keyframes candleFloat { 0%, 100% { height: 10px; opacity: 0.5; } 50% { height: 60px; opacity: 1; } }
+
+        /* 3D GLASS STYLE */
+        .card-3d {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 8px 8px 16px #d1d5db, -8px -8px 16px #ffffff;
+            border: 1px solid rgba(255,255,255,0.8);
         }
-        .neon-input {
-            background: rgba(0,0,0,0.5); border: 1px solid #333; color: #0ff;
-            transition: 0.3s;
+        .btn-3d {
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            box-shadow: 5px 5px 10px #d1d5db, -5px -5px 10px #ffffff;
+            transition: all 0.2s;
+            border: 1px solid #f3f4f6;
         }
-        .neon-input:focus { border-color: #0ff; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); outline: none; }
-        .scan-line {
-            height: 2px; width: 100%; background: #0ff; box-shadow: 0 0 10px #0ff;
-            position: absolute; animation: scan 3s infinite linear; opacity: 0.5;
+        .btn-3d:active {
+            box-shadow: inset 5px 5px 10px #d1d5db, inset -5px -5px 10px #ffffff;
+            transform: scale(0.98);
         }
-        @keyframes scan { 0% {top:0%} 50%{top:100%} 100%{top:0%} }
+        
+        /* SIDEBAR */
+        .sidebar { position: fixed; left: -100%; top: 0; width: 280px; height: 100%; background: #fff; z-index: 50; transition: 0.3s; box-shadow: 10px 0 20px rgba(0,0,0,0.1); }
+        .sidebar.active { left: 0; }
     </style>
 </head>
-<body class="flex items-center justify-center h-screen text-white">
+<body class="bg-gray-100">
 
-    <canvas id="matrix" class="matrix-bg"></canvas>
+    <div class="candles-container" id="bg-candles"></div>
 
-    <div class="glass-panel p-8 rounded-xl w-full max-w-md mx-4 relative overflow-hidden">
-        <div class="scan-line"></div>
-        
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-black tracking-tighter mb-1">NEXUS <span class="text-cyan-400">PRIME</span></h1>
-            <p class="text-xs text-gray-400 tracking-[0.3em]">QUANTUM TRADING TERMINAL</p>
-        </div>
-
-        <form onsubmit="event.preventDefault(); handleLogin();" class="space-y-4">
-            <div>
-                <label class="text-[10px] uppercase font-bold text-gray-500 ml-1">Access ID</label>
-                <input type="text" id="email" class="neon-input w-full p-3 rounded text-sm font-mono" placeholder="USR-8842-X" required>
+    <div id="sidebar" class="sidebar p-6 flex flex-col justify-between">
+        <div>
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-black text-blue-600">MENU</h2>
+                <button onclick="toggleSidebar()" class="text-xl text-gray-500"><i class="fas fa-times"></i></button>
             </div>
-            <div>
-                <label class="text-[10px] uppercase font-bold text-gray-500 ml-1">Secure Key</label>
-                <input type="password" id="password" class="neon-input w-full p-3 rounded text-sm font-mono" placeholder="••••••••" required>
-            </div>
-            
-            <button id="btn-login" class="w-full bg-cyan-900/50 hover:bg-cyan-500 hover:text-black border border-cyan-500/50 text-cyan-400 font-bold py-3 rounded transition duration-300 flex justify-center items-center gap-2 group">
-                <i class="fas fa-fingerprint group-hover:scale-110 transition"></i> AUTHENTICATE
-            </button>
-        </form>
-
-        <div id="loader" class="hidden mt-4 text-center">
-            <p class="text-xs text-cyan-400 animate-pulse">ESTABLISHING SECURE CONNECTION...</p>
-            <div class="w-full bg-gray-900 h-1 mt-2 rounded overflow-hidden">
-                <div class="h-full bg-cyan-400 animate-[width_2s_ease-out] w-0" style="transition: width 2s;"></div>
+            <div class="space-y-4">
+                <a href="https://wa.me/923064391353" class="btn-3d flex items-center p-4 rounded-xl font-bold text-gray-700">
+                    <i class="fab fa-whatsapp text-green-500 text-xl mr-3"></i> Help Center
+                </a>
+                <a href="https://www.youtube.com/@kingtraderofficial45" class="btn-3d flex items-center p-4 rounded-xl font-bold text-gray-700">
+                    <i class="fab fa-youtube text-red-500 text-xl mr-3"></i> YouTube
+                </a>
+                <a href="https://www.tiktok.com/@kingtraderofficail" class="btn-3d flex items-center p-4 rounded-xl font-bold text-gray-700">
+                    <i class="fab fa-tiktok text-black text-xl mr-3"></i> TikTok Bot
+                </a>
             </div>
         </div>
-        
-        <div class="mt-6 border-t border-gray-800 pt-4 flex justify-between text-[10px] text-gray-500">
-            <span>SERVER: <span class="text-green-500">ONLINE</span></span>
-            <span>LATENCY: 12ms</span>
-        </div>
+        <p class="text-xs text-center text-gray-400 font-bold">Version 5.0 (2026)</p>
     </div>
 
+    <div class="flex justify-between items-center p-5 sticky top-0 bg-gray-100/90 backdrop-blur z-40">
+        <button onclick="toggleSidebar()" class="btn-3d w-10 h-10 rounded-full flex items-center justify-center text-blue-600">
+            <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="font-black text-xl tracking-tighter">SILVERX <span class="text-blue-600">AI</span></h1>
+        <div class="w-10"></div>
+    </div>
+
+    <main class="p-5 max-w-md mx-auto pb-20">
+        
+        <div class="card-3d p-6 mb-8 text-center relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-2 opacity-10"><i class="fas fa-chart-line text-8xl"></i></div>
+            <h2 class="text-3xl font-black text-gray-800 mb-2">SUPREME BOT</h2>
+            <p class="text-sm font-bold text-gray-500 mb-6">16 PAIRS | AI LOGIC | 95% ACCURACY</p>
+            
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-blue-50 p-2 rounded-lg border border-blue-100">
+                    <span class="block text-xs font-bold text-blue-400">FOREX</span>
+                    <span class="font-black text-gray-700">12 PAIRS</span>
+                </div>
+                <div class="bg-orange-50 p-2 rounded-lg border border-orange-100">
+                    <span class="block text-xs font-bold text-orange-400">CRYPTO</span>
+                    <span class="font-black text-gray-700">6 PAIRS</span>
+                </div>
+            </div>
+            
+            <button onclick="document.getElementById('auth-form').scrollIntoView({behavior:'smooth'})" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black shadow-lg shadow-blue-300 transform active:scale-95 transition">
+                GET STARTED NOW
+            </button>
+        </div>
+
+        <div class="mb-8">
+            <h3 class="font-black text-lg mb-4 flex items-center gap-2"><i class="fas fa-fire text-orange-500"></i> LIVE CALL PLANS</h3>
+            <div class="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                <div class="min-w-[140px] card-3d p-4 text-center border-b-4 border-blue-500">
+                    <h4 class="font-black text-2xl text-gray-800">$10</h4>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase">1 Day Plan</p>
+                    <p class="text-xs font-bold text-green-500 mt-1">High Risk</p>
+                </div>
+                <div class="min-w-[140px] card-3d p-4 text-center border-b-4 border-purple-500">
+                    <h4 class="font-black text-2xl text-gray-800">$20</h4>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase">1 Day Plan</p>
+                    <p class="text-xs font-bold text-green-500 mt-1">Med Risk</p>
+                </div>
+                <div class="min-w-[140px] card-3d p-4 text-center border-b-4 border-orange-500">
+                    <h4 class="font-black text-2xl text-gray-800">$35</h4>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase">1 Day Plan</p>
+                    <p class="text-xs font-bold text-green-500 mt-1">Safe Mode</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="auth-form" class="card-3d p-6 mb-8">
+            <h3 class="text-center font-black text-xl mb-6">MEMBER LOGIN</h3>
+            <input type="email" id="email" placeholder="Email Address" class="w-full p-4 bg-gray-50 rounded-xl mb-3 outline-none font-bold text-sm border focus:border-blue-500 transition">
+            <input type="password" id="pass" placeholder="Password" class="w-full p-4 bg-gray-50 rounded-xl mb-6 outline-none font-bold text-sm border focus:border-blue-500 transition">
+            <div class="flex gap-3">
+                <button onclick="handleLogin()" class="flex-1 bg-gray-800 text-white py-3 rounded-xl font-bold text-sm">LOGIN</button>
+                <button onclick="handleSignup()" class="flex-1 border-2 border-gray-800 text-gray-800 py-3 rounded-xl font-bold text-sm">SIGNUP</button>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h3 class="font-black text-lg mb-4 text-center">PRIVACY & TERMS</h3>
+            <div id="policy-list" class="space-y-3 text-[10px] text-gray-500 font-bold text-justify leading-relaxed">
+                </div>
+        </div>
+
+    </main>
+
     <script>
-        // 1. Matrix Effect
-        const canvas = document.getElementById('matrix');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-        const fontSize = 14; 
-        const columns = canvas.width/fontSize;
-        const drops = Array(Math.floor(columns)).fill(1);
+        // CONFIG
+        const firebaseConfig = {
+             apiKey: "AIzaSyAyXzJ1UUdtWe96NjiQbVCqnWdIv8XakhA",
+             authDomain: "silverxtrader.firebaseapp.com",
+             projectId: "silverxtrader",
+             storageBucket: "silverxtrader.firebasestorage.app",
+             messagingSenderId: "46330013690",
+             appId: "1:46330013690:web:c2aad241ad7abd49e0e643"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
 
-        function drawMatrix() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#0F0'; ctx.font = fontSize + 'px monospace';
-            for(let i=0; i<drops.length; i++) {
-                const text = chars[Math.floor(Math.random()*chars.length)];
-                ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-                if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            }
+        // 12 POLICIES
+        const policies = [
+            "1. Trading involves substantial risk. SilverX AI signals are based on market logic but do not guarantee 100% profit. You are responsible for your own capital.",
+            "2. Withdrawals are processed manually to ensure security. Requests are verified within 1-12 hours. Minimum withdrawal threshold is 5000 Points.",
+            "3. Deposits for VIP or Investment Plans must be verified via Transaction ID (TID). Fake TIDs will lead to permanent account suspension.",
+            "4. The 15-second ad system is mandatory for Free users to maintain server costs. VIP users enjoy an ad-free experience with faster signals.",
+            "5. We respect your privacy. Your email and trading data are encrypted and never shared with third-party brokers or agencies.",
+            "6. Use of VPNs, bots, or multiple accounts to exploit the Reward/Points system is strictly prohibited and will result in a ban.",
+            "7. Live Call Plans ($10, $20, $35) are valid for 1 Day only. They are not monthly subscriptions. Renewal is required for the next session.",
+            "8. The $100 VIP Plan is valid for 30 Days and includes ad-free access, 99% accuracy logic, and priority 24/7 support.",
+            "9. Market volatility (News events) can affect AI accuracy. We recommend avoiding trading during High-Impact news releases.",
+            "10. Refunds are only applicable if the service is down for >48 hours. No refunds are provided for trading losses incurred.",
+            "11. Points conversion rate is fixed: 5000 Points = $5 USD. Payments are sent via USDT (TRC20) or Binance Pay only.",
+            "12. By using this platform, you acknowledge that SilverX AI is an analysis tool, not a financial advisor. Trade wisely."
+        ];
+        document.getElementById('policy-list').innerHTML = policies.map(p => `<div class="bg-white p-3 rounded-lg shadow-sm border-l-4 border-blue-500">${p}</div>`).join('');
+
+        // ANIMATION LOGIC
+        const cContainer = document.getElementById('bg-candles');
+        for(let i=0; i<15; i++) {
+            let d = document.createElement('div');
+            d.className = `candle ${Math.random()>0.5 ? 'c-green' : 'c-red'}`;
+            d.style.left = Math.random()*100 + '%';
+            d.style.animationDuration = (2 + Math.random()*3) + 's';
+            cContainer.appendChild(d);
         }
-        setInterval(drawMatrix, 50);
 
-        // 2. Login Logic
+        // AUTH
         function handleLogin() {
-            const btn = document.getElementById('btn-login');
-            const loader = document.getElementById('loader');
-            const email = document.getElementById('email').value;
-            
-            // UI Feedback
-            btn.classList.add('hidden');
-            loader.classList.remove('hidden');
-            
-            // Fake Delay to look real
-            setTimeout(() => {
-                document.querySelector('#loader div div').style.width = "100%";
-            }, 100);
-
-            setTimeout(() => {
-                // Save fake session
-                localStorage.setItem('nexus_user', email);
-                localStorage.setItem('nexus_balance', '0.00');
-                localStorage.setItem('nexus_status', 'Standard');
-                window.location.href = "dashboard.html"; // Redirect
-            }, 2500);
+            const e = document.getElementById('email').value, p = document.getElementById('pass').value;
+            if(!e || !p) return alert("Enter details");
+            auth.signInWithEmailAndPassword(e, p).then(() => window.location.href = "dashboard.html").catch(e => alert(e.message));
         }
+        function handleSignup() {
+            const e = document.getElementById('email').value, p = document.getElementById('pass').value;
+            if(!e || !p) return alert("Enter details");
+            auth.createUserWithEmailAndPassword(e, p).then(() => alert("Account Created! Login Now.")).catch(e => alert(e.message));
+        }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
     </script>
 </body>
 </html>
