@@ -3,233 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal | Nexus Prime</title>
+    <title>Secure Gateway | Nexus Prime</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root { --gold: #D4AF37; --dark: #050505; }
-        body { background: var(--dark); color: white; font-family: sans-serif; overflow-x: hidden; }
-        .glass { background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.08); }
-        .gold-text { background: linear-gradient(45deg, #D4AF37, #F2D06B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        /* Loader */
-        .loader-bar { width: 100%; height: 4px; background: #222; position: relative; overflow: hidden; }
-        .loader-bar::after { content:''; position: absolute; top:0; left:0; height:100%; width: 50%; background: linear-gradient(90deg, transparent, var(--gold), transparent); animation: load 1.5s infinite; }
-        @keyframes load { 0% {left: -50%} 100% {left: 100%} }
-        .blink { animation: blinker 1s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
+        body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+        .matrix-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.2; }
+        .glass-panel {
+            background: rgba(10, 20, 30, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.1);
+            position: relative; z-index: 10;
+        }
+        .neon-input {
+            background: rgba(0,0,0,0.5); border: 1px solid #333; color: #0ff;
+            transition: 0.3s;
+        }
+        .neon-input:focus { border-color: #0ff; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); outline: none; }
+        .scan-line {
+            height: 2px; width: 100%; background: #0ff; box-shadow: 0 0 10px #0ff;
+            position: absolute; animation: scan 3s infinite linear; opacity: 0.5;
+        }
+        @keyframes scan { 0% {top:0%} 50%{top:100%} 100%{top:0%} }
     </style>
 </head>
-<body class="pb-10">
+<body class="flex items-center justify-center h-screen text-white">
 
-    <nav class="glass sticky top-0 z-50 p-4 flex justify-between items-center border-b border-white/5">
-        <div class="flex items-center gap-3">
-            <i class="fas fa-cube text-xl text-yellow-500"></i>
-            <h1 class="font-bold text-lg tracking-wider">NEXUS <span class="text-xs align-top text-yellow-500">PRO</span></h1>
-        </div>
-        <div class="flex gap-4 text-xs font-mono">
-            <div class="text-right">
-                <p class="text-gray-500">BALANCE</p>
-                <p class="font-bold text-lg text-yellow-500">$<span id="bal">0.00</span></p>
-            </div>
-            <div onclick="logout()" class="cursor-pointer bg-red-900/20 p-2 rounded hover:bg-red-900/40 text-red-500">
-                <i class="fas fa-power-off"></i>
-            </div>
-        </div>
-    </nav>
+    <canvas id="matrix" class="matrix-bg"></canvas>
 
-    <main class="max-w-4xl mx-auto p-4 space-y-6">
+    <div class="glass-panel p-8 rounded-xl w-full max-w-md mx-4 relative overflow-hidden">
+        <div class="scan-line"></div>
         
-        <div class="glass rounded-xl p-1 h-[400px] relative">
-            <div id="tv_chart_container" class="w-full h-full rounded-lg opacity-90"></div>
-            <div class="absolute top-4 left-4 bg-black/60 px-2 py-1 rounded border border-white/10 text-[10px] font-bold">
-                <span class="text-green-500 blink">●</span> LIVE FEED
-            </div>
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-black tracking-tighter mb-1">NEXUS <span class="text-cyan-400">PRIME</span></h1>
+            <p class="text-xs text-gray-400 tracking-[0.3em]">QUANTUM TRADING TERMINAL</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onsubmit="event.preventDefault(); handleLogin();" class="space-y-4">
+            <div>
+                <label class="text-[10px] uppercase font-bold text-gray-500 ml-1">Access ID</label>
+                <input type="text" id="email" class="neon-input w-full p-3 rounded text-sm font-mono" placeholder="USR-8842-X" required>
+            </div>
+            <div>
+                <label class="text-[10px] uppercase font-bold text-gray-500 ml-1">Secure Key</label>
+                <input type="password" id="password" class="neon-input w-full p-3 rounded text-sm font-mono" placeholder="••••••••" required>
+            </div>
             
-            <div class="glass rounded-xl p-6">
-                <h2 class="text-xs font-bold text-gray-500 uppercase mb-4">AI Prediction Engine</h2>
-                
-                <div class="flex justify-between mb-4">
-                    <select id="pair-select" class="bg-black border border-white/10 p-2 rounded text-sm w-full mr-2 outline-none focus:border-yellow-500" onchange="changeChart()">
-                        <option value="EURUSD">EUR/USD (92%)</option>
-                        <option value="BTCUSD">BTC/USD (89%)</option>
-                        <option value="XAUUSD">GOLD (95%)</option>
-                    </select>
-                    <select class="bg-black border border-white/10 p-2 rounded text-sm outline-none">
-                        <option>1 Min</option>
-                        <option>5 Min</option>
-                    </select>
-                </div>
+            <button id="btn-login" class="w-full bg-cyan-900/50 hover:bg-cyan-500 hover:text-black border border-cyan-500/50 text-cyan-400 font-bold py-3 rounded transition duration-300 flex justify-center items-center gap-2 group">
+                <i class="fas fa-fingerprint group-hover:scale-110 transition"></i> AUTHENTICATE
+            </button>
+        </form>
 
-                <div id="analysis-box" class="hidden mb-4">
-                    <div class="flex justify-between text-[10px] mb-1">
-                        <span>ANALYZING VOLATILITY...</span>
-                        <span id="pct">0%</span>
-                    </div>
-                    <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                        <div id="prog-bar" class="h-full bg-yellow-500 w-0 transition-all duration-300"></div>
-                    </div>
-                </div>
-
-                <div id="result-box" class="hidden mb-4 text-center p-4 border rounded-lg bg-black/40">
-                    <p class="text-gray-400 text-xs">RECOMMENDED ACTION</p>
-                    <h3 id="signal-text" class="text-2xl font-black mt-1">BUY</h3>
-                    <p class="text-[10px] text-gray-500 mt-2">CONFIDENCE: <span class="text-white">96.4%</span></p>
-                </div>
-
-                <button onclick="startSignal()" id="scan-btn" class="w-full py-4 bg-gradient-to-r from-yellow-600 to-yellow-500 text-black font-bold rounded-lg shadow-lg hover:scale-[1.02] transition uppercase tracking-widest">
-                    <i class="fas fa-radar"></i> Analyze Market
-                </button>
-            </div>
-
-            <div class="glass rounded-xl p-6 relative overflow-hidden">
-                <h2 class="text-xs font-bold text-gray-500 uppercase mb-4">Institutional Order Flow</h2>
-                <div class="flex justify-between text-[9px] text-gray-600 mb-2">
-                    <span>TYPE</span>
-                    <span>PRICE</span>
-                    <span>VOLUME</span>
-                </div>
-                <div id="order-book" class="space-y-2 text-xs font-mono h-[160px] overflow-hidden">
-                    </div>
+        <div id="loader" class="hidden mt-4 text-center">
+            <p class="text-xs text-cyan-400 animate-pulse">ESTABLISHING SECURE CONNECTION...</p>
+            <div class="w-full bg-gray-900 h-1 mt-2 rounded overflow-hidden">
+                <div class="h-full bg-cyan-400 animate-[width_2s_ease-out] w-0" style="transition: width 2s;"></div>
             </div>
         </div>
-
-        <div class="grid grid-cols-2 gap-4">
-            <a href="https://broker-qx.pro/sign-up/?lid=855720" target="_blank" class="glass p-4 rounded-xl flex items-center justify-center gap-2 hover:bg-white/5 transition cursor-pointer border-l-4 border-green-500">
-                <i class="fas fa-external-link-alt"></i> <span class="font-bold text-sm">QUOTEX</span>
-            </a>
-            <a href="https://pocketoption.com/register" target="_blank" class="glass p-4 rounded-xl flex items-center justify-center gap-2 hover:bg-white/5 transition cursor-pointer border-l-4 border-blue-500">
-                <i class="fas fa-external-link-alt"></i> <span class="font-bold text-sm">POCKET</span>
-            </a>
+        
+        <div class="mt-6 border-t border-gray-800 pt-4 flex justify-between text-[10px] text-gray-500">
+            <span>SERVER: <span class="text-green-500">ONLINE</span></span>
+            <span>LATENCY: 12ms</span>
         </div>
-
-    </main>
+    </div>
 
     <script>
-        // INIT
-        window.onload = function() {
-            // Check Login
-            const user = localStorage.getItem('nexus_user');
-            if(!user) console.log("Guest Mode");
+        // 1. Matrix Effect
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        const fontSize = 14; 
+        const columns = canvas.width/fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0F0'; ctx.font = fontSize + 'px monospace';
+            for(let i=0; i<drops.length; i++) {
+                const text = chars[Math.floor(Math.random()*chars.length)];
+                ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+                if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 50);
+
+        // 2. Login Logic
+        function handleLogin() {
+            const btn = document.getElementById('btn-login');
+            const loader = document.getElementById('loader');
+            const email = document.getElementById('email').value;
             
-            // Load Chart
-            initTv('EURUSD');
-            
-            // Start Fake Data
-            startOrderBook();
-            simulateBalance();
-        }
-
-        // CHART
-        let widget;
-        function initTv(pair) {
-            document.getElementById('tv_chart_container').innerHTML = "";
-            new TradingView.widget({
-                "autosize": true,
-                "symbol": "FX:" + pair,
-                "interval": "1",
-                "timezone": "Etc/UTC",
-                "theme": "dark",
-                "style": "1",
-                "locale": "en",
-                "toolbar_bg": "#f1f3f6",
-                "enable_publishing": false,
-                "hide_top_toolbar": true,
-                "hide_legend": true,
-                "save_image": false,
-                "container_id": "tv_chart_container"
-            });
-        }
-
-        function changeChart() {
-            const pair = document.getElementById('pair-select').value;
-            initTv(pair);
-        }
-
-        // SIGNAL LOGIC
-        function startSignal() {
-            const btn = document.getElementById('scan-btn');
-            const box = document.getElementById('analysis-box');
-            const res = document.getElementById('result-box');
-            const bar = document.getElementById('prog-bar');
-            const pct = document.getElementById('pct');
-
-            // Reset
-            res.classList.add('hidden');
+            // UI Feedback
             btn.classList.add('hidden');
-            box.classList.remove('hidden');
-            bar.style.width = "0%";
-
-            // Animate
-            let width = 0;
-            const timer = setInterval(() => {
-                width += Math.random() * 5;
-                if(width > 100) width = 100;
-                bar.style.width = width + "%";
-                pct.innerText = Math.floor(width) + "%";
-
-                if(width === 100) {
-                    clearInterval(timer);
-                    showResult();
-                }
-            }, 100);
-        }
-
-        function showResult() {
-            const box = document.getElementById('analysis-box');
-            const res = document.getElementById('result-box');
-            const btn = document.getElementById('scan-btn');
-            const txt = document.getElementById('signal-text');
-
-            box.classList.add('hidden');
-            res.classList.remove('hidden');
-
-            const isBuy = Math.random() > 0.5;
-            txt.innerText = isBuy ? "CALL (BUY) ⬆" : "PUT (SELL) ⬇";
-            txt.className = isBuy ? "text-3xl font-black mt-1 text-green-500" : "text-3xl font-black mt-1 text-red-500";
-            res.style.borderColor = isBuy ? "#22c55e" : "#ef4444";
-
-            // Cooldown
+            loader.classList.remove('hidden');
+            
+            // Fake Delay to look real
             setTimeout(() => {
-                btn.innerHTML = "<i class='fas fa-sync'></i> NEW SCAN";
-                btn.classList.remove('hidden');
-            }, 2000);
-        }
+                document.querySelector('#loader div div').style.width = "100%";
+            }, 100);
 
-        // FAKE ORDER BOOK
-        function startOrderBook() {
-            const container = document.getElementById('order-book');
-            setInterval(() => {
-                const type = Math.random() > 0.5 ? 'BID' : 'ASK';
-                const color = type === 'BID' ? 'text-green-500' : 'text-red-500';
-                const div = document.createElement('div');
-                div.className = "flex justify-between border-b border-white/5 pb-1 animate-pulse";
-                div.innerHTML = `
-                    <span class="${color} font-bold">${type}</span>
-                    <span>${(1.08 + Math.random()*0.01).toFixed(5)}</span>
-                    <span class="text-gray-500">${(Math.random()*5).toFixed(2)}M</span>
-                `;
-                container.prepend(div);
-                if(container.children.length > 6) container.lastElementChild.remove();
-            }, 800);
-        }
-
-        // FAKE BALANCE ANIMATION
-        function simulateBalance() {
-            let bal = 0.00;
-            const el = document.getElementById('bal');
-            const timer = setInterval(() => {
-                bal += 5.25;
-                el.innerText = bal.toFixed(2);
-                if(bal > 250) clearInterval(timer);
-            }, 50);
-        }
-
-        function logout() {
-            window.location.href = "index.html";
+            setTimeout(() => {
+                // Save fake session
+                localStorage.setItem('nexus_user', email);
+                localStorage.setItem('nexus_balance', '0.00');
+                localStorage.setItem('nexus_status', 'Standard');
+                window.location.href = "dashboard.html"; // Redirect
+            }, 2500);
         }
     </script>
 </body>
