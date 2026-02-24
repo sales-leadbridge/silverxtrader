@@ -43,7 +43,11 @@
         .btn-supreme { background:var(--primary); color:#fff; font-weight:700; border-radius:16px; box-shadow:0 6px 18px rgba(14,165,233,0.3); transition:transform 0.15s; }
         .btn-supreme:active { transform:scale(0.96); }
         .btn-supreme:disabled { opacity:0.5; cursor:not-allowed; }
-        .loader { border:3px solid #e5e7eb; border-top:3px solid var(--primary); border-radius:50%; width:18px; height:18px; animation:spin 0.7s linear infinite; display:inline-block; }
+        .loader { border:3px solid rgba(255,255,255,0.3); border-top:3px solid #fff; border-radius:50%; width:18px; height:18px; animation:spin 0.6s linear infinite; display:inline-block; vertical-align:middle; }
+        .loader-dark { border:3px solid #e5e7eb; border-top:3px solid var(--primary); border-radius:50%; width:18px; height:18px; animation:spin 0.6s linear infinite; display:inline-block; vertical-align:middle; }
+        button { transition:opacity 0.2s, transform 0.1s; }
+        button:active:not(:disabled) { transform:scale(0.97); }
+        button:disabled { cursor:not-allowed; }
         @keyframes spin { to { transform:rotate(360deg); } }
 
         /* AI Chip */
@@ -191,24 +195,16 @@
         </div>
         
         <div id="signup-block" class="hidden space-y-3">
-            <div class="grid grid-cols-2 gap-3">
-                <input type="text" id="su-fname" placeholder="First Name" class="auth-input">
-                <input type="text" id="su-lname" placeholder="Last Name" class="auth-input">
+            <div class="text-center py-8">
+                <div class="w-16 h-16 rounded-full bg-sky-100 flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="user-plus" class="w-8 h-8 text-sky-500"></i>
+                </div>
+                <p class="text-sm font-bold text-slate-600 mb-4">Create your free account on our main page</p>
+                <button onclick="handleSignup()" class="w-full btn-supreme py-4 text-[12px] tracking-widest uppercase flex items-center justify-center gap-2">
+                    <span>Go to Signup Page</span>
+                </button>
             </div>
-            <input type="tel" id="su-phone" placeholder="Phone Number" class="auth-input">
-            <input type="email" id="su-email" placeholder="Email" class="auth-input">
-            <input type="password" id="su-pass" placeholder="Password" class="auth-input">
-            <input type="password" id="su-cpass" placeholder="Confirm Password" class="auth-input">
-            <input type="text" id="su-ref" placeholder="Referral Code (Optional)" class="auth-input" style="border-color:#bae6fd; color:var(--primary);">
-            <div class="flex items-start gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-left">
-                <input type="checkbox" id="su-privacy" class="mt-0.5 w-4 h-4 accent-sky-500 flex-shrink-0">
-                <p class="text-[10px] text-slate-600 font-bold">I have read and accept the <button onclick="openPrivacyPolicy()" class="sky-text underline">Privacy Policy & Terms</button></p>
-            </div>
-            <button onclick="handleSignup()" class="w-full btn-supreme py-4 text-[12px] mt-2 tracking-widest uppercase flex items-center justify-center gap-2" id="signup-btn">
-                <span id="signup-btn-text">Signup Now</span>
-                <div id="signup-btn-loader" class="loader hidden"></div>
-            </button>
-            <p class="text-[11px] font-bold mt-2 text-black"><span class="text-slate-400">Already have account?</span> <button onclick="showLogin()" class="sky-text underline">Login</button></p>
+            <p class="text-[11px] font-bold mt-2 text-black text-center"><span class="text-slate-400">Already have account?</span> <button onclick="showLogin()" class="sky-text underline">Login</button></p>
         </div>
     </div>
 </div>
@@ -419,10 +415,10 @@
                     <h3 class="outfit text-[13px] font-black sky-text uppercase tracking-tight">Daily Ad Claim</h3>
                     <span id="ad-claim-badge" class="text-[9px] font-bold bg-sky-100 text-sky-700 px-2 py-1 rounded-lg">0/1 Today</span>
                 </div>
-                <p class="text-[10px] text-slate-500 mb-3">Watch a 5-min ad to earn <strong class="text-green-600">$2.00</strong> in your Earn Wallet. Resets daily.</p>
+                <p class="text-[10px] text-slate-500 mb-3">Watch 5 short ads (30 sec each) to earn <strong class="text-green-600">$2.50</strong> in your Earn Wallet. $0.50 per ad step. Resets daily.</p>
                 <button onclick="handleAdClaim()" id="ad-claim-btn" class="w-full btn-supreme py-3 rounded-2xl font-bold uppercase text-[11px] flex items-center justify-center gap-2">
                     <i data-lucide="play-circle" class="w-4 h-4"></i>
-                    <span id="ad-claim-btn-txt">Claim $2 Now</span>
+                    <span id="ad-claim-btn-txt">Claim $2.50 Now</span>
                 </button>
                 <div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between">
                     <div>
@@ -510,11 +506,22 @@ const PAIRS = ["EUR/USD","GBP/USD","USD/JPY","USD/CHF","AUD/USD","USD/CAD","BTC/
 let currentUser=null, userData=null, unsubscribeUser=null, unsubscribeTx=null, unsubscribeConfig=null;
 let isProcessing=false, currentTxFilter='all', claimedMilestones=[];
 
-// ── SERVER TIME (cached offset — no repeated Firestore writes) ──
+// ── SERVER TIME (cached offset — userId as doc ID to match Firestore rules) ──
 let _stOffset=null;
-async function _syncST(){try{const lb=Date.now();const ref=db.collection('_serverTime').doc('t');await ref.set({t:firebase.firestore.FieldValue.serverTimestamp()});const s=await ref.get();_stOffset=s.data().t.toMillis()-Math.round((lb+Date.now())/2);}catch(e){_stOffset=0;}}
+async function _syncST(){
+    try{
+        if(!currentUser)return;
+        const lb=Date.now();
+        const ref=db.collection('_serverTime').doc(currentUser.uid);
+        await ref.set({t:firebase.firestore.FieldValue.serverTimestamp()});
+        const s=await ref.get();
+        _stOffset=s.data().t.toMillis()-Math.round((lb+Date.now())/2);
+    }catch(e){_stOffset=0;}
+}
 function getServerTime(){return Date.now()+(_stOffset||0);}
 function getServerDateStr(){return new Date(getServerTime()).toISOString().slice(0,10);}
+// Alias for ad claim compatibility
+function getTodayDateStr(){return getServerDateStr();}
 
 // ── PLATFORM CONFIG (from Firestore) ──
 let CFG={vip_price:199,investment_roi:15,ref_bonus_free:1.00,ref_bonus_vip:2.00,referral_commission_rate:0.03,ad_reward:2.00,earn_transfer_min:120,withdrawal_min:10,withdrawals_frozen:false};
@@ -581,8 +588,8 @@ window.addEventListener('load',async()=>{
             await _syncST(); // sync server time ONCE at login
             // load platform config
             try{const cs=await db.collection('config').doc('platform').get();if(cs.exists)applyConfig(cs.data());}catch(e){}
-            // live config listener
-            db.collection('config').doc('platform').onSnapshot(s=>{if(s.exists)applyConfig(s.data());});
+            // live config listener — stored so logout can unsubscribe
+            unsubscribeConfig=db.collection('config').doc('platform').onSnapshot(s=>{if(s.exists)applyConfig(s.data());});
             await loadUserData();
             document.getElementById('splash').classList.add('hidden');
             document.getElementById('auth-screen').classList.add('hidden');
@@ -623,34 +630,31 @@ async function handleLogin(){
     isProcessing=true;setBtn('login-btn','login-btn-text','login-btn-loader',false);
     try{
         await firebase.auth().signInWithEmailAndPassword(email,pass);
+        isProcessing=false;
         toast('Login Successful');
     }
     catch(e){
         isProcessing=false;setBtn('login-btn','login-btn-text','login-btn-loader',true);
-        // ✅ FIX 1: Enhanced error handling for non-existent users
-        if(e.code === 'auth/user-not-found'){
-            toast('Account doesn\'t exist, please sign up');
-            setTimeout(()=>showSignup(), 1500);
-        } else if(e.code === 'auth/wrong-password'){
+        if(e.code==='auth/user-not-found'||e.code==='auth/invalid-credential'){
+            toast('Account not found. Please sign up.');
+            setTimeout(()=>showSignup(),1500);
+        } else if(e.code==='auth/wrong-password'){
             toast('Incorrect password');
-        } else if(e.code === 'auth/invalid-email'){
+        } else if(e.code==='auth/invalid-email'){
             toast('Invalid email format');
-        } else if(e.code === 'auth/user-disabled'){
+        } else if(e.code==='auth/user-disabled'){
             toast('Account suspended. Contact support.');
+        } else if(e.code==='auth/too-many-requests'){
+            toast('Too many attempts. Try again later.');
         } else {
-            toast('Login failed: ' + (e.message || 'Unknown error'));
+            toast('Login failed: '+(e.message||'Unknown error'));
         }
     }
 }
 
 // ─── SIGNUP — Redirects to index.html ────────────────────────
-// Signup is fully handled in index.html (joining bonus, referral, all fields)
-// app.html just redirects to avoid duplicate logic
 function handleSignup(){
-    // Save referral code if present, then redirect to index.html signup
-    const ref=document.getElementById('su-ref').value.trim();
-    const dest = ref ? 'index.html?ref='+encodeURIComponent(ref)+'#signup' : 'index.html#signup';
-    window.location.href = dest;
+    window.location.href='index.html#signup';
 }
 
 // ─── FORGOT PASSWORD ─────────────────────────────────────────
@@ -1494,13 +1498,18 @@ function launchAdGate(i,vip){
         </div>
         <!-- PROGRESS BAR -->
         <div style="height:3px;background:#1e293b;flex-shrink:0;position:relative;z-index:2;"><div id="sig-ad-bar" style="height:100%;background:linear-gradient(90deg,#0ea5e9,#38bdf8);width:100%;transition:width 1s linear;"></div></div>
-        <!-- AD SCROLL ZONE: ads confined here, overflow:hidden prevents escape -->
-        <div id="sig-ad-slots" style="flex:1;overflow-y:auto;overflow-x:hidden;padding:12px;display:flex;flex-direction:column;gap:10px;align-items:center;position:relative;z-index:1;">
-            <div id="sig-slot-1" style="background:#1e293b;border-radius:12px;width:100%;max-width:340px;height:60px;overflow:hidden;padding:4px;flex-shrink:0;"></div>
-            <div id="sig-slot-2" style="background:#1e293b;border-radius:12px;width:100%;max-width:340px;height:260px;overflow:hidden;padding:4px;flex-shrink:0;"></div>
-            <div id="sig-slot-3" style="background:#1e293b;border-radius:12px;width:100%;max-width:340px;min-height:100px;overflow:hidden;padding:4px;flex-shrink:0;"></div>
+        <!-- AD SCROLL ZONE -->
+        <div id="sig-ad-slots" style="flex:1;overflow-y:auto;overflow-x:hidden;padding:10px;display:flex;flex-direction:column;gap:8px;align-items:center;position:relative;z-index:1;">
+            <!-- 320x50 mobile banner -->
+            <div id="sig-slot-1" style="background:#1e293b;border-radius:10px;width:100%;max-width:340px;height:58px;overflow:hidden;padding:4px;flex-shrink:0;"></div>
+            <!-- 300x250 rectangle -->
+            <div id="sig-slot-2" style="background:#1e293b;border-radius:10px;width:100%;max-width:340px;height:258px;overflow:hidden;padding:4px;flex-shrink:0;"></div>
+            <!-- Native ad (effectivegatecpm) -->
+            <div id="sig-slot-3" style="background:#1e293b;border-radius:10px;width:100%;max-width:340px;min-height:80px;overflow:hidden;padding:4px;flex-shrink:0;"></div>
+            <!-- 160x300 half-page (scaled to fit mobile) -->
+            <div id="sig-slot-4" style="background:#1e293b;border-radius:10px;width:100%;max-width:340px;height:160px;overflow:hidden;padding:4px;flex-shrink:0;"></div>
         </div>
-        <!-- BOTTOM EXIT BAR: z-index:99999 — ALWAYS visible, no ad can reach it -->
+        <!-- BOTTOM EXIT BAR: z-index:99999 — ALWAYS visible -->
         <div style="padding:12px 16px;background:#0f172a;border-top:2px solid #1e293b;flex-shrink:0;position:relative;z-index:99999;">
             <p style="color:#475569;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;text-align:center;margin:0 0 10px;">Watch ad to unlock signal</p>
             <div id="sig-exit-placeholder" style="width:100%;height:52px;background:#1e293b;border-radius:14px;display:flex;align-items:center;justify-content:center;">
@@ -1525,22 +1534,24 @@ function launchAdGate(i,vip){
         wrap.appendChild(invScript);
     }
 
-    // Slot 1: 320x50 banner
+    // Slot 1: 320x50 mobile banner
     _injectIframeAd('sig-slot-1','55a786a7f988f0fd4fc9a79f5f603245',320,50);
-    // Slot 2: 300x250 rectangle
+    // Slot 2: 300x250 rectangle (best performing)
     _injectIframeAd('sig-slot-2','f667f609de40ee5be5bdd14ad3be7d04',300,250);
-    // Slot 3: native container
+    // Slot 3: Native container (effectivegatecpm)
     (function(){
         const wrap = document.getElementById('sig-slot-3');
         if(!wrap) return;
         const d = document.createElement('div');
-        d.id = 'container-sig-native';
+        d.id = 'container-sig-native-8c1a';
         wrap.appendChild(d);
         const s = document.createElement('script');
         s.src = 'https://pl28642600.effectivegatecpm.com/8c1aaf1130429dd18c7a9211f01bdb07/invoke.js';
         s.async = true; s.dataset.cfasync = 'false';
         wrap.appendChild(s);
     })();
+    // Slot 4: 160x600 half-page (scaled for mobile)
+    _injectIframeAd('sig-slot-4','6ebf3a92f1fa3331eff7368c037bea5a',160,300);
 
     // ── 15s countdown ──
     let t = 15;
@@ -1638,20 +1649,21 @@ function updateBalanceUI(){
 }
 
 // ─── AUTO MATURE PLANS (24hr check on load) ──────────────────
+let _maturingPlans = false; // guard against concurrent runs
 async function autoMaturePlans(){
-    if(!currentUser)return;
+    if(!currentUser||_maturingPlans)return;
+    _maturingPlans=true;
     try{
         const snap=await db.collection('plans')
             .where('user_id','==',currentUser.uid)
             .where('status','==','active').get();
-        if(snap.empty)return;
+        if(snap.empty){_maturingPlans=false;return;}
         const now=getServerTime();
         const batch=db.batch();
         let maturedCount=0,totalMatured=0;
         snap.forEach(doc=>{
             const p=doc.data();
             if(now>=p.withdraw_available_at){
-                // ✅ FIX: status + balance + tx all in ONE atomic batch — prevents double trigger
                 batch.update(db.collection('plans').doc(doc.id),{
                     status:'completed',auto_matured:true,matured_at:now
                 });
@@ -1671,11 +1683,12 @@ async function autoMaturePlans(){
             }
         });
         if(maturedCount>0){
-            await batch.commit(); // ✅ Atomic — all plans in one write
+            await batch.commit();
             await loadPlans();
             toast('💰 $'+totalMatured.toFixed(2)+' auto-credited from '+maturedCount+' plan(s)!');
         }
     }catch(e){console.error('Auto mature error:',e);}
+    finally{_maturingPlans=false;}
 }
 
 // ─── TRANSFER EARN WALLET TO MAIN ────────────────────────────
@@ -1733,8 +1746,6 @@ async function executeTransferToMain(){
 }
 
 // ─── DAILY AD CLAIM ──────────────────────────────────────────
-function getTodayDateStr(){return new Date(getServerTime()).toISOString().slice(0,10);} // ✅ server time
-
 function checkDailyAdClaimReset(){
     const today=getTodayDateStr();
     if(state.lastAdClaimDate!==today){
@@ -1759,16 +1770,16 @@ function updateAdClaimUI(){
         btn.disabled=!canClaim;
         btn.style.opacity=canClaim?'1':'0.5';
     }
-    if(btnTxt)btnTxt.innerText=canClaim?'Claim $2 Now':'Claimed Today';
+    if(btnTxt)btnTxt.innerText=canClaim?'Claim $2.50 Now':'Claimed Today';
     if(boosterBtn&&boosterTxt){
         if(state.boosterActive&&state.boosterExpiry>getServerTime()){
             const d=Math.ceil((state.boosterExpiry-getServerTime())/(1000*60*60*24));
-            boosterTxt.innerText='Active: '+d+'d left (3 claims/day)';
+            boosterTxt.innerText='Active: '+d+'d left (3 claims/day = $7.50/day)';
             boosterBtn.innerText='Active';
             boosterBtn.disabled=true;
             boosterBtn.style.background='#22C55E';
         } else {
-            boosterTxt.innerText='Unlock 3 claims/day ($6 total)';
+            boosterTxt.innerText='Unlock 3 claims/day ($7.50 total daily)';
             boosterBtn.innerText='$30 / 30d';
             boosterBtn.disabled=false;
             boosterBtn.style.background='';
@@ -1776,188 +1787,284 @@ function updateAdClaimUI(){
     }
 }
 
-async function handleAdClaim(){
-    if(isProcessing)return;
-    const today=getTodayDateStr();
-    const claims=state.lastAdClaimDate===today?state.adClaimsToday:0;
-    const maxClaims=state.boosterActive&&state.boosterExpiry>getServerTime()?3:1;
-    if(claims>=maxClaims)return toast('Daily claim limit reached!');
+// ─── AD CLAIM — 5 STEP SYSTEM ────────────────────────────────
+// Each step: 9 ads shown, 30 sec timer, $0.50 earned
+// Total: 5 steps × $0.50 = $2.50 per daily claim
+// 5 steps × 9 ads = 45 ad impressions per user per claim
 
-    // ✅ FIX: Save start time to Firestore — server-side verification, bypass-proof
-    window._adStartLocal = getServerTime(); // local fallback
+const AD_STEPS_TOTAL    = 5;
+const AD_STEP_REWARD    = 0.50;   // $0.50 per step
+const AD_STEP_SECONDS   = 30;     // 30 seconds per step
+const AD_TOTAL_REWARD   = AD_STEPS_TOTAL * AD_STEP_REWARD; // $2.50
+
+// 9 ad configs (6 iframe + 1 native + 2 popunders)
+const _AD_IFRAMES = [
+    {key:'55a786a7f988f0fd4fc9a79f5f603245', w:320, h:50},   // 320×50 banner
+    {key:'f667f609de40ee5be5bdd14ad3be7d04', w:300, h:250},  // 300×250 rectangle
+    {key:'6ebf3a92f1fa3331eff7368c037bea5a', w:160, h:300},  // 160×300 half-page
+    {key:'6b658dcbda9bd67832ca43a254897f26', w:160, h:300},  // 160×300 skyscraper
+    {key:'176ca819e8dd79380005cd639d66f63a', w:468, h:60},   // 468×60 leaderboard
+    {key:'c74d7a11ca2a6cfa3aba03b90f5888f0', w:728, h:90},   // 728×90 large banner
+];
+
+// State for multi-step ad claim
+let _adStep = 0;          // current step 0–4
+let _adStepTimer = null;  // interval handle
+let _adStepEarned = 0;    // total earned so far in session
+
+async function handleAdClaim(){
+    if(isProcessing) return;
+    const today = getTodayDateStr();
+    const claims = state.lastAdClaimDate === today ? state.adClaimsToday : 0;
+    const maxClaims = state.boosterActive && state.boosterExpiry > getServerTime() ? 3 : 1;
+    if(claims >= maxClaims) return toast('Daily claim limit reached!');
+
+    // Save session start to Firestore (anti-bypass)
+    window._adStartLocal = getServerTime();
     try {
         await db.collection('users').doc(currentUser.uid).update({
             ad_start_time: firebase.firestore.FieldValue.serverTimestamp()
         });
     } catch(_) {}
 
-    const adReward = CFG.ad_reward||2;
-    let secondsLeft = 300;
-    const fmt = s => Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60);
+    // Reset step state
+    _adStep = 0;
+    _adStepEarned = 0;
+    isProcessing = true;
 
-    // Build overlay HTML (no script tags here — inject ads via JS below)
+    _launchAdStep();
+}
+
+function _adLoadScript(src){
+    // Only load each popunder script once per session
+    if(document.querySelector(`script[src="${src}"]`)) return;
+    const s = document.createElement('script');
+    s.src = src; s.async = true;
+    document.head.appendChild(s);
+}
+
+function _adInjectIframe(containerId, key, w, h){
+    const wrap = document.getElementById(containerId);
+    if(!wrap) return;
+    // Clear old ad if re-using slot
+    wrap.innerHTML = '';
+    const opt = document.createElement('script');
+    opt.text = `window.atOptions={'key':'${key}','format':'iframe','height':${h},'width':${w},'params':{}};`;
+    wrap.appendChild(opt);
+    const inv = document.createElement('script');
+    inv.src = `https://www.highperformanceformat.com/${key}/invoke.js`;
+    inv.async = true;
+    wrap.appendChild(inv);
+}
+
+function _launchAdStep(){
+    // Remove any existing overlay first
+    const old = document.getElementById('ad-claim-fullscreen');
+    if(old) old.remove();
+
+    const stepNum    = _adStep + 1;           // 1–5 (display)
+    const stepsLeft  = AD_STEPS_TOTAL - _adStep;
+    const totalEarnedSoFar = _adStepEarned;
+    const thisStepReward   = AD_STEP_REWARD;
+    const totalIfComplete  = AD_TOTAL_REWARD;
+    let secondsLeft = AD_STEP_SECONDS;
+
+    // ── Build step dots ──
+    const dots = Array.from({length: AD_STEPS_TOTAL}, (_, i) => {
+        if(i < _adStep)       return `<div style="width:10px;height:10px;border-radius:50%;background:#22C55E;flex-shrink:0;"></div>`;
+        if(i === _adStep)     return `<div style="width:14px;height:14px;border-radius:50%;background:#0ea5e9;border:2px solid #38bdf8;box-shadow:0 0 8px rgba(14,165,233,0.7);flex-shrink:0;animation:adPulse 1s infinite;"></div>`;
+        return `<div style="width:10px;height:10px;border-radius:50%;background:#1e293b;border:1.5px solid #334155;flex-shrink:0;"></div>`;
+    }).join('');
+
     const overlay = document.createElement('div');
     overlay.id = 'ad-claim-fullscreen';
     overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#0f172a;display:flex;flex-direction:column;overflow:hidden;';
     overlay.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#0f172a;border-bottom:1px solid #1e293b;flex-shrink:0;">
+        <style>@keyframes adPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.25);opacity:0.7}}</style>
+
+        <!-- ── TOP BAR ── -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#0f172a;border-bottom:1.5px solid #1e293b;flex-shrink:0;z-index:2;">
             <div style="display:flex;align-items:center;gap:8px;">
-                <div style="width:28px;height:28px;border-radius:50%;overflow:hidden;border:1.5px solid #0ea5e9;"><img src="logo.jpg" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.style.background='#0ea5e9'"></div>
-                <span style="color:#38bdf8;font-weight:900;font-size:12px;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;">Silver X Ads</span>
+                <div style="width:26px;height:26px;border-radius:50%;overflow:hidden;border:1.5px solid #0ea5e9;">
+                    <img src="logo.jpg" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.style.background='#0ea5e9'">
+                </div>
+                <div>
+                    <div style="color:#38bdf8;font-weight:900;font-size:11px;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;line-height:1;">Silver X Ads</div>
+                    <div style="color:#475569;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Ad ${stepNum} of ${AD_STEPS_TOTAL} · $${thisStepReward.toFixed(2)} this step</div>
+                </div>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-                <div id="ad-claim-timer" style="background:#1e293b;border:1.5px solid #0ea5e9;border-radius:10px;padding:6px 14px;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:13px;color:#38bdf8;">${fmt(secondsLeft)}</div>
-                <div style="background:#22C55E;border-radius:10px;padding:6px 14px;font-weight:900;font-size:12px;color:#fff;">+$${adReward.toFixed(2)}</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <div id="acs-timer" style="background:#1e293b;border:1.5px solid #0ea5e9;border-radius:8px;padding:5px 12px;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:14px;color:#38bdf8;min-width:38px;text-align:center;">${secondsLeft}s</div>
+                <div style="background:linear-gradient(135deg,#22C55E,#16a34a);border-radius:8px;padding:5px 10px;font-weight:900;font-size:11px;color:#fff;white-space:nowrap;">+$${totalIfComplete.toFixed(2)}</div>
             </div>
         </div>
-        <div style="height:4px;background:#1e293b;flex-shrink:0;"><div id="ad-progress-line" style="height:100%;background:linear-gradient(90deg,#0ea5e9,#38bdf8);width:0%;transition:width 1s linear;"></div></div>
-        <div id="ad-slots-container" style="flex:1;overflow-y:auto;overflow-x:hidden;padding:10px;display:flex;flex-direction:column;gap:10px;align-items:center;position:relative;z-index:1;">
-            <div id="ad-slot-banner1" style="background:#1e293b;border-radius:12px;width:100%;max-width:340px;height:60px;overflow:hidden;padding:4px;flex-shrink:0;"></div>
-            <div id="ad-slot-rect1" style="background:#1e293b;border-radius:12px;width:100%;max-width:340px;height:260px;overflow:hidden;padding:4px;flex-shrink:0;"></div>
-            <div id="ad-slot-native" style="background:#1e293b;border-radius:12px;width:100%;max-width:340px;min-height:100px;overflow:hidden;padding:4px;flex-shrink:0;"></div>
-            <div id="ad-slot-rect2" style="background:#1e293b;border-radius:12px;width:100%;max-width:340px;height:100px;overflow:hidden;padding:4px;flex-shrink:0;"></div>
-            <div id="ad-slot-banner2" style="background:#1e293b;border-radius:12px;width:100%;max-width:340px;height:60px;overflow:hidden;padding:4px;flex-shrink:0;"></div>
-        </div>
-        <div style="padding:12px 16px;background:#0f172a;border-top:2px solid #1e293b;flex-shrink:0;position:relative;z-index:99999;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-                <span style="color:#64748b;font-size:10px;font-weight:700;">Watch full ad to earn reward</span>
-                <span id="ad-claim-countdown-text" style="color:#38bdf8;font-size:11px;font-weight:900;font-family:'Space Grotesk',sans-serif;">${fmt(secondsLeft)} remaining</span>
+
+        <!-- ── STEP PROGRESS BAR ── -->
+        <div style="background:#0f172a;padding:8px 14px 6px;flex-shrink:0;border-bottom:1px solid #1e293b;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+                <div style="display:flex;align-items:center;gap:6px;">${dots}</div>
+                <span style="color:#64748b;font-size:9px;font-weight:700;font-family:'Space Grotesk',sans-serif;">EARNED: <span style="color:#22C55E;">$${totalEarnedSoFar.toFixed(2)}</span> / $${totalIfComplete.toFixed(2)}</span>
             </div>
-            <div style="background:#1e293b;border-radius:12px;height:6px;margin-bottom:10px;overflow:hidden;"><div id="ad-bar" style="height:100%;background:linear-gradient(90deg,#0ea5e9,#38bdf8);width:0%;transition:width 1s linear;border-radius:12px;"></div></div>
-            <button id="ad-claim-final-btn" disabled onclick="completeAdClaimFromFullscreen()"
-                style="width:100%;background:#374151;color:#9ca3af;border:none;border-radius:14px;padding:14px;font-weight:900;font-size:14px;text-transform:uppercase;letter-spacing:1px;cursor:not-allowed;font-family:'Space Grotesk',sans-serif;transition:all 0.3s;">
-                ⏳ Watch Ad — <span id="ad-btn-txt">${fmt(secondsLeft)} remaining</span>
+            <div style="background:#1e293b;border-radius:6px;height:4px;overflow:hidden;">
+                <div id="acs-progress-bar" style="height:100%;background:linear-gradient(90deg,#0ea5e9,#38bdf8);width:0%;transition:width 1s linear;border-radius:6px;"></div>
+            </div>
+        </div>
+
+        <!-- ── AD SCROLL ZONE (9 ads) ── -->
+        <div id="acs-slots" style="flex:1;overflow-y:auto;overflow-x:hidden;padding:10px;display:flex;flex-direction:column;gap:8px;align-items:center;z-index:1;">
+            <!-- Ad 1: 320x50 banner -->
+            <div id="acs-ad-1" style="background:#1e293b;border-radius:10px;width:100%;max-width:340px;height:58px;overflow:hidden;padding:3px;flex-shrink:0;"></div>
+            <!-- Ad 2: 300x250 rectangle -->
+            <div id="acs-ad-2" style="background:#1e293b;border-radius:10px;width:100%;max-width:340px;height:258px;overflow:hidden;padding:3px;flex-shrink:0;"></div>
+            <!-- Ad 3: Native (effectivegatecpm) -->
+            <div id="acs-ad-3" style="background:#1e293b;border-radius:10px;width:100%;max-width:340px;min-height:80px;overflow:hidden;padding:3px;flex-shrink:0;"></div>
+            <!-- Ad 4: 160x300 half-page -->
+            <div id="acs-ad-4" style="background:#1e293b;border-radius:10px;width:100%;max-width:340px;height:158px;overflow:hidden;padding:3px;flex-shrink:0;"></div>
+            <!-- Ad 5: 160x300 skyscraper -->
+            <div id="acs-ad-5" style="background:#1e293b;border-radius:10px;width:100%;max-width:340px;height:158px;overflow:hidden;padding:3px;flex-shrink:0;"></div>
+            <!-- Ad 6: 468x60 leaderboard -->
+            <div id="acs-ad-6" style="background:#1e293b;border-radius:10px;width:100%;max-width:340px;height:66px;overflow:hidden;padding:3px;flex-shrink:0;"></div>
+            <!-- Ad 7: 728x90 large banner -->
+            <div id="acs-ad-7" style="background:#1e293b;border-radius:10px;width:100%;max-width:340px;height:56px;overflow:hidden;padding:3px;flex-shrink:0;"></div>
+        </div>
+
+        <!-- ── BOTTOM ACTION BAR ── -->
+        <div style="padding:10px 14px 12px;background:#0f172a;border-top:2px solid #1e293b;flex-shrink:0;position:relative;z-index:99999;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <span style="color:#475569;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Step ${stepNum}/${AD_STEPS_TOTAL} — Watch ads to earn $${thisStepReward.toFixed(2)}</span>
+                <span id="acs-countdown-txt" style="color:#38bdf8;font-size:11px;font-weight:900;font-family:'Space Grotesk',sans-serif;">${secondsLeft}s remaining</span>
+            </div>
+            <div style="background:#1e293b;border-radius:8px;height:5px;margin-bottom:8px;overflow:hidden;">
+                <div id="acs-step-bar" style="height:100%;background:linear-gradient(90deg,#22C55E,#16a34a);width:0%;transition:width 1s linear;border-radius:8px;"></div>
+            </div>
+
+            <!-- Placeholder shown while counting down -->
+            <div id="acs-btn-placeholder" style="width:100%;height:50px;background:#1e293b;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <span style="color:#475569;font-size:11px;font-weight:800;font-family:'Space Grotesk',sans-serif;">⏳ <span id="acs-btn-txt">${secondsLeft}s remaining...</span></span>
+            </div>
+
+            <!-- Next Step button (hidden until timer done) -->
+            <button id="acs-next-btn" onclick="window._adStepNext()"
+                style="display:none;width:100%;border:none;border-radius:12px;padding:14px;font-weight:900;font-size:14px;cursor:pointer;font-family:'Space Grotesk',sans-serif;letter-spacing:0.5px;transition:all 0.3s;">
             </button>
         </div>`;
 
     document.body.appendChild(overlay);
     document.body.classList.add('modal-open');
-    isProcessing = true;
 
-    // ✅ INJECT ADS PROPERLY via createElement (innerHTML scripts don't execute)
-    function _loadAdScript(src, callback){
-        const s = document.createElement('script');
-        s.src = src; s.async = true;
-        if(callback) s.onload = callback;
-        document.head.appendChild(s);
-    }
-    function _injectIframeAd(containerId, key, w, h){
-        const wrap = document.getElementById(containerId);
-        if(!wrap) return;
-        // Set atOptions then inject invoke.js
-        const optScript = document.createElement('script');
-        optScript.text = `window.atOptions = {'key':'${key}','format':'iframe','height':${h},'width':${w},'params':{}};`;
-        wrap.appendChild(optScript);
-        const invScript = document.createElement('script');
-        invScript.src = `https://www.highperformanceformat.com/${key}/invoke.js`;
-        invScript.async = true;
-        wrap.appendChild(invScript);
-    }
+    // ── Inject 9 ads ──
+    // 1–6: iframe ads
+    _AD_IFRAMES.forEach((a, i) => _adInjectIframe(`acs-ad-${i+1}`, a.key, a.w, a.h));
 
-    // Slot 1: 320x50 mobile banner
-    _injectIframeAd('ad-slot-banner1','55a786a7f988f0fd4fc9a79f5f603245',320,50);
-    // Slot 2: 300x250 main rectangle
-    _injectIframeAd('ad-slot-rect1','f667f609de40ee5be5bdd14ad3be7d04',300,250);
-    // Slot 3: Native container (effectivegatecpm)
+    // 7: Native (effectivegatecpm)
     (function(){
-        const nativeWrap = document.getElementById('ad-slot-native');
-        if(nativeWrap){
-            const d = document.createElement('div');
-            d.id = 'container-8c1aaf1130429dd18c7a9211f01bdb07';
-            nativeWrap.appendChild(d);
-            _loadAdScript('https://pl28642600.effectivegatecpm.com/8c1aaf1130429dd18c7a9211f01bdb07/invoke.js');
-        }
+        const wrap = document.getElementById('acs-ad-3');
+        if(!wrap) return;
+        wrap.innerHTML = '';
+        const d = document.createElement('div');
+        d.id = `container-acsnat-${_adStep}`;
+        wrap.appendChild(d);
+        const s = document.createElement('script');
+        s.src = 'https://pl28642600.effectivegatecpm.com/8c1aaf1130429dd18c7a9211f01bdb07/invoke.js';
+        s.async = true; s.dataset.cfasync = 'false';
+        wrap.appendChild(s);
     })();
-    // Slot 4: 728x90 (acts as 300x100 on mobile)
-    _injectIframeAd('ad-slot-rect2','c74d7a11ca2a6cfa3aba03b90f5888f0',728,90);
-    // Slot 5: 468x60 banner
-    _injectIframeAd('ad-slot-banner2','176ca819e8dd79380005cd639d66f63a',468,60);
-    // Popunders (background — fire once)
-    if(!window._popundersLoaded){
-        window._popundersLoaded = true;
-        _loadAdScript('https://pl28642599.effectivegatecpm.com/93/a6/86/93a686a4eaa2407c4acf84b47f5a34e3.js');
-        _loadAdScript('https://pl28756295.effectivegatecpm.com/fc/17/cf/fc17cfd41ac2625f5a0075059355dfd0.js');
-    }
 
-    // ✅ TIMER
-    const interval = setInterval(() => {
+    // 8 & 9: Popunders — fire once per session
+    _adLoadScript('https://pl28642599.effectivegatecpm.com/93/a6/86/93a686a4eaa2407c4acf84b47f5a34e3.js');
+    _adLoadScript('https://pl28756295.effectivegatecpm.com/fc/17/cf/fc17cfd41ac2625f5a0075059355dfd0.js');
+
+    // ── 30s countdown ──
+    _adStepTimer = setInterval(() => {
         secondsLeft--;
-        const pct = ((300-secondsLeft)/300)*100;
-        const ts = fmt(secondsLeft);
-        const t=document.getElementById('ad-claim-timer');
-        const b=document.getElementById('ad-bar');
-        const pl=document.getElementById('ad-progress-line');
-        const ct=document.getElementById('ad-claim-countdown-text');
-        const bt=document.getElementById('ad-btn-txt');
-        const cb=document.getElementById('ad-claim-final-btn');
-        if(t)t.innerText=ts;
-        if(b)b.style.width=pct+'%';
-        if(pl)pl.style.width=pct+'%';
-        if(ct)ct.innerText=secondsLeft>0?ts+' remaining':'Done!';
-        if(bt)bt.innerText=secondsLeft>0?ts+' remaining':'Ready!';
-        if(secondsLeft<=0){
-            clearInterval(interval);
-            if(cb){cb.disabled=false;cb.style.background='linear-gradient(135deg,#22C55E,#16a34a)';cb.style.color='#fff';cb.style.cursor='pointer';cb.style.boxShadow='0 6px 20px rgba(34,197,94,0.4)';cb.innerHTML='🎉 Claim $'+adReward.toFixed(2)+' Now!';}
+        const pct = ((AD_STEP_SECONDS - secondsLeft) / AD_STEP_SECONDS) * 100;
+        const timerEl    = document.getElementById('acs-timer');
+        const progressEl = document.getElementById('acs-progress-bar');
+        const stepBarEl  = document.getElementById('acs-step-bar');
+        const cntdwnEl   = document.getElementById('acs-countdown-txt');
+        const btnTxtEl   = document.getElementById('acs-btn-txt');
+        if(timerEl)    timerEl.innerText    = secondsLeft > 0 ? secondsLeft + 's' : '✓';
+        if(progressEl) progressEl.style.width = pct + '%';
+        if(stepBarEl)  stepBarEl.style.width  = pct + '%';
+        if(cntdwnEl)   cntdwnEl.innerText   = secondsLeft > 0 ? secondsLeft + 's remaining' : 'Done!';
+        if(btnTxtEl)   btnTxtEl.innerText   = secondsLeft > 0 ? secondsLeft + 's remaining...' : 'Ready!';
+        if(secondsLeft <= 0){
+            clearInterval(_adStepTimer);
+            _adStepTimer = null;
+            // Show action button
+            const placeholder = document.getElementById('acs-btn-placeholder');
+            const nextBtn     = document.getElementById('acs-next-btn');
+            if(placeholder) placeholder.style.display = 'none';
+            if(nextBtn){
+                const isLastStep = (_adStep === AD_STEPS_TOTAL - 1);
+                nextBtn.style.display = 'block';
+                if(isLastStep){
+                    nextBtn.style.background = 'linear-gradient(135deg,#22C55E,#16a34a)';
+                    nextBtn.style.color = '#fff';
+                    nextBtn.style.boxShadow = '0 6px 20px rgba(34,197,94,0.5)';
+                    nextBtn.innerHTML = `🎉 CLAIM $${AD_TOTAL_REWARD.toFixed(2)} NOW!`;
+                } else {
+                    nextBtn.style.background = 'linear-gradient(135deg,#0ea5e9,#38bdf8)';
+                    nextBtn.style.color = '#fff';
+                    nextBtn.style.boxShadow = '0 6px 20px rgba(14,165,233,0.4)';
+                    nextBtn.innerHTML = `✅ +$${AD_STEP_REWARD.toFixed(2)} Earned &nbsp;→&nbsp; Next Ad (${_adStep + 2}/${AD_STEPS_TOTAL})`;
+                }
+            }
         }
     }, 1000);
-    window._adClaimInterval = interval;
+    window._adClaimInterval = _adStepTimer;
 }
 
-async function completeAdClaimFromFullscreen(){
-    // ✅ FIX: Server-side time verification — console bypass impossible
-    try {
-        const userSnap = await db.collection('users').doc(currentUser.uid).get();
-        const startTime = userSnap.data().ad_start_time;
-        if(startTime){
-            const elapsed = getServerTime() - startTime.toMillis();
-            if(elapsed < 290000){ toast('⚠️ Watch the full ad first!'); return; }
-        } else {
-            // Fallback: local time check
-            const elapsedLocal = getServerTime() - (window._adStartLocal||0);
-            if(elapsedLocal < 295000){ toast('⚠️ Watch the full ad first!'); return; }
-        }
-    } catch(_) {
-        // If check fails, use local time
-        const elapsedLocal = getServerTime() - (window._adStartLocal||0);
-        if(elapsedLocal < 295000){ toast('⚠️ Watch the full ad first!'); return; }
+// Called when user taps Next Step / Claim button
+window._adStepNext = function(){
+    if(_adStepTimer){ clearInterval(_adStepTimer); _adStepTimer = null; }
+    _adStepEarned += AD_STEP_REWARD;
+    _adStep++;
+    if(_adStep < AD_STEPS_TOTAL){
+        _launchAdStep();          // launch next step
+    } else {
+        _finalizeAdClaim();       // all 5 done — write to Firestore
     }
+};
 
-    const today=getTodayDateStr();
-    const newClaims=(state.lastAdClaimDate===today?state.adClaimsToday:0)+1;
-    const adReward=CFG.ad_reward||2;
-    try{
-        // ✅ FIX: Atomic batch — earn_wallet + clear ad_start_time + claims count together
+async function _finalizeAdClaim(){
+    const today = getTodayDateStr();
+    const newClaims = (state.lastAdClaimDate === today ? state.adClaimsToday : 0) + 1;
+    const totalReward = AD_TOTAL_REWARD; // $2.50
+
+    // Remove overlay
+    const overlay = document.getElementById('ad-claim-fullscreen');
+    if(overlay) overlay.remove();
+    document.body.classList.remove('modal-open');
+
+    try {
+        // Atomic batch: credit earn_wallet + update claim count + clear ad_start_time
         const batch = db.batch();
-        batch.update(db.collection('users').doc(currentUser.uid),{
-            earn_wallet:firebase.firestore.FieldValue.increment(adReward),
-            ad_claims_today:newClaims,
-            last_ad_claim_date:today,
-            ad_start_time:null   // clear start time — prevents replay
+        batch.update(db.collection('users').doc(currentUser.uid), {
+            earn_wallet:       firebase.firestore.FieldValue.increment(totalReward),
+            ad_claims_today:   newClaims,
+            last_ad_claim_date: today,
+            ad_start_time:     null   // clear — prevents replay
         });
-        batch.set(db.collection('transactions').doc(),{
-            user_id:currentUser.uid,
-            transaction_type:'AD_CLAIM',
-            amount:adReward,
-            status:'approved',
-            notes:'Daily Ad Claim reward',
-            created_at:firebase.firestore.FieldValue.serverTimestamp()
+        batch.set(db.collection('transactions').doc(), {
+            user_id:          currentUser.uid,
+            transaction_type: 'AD_CLAIM',
+            amount:           totalReward,
+            status:           'approved',
+            notes:            `Daily Ad Claim (5 steps × $${AD_STEP_REWARD.toFixed(2)})`,
+            created_at:       firebase.firestore.FieldValue.serverTimestamp()
         });
         await batch.commit();
-
-        isProcessing=false;
-        const overlay = document.getElementById('ad-claim-fullscreen');
-        if(overlay) overlay.remove();
-        document.body.classList.remove('modal-open');
-        if(window._adClaimInterval) clearInterval(window._adClaimInterval);
-        toast('🎉 $'+adReward.toFixed(2)+' added to Earn Wallet!');
-    }catch(e){
-        isProcessing=false;
-        const overlay = document.getElementById('ad-claim-fullscreen');
-        if(overlay) overlay.remove();
-        document.body.classList.remove('modal-open');
-        toast('Error: '+e.message);
+        isProcessing = false;
+        toast('🎉 $' + totalReward.toFixed(2) + ' added to Earn Wallet!');
+    } catch(e) {
+        isProcessing = false;
+        toast('Error: ' + e.message);
     }
 }
+
+// Legacy wrapper (kept for compatibility — not called anymore)
+async function completeAdClaimFromFullscreen(){ await _finalizeAdClaim(); }
 
 // ─── CLAIM BOOSTER ────────────────────────────────────────────
 function handleBuyBooster(){
@@ -2024,11 +2131,9 @@ async function checkBoosterExpiry(){
 }
 
 // ─── 3% DEPOSIT COMMISSION FOR UPLINE ────────────────────────
-// Called after deposit is approved (admin flow) — here we expose a client trigger
-// that credits 3% of deposit amount to referrer's earn wallet
 async function triggerDepositCommission(userId, depositAmount, txDocId){
     try{
-        // ✅ Mark FIRST to prevent double trigger race condition
+        // Mark FIRST to prevent double trigger race condition
         if(txDocId){try{await db.collection('transactions').doc(txDocId).update({commission_triggered:true});}catch(e){}}
         const userDoc=await db.collection('users').doc(userId).get();
         if(!userDoc.exists)return;
@@ -2037,18 +2142,21 @@ async function triggerDepositCommission(userId, depositAmount, txDocId){
         const snap=await db.collection('users').where('ref_code','==',udata.referred_by).limit(1).get();
         if(snap.empty)return;
         const refDoc=snap.docs[0];
-        const commission=parseFloat((depositAmount*CFG.referral_commission_rate).toFixed(2));
+        const rate=CFG.referral_commission_rate||0.03;
+        const commission=parseFloat((depositAmount*rate).toFixed(2));
         if(commission<=0)return;
-        await db.collection('users').doc(refDoc.id).update({earn_wallet:firebase.firestore.FieldValue.increment(commission)});
-        await db.collection('transactions').add({
+        const batch=db.batch();
+        batch.update(db.collection('users').doc(refDoc.id),{earn_wallet:firebase.firestore.FieldValue.increment(commission)});
+        batch.set(db.collection('transactions').doc(),{
             user_id:refDoc.id,
             transaction_type:'DEPOSIT_COMMISSION',
             amount:commission,
             status:'approved',
             from_user:userId,
-            notes:`${(CFG.referral_commission_rate*100).toFixed(0)}% deposit commission from referral deposit of $${depositAmount}`,
+            notes:`${(rate*100).toFixed(0)}% deposit commission from referral deposit of $${depositAmount}`,
             created_at:firebase.firestore.FieldValue.serverTimestamp()
         });
+        await batch.commit();
     }catch(e){console.error('Deposit commission error:',e);}
 }
 
@@ -2200,8 +2308,25 @@ function openPrivacyPolicy(){
 // ─── ABOUT SILVER X ──────────────────────────────────────────
 // ─── HELPERS ─────────────────────────────────────────────────
 function closeModal(){document.getElementById('modal-overlay').classList.add('hidden');document.body.classList.remove('modal-open');}
-function toast(msg){const t=document.getElementById('toast');t.innerText=msg;t.classList.remove('-translate-y-40');setTimeout(()=>t.classList.add('-translate-y-40'),2800);}
-function setBtn(btnId,txtId,ldrId,enable){const btn=document.getElementById(btnId),txt=document.getElementById(txtId),ldr=document.getElementById(ldrId);if(!btn)return;btn.disabled=!enable;if(txt)txt.classList.toggle('hidden',!enable);if(ldr)ldr.classList.toggle('hidden',enable);}
+function toast(msg,type='info'){
+    const t=document.getElementById('toast');
+    const c={success:'#10B981',error:'#EF4444',warning:'#F59E0B',info:'#0ea5e9'};
+    t.style.background=c[type]||c.info;
+    t.innerText=msg;
+    t.classList.remove('-translate-y-40');
+    t.classList.add('translate-y-0');
+    clearTimeout(window._toastTmr);
+    window._toastTmr=setTimeout(()=>{t.classList.remove('translate-y-0');t.classList.add('-translate-y-40');},3000);
+}
+function setBtn(btnId,txtId,ldrId,enable){
+    const btn=document.getElementById(btnId),txt=document.getElementById(txtId),ldr=document.getElementById(ldrId);
+    if(!btn)return;
+    btn.disabled=!enable;
+    btn.style.opacity=enable?'1':'0.75';
+    btn.style.transition='opacity 0.2s';
+    if(txt)txt.classList.toggle('hidden',!enable);
+    if(ldr)ldr.classList.toggle('hidden',enable);
+}
 function toggleSidebar(){const sb=document.getElementById('sidebar-main');sb.classList.toggle('active');document.getElementById('sb-overlay').style.display=sb.classList.contains('active')?'block':'none';if(sb.classList.contains('active'))document.body.classList.add('modal-open');else document.body.classList.remove('modal-open');}
 function switchTab(t){
     ['bot','wallet','invest','invite'].forEach(x=>{
@@ -2232,10 +2357,11 @@ function copyReferralLink(){
     });
 }
 
-// ✅ FIX 3: Enhanced logout with complete session cleanup
+// ✅ FIX: Enhanced logout with complete session cleanup + config listener
 function handleLogout(){
     if(unsubscribeUser)unsubscribeUser();
     if(unsubscribeTx)unsubscribeTx();
+    if(unsubscribeConfig)unsubscribeConfig();
     
     // Clear all state
     state = {
@@ -2258,16 +2384,14 @@ function handleLogout(){
     };
     
     // Clear any localStorage
-    try{
-        localStorage.clear();
-    }catch(e){}
+    try{localStorage.clear();}catch(e){}
     
     // Firebase signout and reload
     firebase.auth().signOut().then(()=>{
         window.location.href='index.html';
     }).catch(e=>{
         console.error('Logout error:', e);
-        location.reload(); // Force reload anyway
+        location.reload();
     });
 }
 
