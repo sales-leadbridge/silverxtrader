@@ -119,6 +119,19 @@
 
         @keyframes fadeInUp { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
 
+        /* Milestone card click animation */
+        .milestone-card { transition: transform 0.15s, box-shadow 0.15s, background 0.2s; }
+        .milestone-card:hover { transform: translateY(-4px) scale(1.04); box-shadow: 0 8px 24px rgba(139,92,246,0.25); background: rgba(139,92,246,0.12) !important; }
+        .milestone-card:active { transform: scale(0.96); }
+        .milestone-card.pop { animation: milestonePop 0.45s cubic-bezier(0.36,0.07,0.19,0.97) both; }
+        @keyframes milestonePop {
+            0%   { transform: scale(1); }
+            20%  { transform: scale(1.18) rotate(-2deg); box-shadow: 0 12px 32px rgba(139,92,246,0.45); background: rgba(139,92,246,0.2); }
+            50%  { transform: scale(0.95) rotate(1deg); }
+            75%  { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
         /* Dark section text helpers */
         .dark-section-title { color:#38bdf8; font-weight:900; }
         .dark-section-sub { color:#94a3b8; }
@@ -355,15 +368,15 @@
             <div class="w-12 h-12 bg-gradient-to-br from-sky-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 float-premium">
                 <i data-lucide="play-circle" class="w-6 h-6 text-white"></i>
             </div>
-            <div class="text-2xl font-black outfit text-sky-600 mb-1">$2</div>
+            <div class="text-2xl font-black outfit text-sky-600 mb-1">$2.50</div>
             <div class="text-xs font-bold text-sky-700 uppercase mb-1">Ad-Claim</div>
-            <div class="text-[10px] text-slate-500 font-semibold">Daily reward</div>
+            <div class="text-[10px] text-slate-500 font-semibold">5 ads × $0.50 daily</div>
         </div>
         <div class="glass-premium p-5 text-center border-2 border-purple-300">
             <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl flex items-center justify-center mx-auto mb-3 float-premium">
                 <i data-lucide="zap" class="w-6 h-6 text-white"></i>
             </div>
-            <div class="text-2xl font-black outfit text-purple-600 mb-1">$6/day</div>
+            <div class="text-2xl font-black outfit text-purple-600 mb-1">$7.50/d</div>
             <div class="text-xs font-bold text-purple-700 uppercase mb-1">Booster</div>
             <div class="text-[10px] text-slate-500 font-semibold">$30 for 30 days</div>
         </div>
@@ -446,10 +459,22 @@
             <div class="float-premium mb-3"><i data-lucide="trophy" class="w-14 h-14 mx-auto" style="color:#8B5CF6;"></i></div>
             <div class="text-sm font-black outfit uppercase mb-3" style="color:#8B5CF6;">Milestone Bonuses</div>
             <div class="grid grid-cols-2 gap-2">
-                <div class="bg-white/60 rounded-xl p-2"><div class="text-xl font-black outfit" style="color:#8B5CF6;">$10</div><div class="text-[11px] font-bold text-slate-600">25 Refs</div></div>
-                <div class="bg-white/60 rounded-xl p-2"><div class="text-xl font-black outfit" style="color:#8B5CF6;">$20</div><div class="text-[11px] font-bold text-slate-600">50 Refs</div></div>
-                <div class="bg-white/60 rounded-xl p-2"><div class="text-xl font-black outfit" style="color:#8B5CF6;">$30</div><div class="text-[11px] font-bold text-slate-600">100 Refs</div></div>
-                <div class="bg-white/60 rounded-xl p-2"><div class="text-xl font-black outfit" style="color:#8B5CF6;">$50</div><div class="text-[11px] font-bold text-slate-600">500 Refs</div></div>
+                <div class="milestone-card bg-white/70 rounded-xl p-3 border border-purple-100 cursor-pointer" onclick="animateMilestone(this)">
+                    <div class="text-2xl font-black outfit" style="color:#8B5CF6;">$10</div>
+                    <div class="text-xs font-bold text-slate-600 mt-0.5">25 Refs</div>
+                </div>
+                <div class="milestone-card bg-white/70 rounded-xl p-3 border border-purple-100 cursor-pointer" onclick="animateMilestone(this)">
+                    <div class="text-2xl font-black outfit" style="color:#8B5CF6;">$20</div>
+                    <div class="text-xs font-bold text-slate-600 mt-0.5">50 Refs</div>
+                </div>
+                <div class="milestone-card bg-white/70 rounded-xl p-3 border border-purple-100 cursor-pointer" onclick="animateMilestone(this)">
+                    <div class="text-2xl font-black outfit" style="color:#8B5CF6;">$30</div>
+                    <div class="text-xs font-bold text-slate-600 mt-0.5">100 Refs</div>
+                </div>
+                <div class="milestone-card bg-white/70 rounded-xl p-3 border border-purple-100 cursor-pointer" onclick="animateMilestone(this)">
+                    <div class="text-2xl font-black outfit" style="color:#8B5CF6;">$40</div>
+                    <div class="text-xs font-bold text-slate-600 mt-0.5">250 Refs</div>
+                </div>
             </div>
         </div>
     </div>
@@ -591,7 +616,7 @@
                     <span id="login-loader" class="loader-spin hidden"></span>
                 </button>
                 <div class="text-center">
-                    <button onclick="handleForgotPassword()" class="text-xs font-bold text-sky-600 hover:underline">Forgot Password?</button>
+                    <button onclick="handleForgotPassword()" id="forgot-pass-btn" class="text-xs font-bold text-sky-600 hover:underline">Forgot Password?</button>
                 </div>
             </div>
             <p class="text-center text-xs text-slate-500 mt-4">New to Silver X? <button onclick="switchToSignup()" class="text-sky-600 font-bold hover:underline">Create Account</button></p>
@@ -616,6 +641,14 @@
 <script src="firebase-config.js"></script>
 <script>
 lucide.createIcons();
+
+// Milestone card pop animation
+function animateMilestone(el) {
+    el.classList.remove('pop');
+    void el.offsetWidth; // force reflow
+    el.classList.add('pop');
+    el.addEventListener('animationend', () => el.classList.remove('pop'), { once: true });
+}
 
 // Scroll reveal
 const revealObserver = new IntersectionObserver(entries => {
@@ -646,11 +679,13 @@ firebase.auth().onAuthStateChanged(user => {
     if (user) window.location.replace("app.html");
 });
 
-// URL ref param pre-fill + handle #signup from app.html redirect
+// URL ref param pre-fill + handle #signup / #login hash from app.html redirect
 (function(){
     const r = new URLSearchParams(window.location.search).get('ref');
     const hash = window.location.hash;
-    if(hash === '#signup' || r) {
+    if(hash === '#login') {
+        openAuthPopup('login');
+    } else if(hash === '#signup' || r) {
         openAuthPopup('signup');
         setTimeout(()=>{ const el=document.getElementById('su-ref'); if(el && r) el.value=r; }, 300);
     }
@@ -693,15 +728,20 @@ function switchToSignup() {
 async function handleForgotPassword() {
     const email = document.getElementById('login-email').value.trim();
     if (!email) return toast('Enter your email address first', 'warning');
+    const btn = document.getElementById('forgot-pass-btn');
+    if(btn){ btn.disabled=true; btn.textContent='Sending...'; }
     try {
         await firebase.auth().sendPasswordResetEmail(email);
-        toast('Password reset email sent! Check your inbox.', 'success');
+        toast('✅ Password reset email sent! Check your inbox.', 'success');
     } catch(e) {
         const msgs = {
             'auth/user-not-found': 'No account found with this email.',
-            'auth/invalid-email': 'Invalid email format.'
+            'auth/invalid-email': 'Invalid email format.',
+            'auth/invalid-credential': 'No account found with this email.'
         };
         toast(msgs[e.code] || e.message, 'error');
+    } finally {
+        if(btn){ btn.disabled=false; btn.textContent='Forgot Password?'; }
     }
 }
 
