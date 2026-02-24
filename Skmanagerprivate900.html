@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SILVER X | ADMIN PANEL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Silver X Trader | Admin Panel</title>
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="theme-color" content="#0ea5e9">
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -26,12 +29,16 @@
         .tool-card.warning { border-color:#fed7aa; }
         .tool-card.success { border-color:#86efac; }
         input,select,textarea { font-family:'Plus Jakarta Sans',sans-serif; }
+        button { transition: opacity 0.15s, transform 0.1s; }
+        button:active:not(:disabled) { transform: scale(0.97); }
+        button:disabled { cursor: not-allowed; opacity: 0.7; }
         .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px; }
         .modal-box { background:#fff;border-radius:20px;padding:28px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3); }
         .filter-btn { padding:6px 14px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;transition:0.2s; }
         .filter-btn.active { background:#0ea5e9;color:#fff; }
         .filter-btn:not(.active) { background:#f1f5f9;color:#64748b; }
         ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-track{background:#f1f5f9} ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        @keyframes spin{to{transform:rotate(360deg)}}
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
@@ -51,7 +58,10 @@
         </div>
         <input type="email" id="admin-email" placeholder="Admin Email" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl mb-3 outline-none focus:border-sky-500 font-semibold text-sm">
         <input type="password" id="admin-password" placeholder="Admin Password" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl mb-5 outline-none focus:border-sky-500 font-semibold text-sm">
-        <button onclick="adminLogin()" class="w-full bg-sky-600 hover:bg-sky-700 text-white py-4 rounded-2xl font-black uppercase text-sm shadow-lg transition">🔐 Secure Login</button>
+        <button onclick="adminLogin()" id="admin-login-btn" class="w-full bg-sky-600 hover:bg-sky-700 text-white py-4 rounded-2xl font-black uppercase text-sm shadow-lg transition flex items-center justify-center gap-2">
+            <span id="admin-login-txt">🔐 Secure Login</span>
+            <span id="admin-login-ldr" class="hidden" style="width:16px;height:16px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block;"></span>
+        </button>
         <p id="login-error" class="text-red-600 text-xs font-bold text-center mt-3 hidden"></p>
     </div>
 </div>
@@ -819,17 +829,23 @@ async function adminLogin(){
         return;
     }
 
+    // Loading state
+    const loginBtn = document.getElementById('admin-login-btn');
+    const loginTxt = document.getElementById('admin-login-txt');
+    const loginLdr = document.getElementById('admin-login-ldr');
+    if(loginBtn) loginBtn.disabled = true;
+    if(loginTxt) loginTxt.textContent = 'Verifying...';
+    if(loginLdr) loginLdr.classList.remove('hidden');
+
     try {
-        // Step 1: Firebase Auth login
         const cred = await auth.signInWithEmailAndPassword(email, pass);
 
-        // ✅ FIX: Step 2 — Server-side admin verification via Firestore admin_roles
-        // This cannot be bypassed from browser console (Firestore Rules enforce it)
         const adminDoc = await db.collection('admin_roles').doc(cred.user.uid).get();
         if(!adminDoc.exists || adminDoc.data().is_admin !== true){
             await auth.signOut();
             errEl.textContent = '❌ Access denied. Not authorized as admin.';
             errEl.classList.remove('hidden');
+            if(loginBtn){ loginBtn.disabled=false; if(loginTxt) loginTxt.textContent='🔐 Secure Login'; if(loginLdr) loginLdr.classList.add('hidden'); }
             return;
         }
 
@@ -843,7 +859,7 @@ async function adminLogin(){
         initDashboard();
         logAdminAction('login', {});
     } catch(e){
-        // If already signed out above, ignore sign-out errors
+        if(loginBtn){ loginBtn.disabled=false; if(loginTxt) loginTxt.textContent='🔐 Secure Login'; if(loginLdr) loginLdr.classList.add('hidden'); }
         if(e.code !== 'auth/no-current-user'){
             errEl.textContent = '❌ ' + (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
                 ? 'Invalid email or password.'
@@ -890,12 +906,15 @@ function updateStatCards(){
 
 async function loadStatsCards(){
     try {
-        const pendDep = await db.collection('transactions').where('status','==','pending').where('transaction_type','==','DEPOSIT').get();
-        const pendWd  = await db.collection('transactions').where('status','==','pending').where('transaction_type','==','WITHDRAWAL').get();
-        const allTxns = await db.collection('transactions').where('status','==','success').get();
+        const [pendDep, pendWd, successTxns, approvedTxns] = await Promise.all([
+            db.collection('transactions').where('status','==','pending').where('transaction_type','==','DEPOSIT').get(),
+            db.collection('transactions').where('status','==','pending').where('transaction_type','==','WITHDRAWAL').get(),
+            db.collection('transactions').where('status','==','success').get(),
+            db.collection('transactions').where('status','==','approved').get()
+        ]);
         document.getElementById('stat-pend-dep').textContent = pendDep.size;
         document.getElementById('stat-pend-wd').textContent  = pendWd.size;
-        document.getElementById('stat-complete').textContent = allTxns.size;
+        document.getElementById('stat-complete').textContent = successTxns.size + approvedTxns.size;
     } catch(e) {}
 }
 
@@ -927,18 +946,26 @@ async function loadAnalytics(){
         const visitsSnap = await visitsQ.get();
         document.getElementById('analytics-visits').textContent = visitsSnap.size;
 
-        // Deposits
-        let depQ = db.collection('transactions').where('transaction_type','==','DEPOSIT').where('status','==','success');
-        if(cutoff) depQ = depQ.where('created_at','>=', firebase.firestore.Timestamp.fromDate(cutoff));
-        const depSnap = await depQ.get();
-        const depTotal = depSnap.docs.reduce((s, d) => s + (d.data().amount || 0), 0);
+        // Deposits — both 'success' and 'approved'
+        let depQs = db.collection('transactions').where('transaction_type','==','DEPOSIT').where('status','==','success');
+        let depQa = db.collection('transactions').where('transaction_type','==','DEPOSIT').where('status','==','approved');
+        if(cutoff){
+            depQs = depQs.where('created_at','>=', firebase.firestore.Timestamp.fromDate(cutoff));
+            depQa = depQa.where('created_at','>=', firebase.firestore.Timestamp.fromDate(cutoff));
+        }
+        const [depSn1, depSn2] = await Promise.all([depQs.get(), depQa.get()]);
+        const depTotal = [...depSn1.docs, ...depSn2.docs].reduce((s,d)=>s+(d.data().amount||0),0);
         document.getElementById('analytics-deposits').textContent = '$' + depTotal.toFixed(2);
 
-        // Withdrawals
-        let wdQ = db.collection('transactions').where('transaction_type','==','WITHDRAWAL').where('status','==','success');
-        if(cutoff) wdQ = wdQ.where('created_at','>=', firebase.firestore.Timestamp.fromDate(cutoff));
-        const wdSnap = await wdQ.get();
-        const wdTotal = wdSnap.docs.reduce((s, d) => s + (d.data().amount || 0), 0);
+        // Withdrawals — both 'success' and 'approved'
+        let wdQs = db.collection('transactions').where('transaction_type','==','WITHDRAWAL').where('status','==','success');
+        let wdQa = db.collection('transactions').where('transaction_type','==','WITHDRAWAL').where('status','==','approved');
+        if(cutoff){
+            wdQs = wdQs.where('created_at','>=', firebase.firestore.Timestamp.fromDate(cutoff));
+            wdQa = wdQa.where('created_at','>=', firebase.firestore.Timestamp.fromDate(cutoff));
+        }
+        const [wdSn1, wdSn2] = await Promise.all([wdQs.get(), wdQa.get()]);
+        const wdTotal = [...wdSn1.docs, ...wdSn2.docs].reduce((s,d)=>s+(d.data().amount||0),0);
         document.getElementById('analytics-withdrawals').textContent = '$' + wdTotal.toFixed(2);
 
     } catch(e) { console.error('Analytics error:', e); }
@@ -959,17 +986,28 @@ async function loadPendingDeposits(){
             const tx = { id: d.id, ...d.data() };
             const date = tx.created_at ? new Date(tx.created_at.toDate()).toLocaleString() : '—';
             const user = allUsers.find(u => u.id === tx.user_id) || {};
+            const joinDate = user.created_at ? new Date(user.created_at.toDate()).toLocaleDateString() : '—';
             return `<div class="border border-slate-200 rounded-xl p-4">
                 <div class="flex justify-between items-start mb-3">
-                    <div>
-                        <p class="text-sm font-black text-black">${user.first_name||''} ${user.last_name||''}</p>
-                        <p class="text-xs text-slate-500">${tx.user_email || user.email || '—'}</p>
-                        <p class="text-xs text-slate-400">${date}</p>
+                    <div class="flex-1">
+                        <p class="text-sm font-black text-black">${(user.first_name||'')+' '+(user.last_name||'—')}</p>
+                        <p class="text-xs text-sky-700 font-bold">📧 ${tx.user_email || user.email || '—'}</p>
+                        <p class="text-xs text-slate-600 font-semibold">📱 ${user.phone || '—'}</p>
+                        <p class="text-[10px] text-slate-400">📅 Joined: ${joinDate} | Ref: ${user.ref_code||'—'}</p>
+                        <p class="text-[10px] text-slate-400">🕐 Tx Time: ${date}</p>
                     </div>
-                    <span class="text-lg font-black outfit text-emerald-600">$${(tx.amount||0).toFixed(2)}</span>
+                    <div class="text-right">
+                        <span class="text-lg font-black outfit text-emerald-600">$${(tx.amount||0).toFixed(2)}</span>
+                        <p class="text-[9px] text-slate-400 mt-1">${tx.payment_method ? tx.payment_method.toUpperCase() : '—'}</p>
+                    </div>
                 </div>
                 ${tx.txid ? `<div class="bg-slate-50 rounded-lg px-3 py-2 mb-3"><p class="text-[10px] text-slate-400 font-bold">TXID</p><p class="text-xs font-bold text-slate-700 break-all">${tx.txid}</p></div>` : ''}
                 ${tx.screenshot_url ? `<a href="${tx.screenshot_url}" target="_blank" class="block text-xs text-sky-600 font-bold mb-3">📎 View Screenshot</a>` : ''}
+                <div class="bg-slate-50 rounded-lg px-3 py-2 mb-3 grid grid-cols-3 gap-2 text-center">
+                    <div><p class="text-[9px] text-slate-400">Main Bal</p><p class="text-xs font-black text-green-600">$${(user.balance||0).toFixed(2)}</p></div>
+                    <div><p class="text-[9px] text-slate-400">Deposited</p><p class="text-xs font-black text-slate-700">$${(user.total_deposited||0).toFixed(2)}</p></div>
+                    <div><p class="text-[9px] text-slate-400">Status</p><p class="text-xs font-black ${user.is_vip?'text-purple-600':'text-slate-500'}">${user.is_vip?'VIP':'FREE'}</p></div>
+                </div>
                 <div class="flex gap-2">
                     <button onclick="approveDeposit('${d.id}','${tx.user_id}',${tx.amount||0})" class="flex-1 bg-green-600 text-white py-2.5 rounded-xl font-bold text-xs hover:bg-green-700 transition">✅ Approve</button>
                     <button onclick="openRejectModal('${d.id}','DEPOSIT','${tx.user_id}',${tx.amount||0})" class="flex-1 bg-red-500 text-white py-2.5 rounded-xl font-bold text-xs hover:bg-red-600 transition">❌ Reject</button>
@@ -993,16 +1031,27 @@ async function loadPendingWithdrawals(){
             const tx = { id: d.id, ...d.data() };
             const date = tx.created_at ? new Date(tx.created_at.toDate()).toLocaleString() : '—';
             const user = allUsers.find(u => u.id === tx.user_id) || {};
+            const joinDate = user.created_at ? new Date(user.created_at.toDate()).toLocaleDateString() : '—';
             return `<div class="border border-orange-200 bg-orange-50 rounded-xl p-4">
                 <div class="flex justify-between items-start mb-3">
-                    <div>
-                        <p class="text-sm font-black text-black">${user.first_name||''} ${user.last_name||''}</p>
-                        <p class="text-xs text-slate-500">${tx.user_email || user.email || '—'}</p>
-                        <p class="text-xs text-slate-400">${date}</p>
+                    <div class="flex-1">
+                        <p class="text-sm font-black text-black">${(user.first_name||'')+' '+(user.last_name||'—')}</p>
+                        <p class="text-xs text-sky-700 font-bold">📧 ${tx.user_email || user.email || '—'}</p>
+                        <p class="text-xs text-slate-600 font-semibold">📱 ${user.phone || '—'}</p>
+                        <p class="text-[10px] text-slate-400">📅 Joined: ${joinDate} | Ref: ${user.ref_code||'—'}</p>
+                        <p class="text-[10px] text-slate-400">🕐 Tx Time: ${date}</p>
                     </div>
-                    <span class="text-lg font-black outfit text-orange-600">$${(tx.amount||0).toFixed(2)}</span>
+                    <div class="text-right">
+                        <span class="text-lg font-black outfit text-orange-600">$${(tx.amount||0).toFixed(2)}</span>
+                        <p class="text-[9px] text-slate-400 mt-1">${tx.payment_method ? tx.payment_method.toUpperCase() : '—'}</p>
+                    </div>
                 </div>
-                ${tx.wallet_address ? `<div class="bg-white rounded-lg px-3 py-2 mb-3"><p class="text-[10px] text-slate-400 font-bold">WALLET ADDRESS</p><p class="text-xs font-bold text-slate-700 break-all">${tx.wallet_address}</p></div>` : ''}
+                <div class="bg-white rounded-lg px-3 py-2 mb-2 grid grid-cols-3 gap-2 text-center">
+                    <div><p class="text-[9px] text-slate-400">Main Bal</p><p class="text-xs font-black text-green-600">$${(user.balance||0).toFixed(2)}</p></div>
+                    <div><p class="text-[9px] text-slate-400">Earn Wal</p><p class="text-xs font-black text-sky-600">$${(user.earn_wallet||0).toFixed(2)}</p></div>
+                    <div><p class="text-[9px] text-slate-400">Total Dep</p><p class="text-xs font-black text-slate-700">$${(user.total_deposited||0).toFixed(2)}</p></div>
+                </div>
+                ${tx.wallet_address ? `<div class="bg-white rounded-lg px-3 py-2 mb-3"><p class="text-[10px] text-slate-400 font-bold uppercase">💳 ${tx.payment_method||'Wallet'} Address</p><p class="text-xs font-bold text-slate-700 break-all">${tx.wallet_address}</p></div>` : ''}
                 <div class="flex gap-2">
                     <button onclick="approveWithdrawal('${d.id}','${tx.user_id}',${tx.amount||0})" class="flex-1 bg-green-600 text-white py-2.5 rounded-xl font-bold text-xs hover:bg-green-700 transition">✅ Approve</button>
                     <button onclick="openRejectModal('${d.id}','WITHDRAWAL','${tx.user_id}',${tx.amount||0})" class="flex-1 bg-red-500 text-white py-2.5 rounded-xl font-bold text-xs hover:bg-red-600 transition">❌ Reject</button>
@@ -1015,25 +1064,42 @@ async function loadPendingWithdrawals(){
 async function loadCompletedTransactions(){
     const list = document.getElementById('list-completed');
     try {
-        const snap = await db.collection('transactions')
-            .where('status','==','success')
-            .orderBy('created_at','desc').limit(50).get();
+        // Fetch both 'success' (admin-approved) and 'approved' (system-generated) transactions
+        const [successSnap, approvedSnap] = await Promise.all([
+            db.collection('transactions').where('status','==','success').orderBy('created_at','desc').limit(30).get(),
+            db.collection('transactions').where('status','==','approved').orderBy('created_at','desc').limit(30).get()
+        ]);
 
-        if(snap.empty){ list.innerHTML='<p class="text-center text-slate-400 py-8">No completed transactions</p>'; return; }
+        // Merge and deduplicate by doc ID
+        const seen = new Set();
+        let allDocs = [];
+        [...successSnap.docs, ...approvedSnap.docs].forEach(d => {
+            if(!seen.has(d.id)){ seen.add(d.id); allDocs.push(d); }
+        });
+        // Sort by created_at descending
+        allDocs.sort((a,b)=>{
+            const at = a.data().created_at, bt = b.data().created_at;
+            if(!at||!bt) return 0;
+            return bt.toMillis() - at.toMillis();
+        });
+        allDocs = allDocs.slice(0,50);
 
-        list.innerHTML = snap.docs.map(d => {
+        if(!allDocs.length){ list.innerHTML='<p class="text-center text-slate-400 py-8">No completed transactions</p>'; return; }
+
+        list.innerHTML = allDocs.map(d => {
             const tx = { id: d.id, ...d.data() };
             const date = tx.created_at ? new Date(tx.created_at.toDate()).toLocaleString() : '—';
             const isDeposit = tx.transaction_type === 'DEPOSIT';
+            const color = isDeposit ? 'text-emerald-600' : 'text-orange-600';
             return `<div class="border border-slate-200 rounded-xl p-3 flex justify-between items-center">
                 <div>
-                    <p class="text-xs font-black uppercase ${isDeposit?'text-emerald-600':'text-orange-600'}">${tx.transaction_type||'—'}</p>
+                    <p class="text-xs font-black uppercase ${color}">${tx.transaction_type||'—'}</p>
                     <p class="text-[10px] text-slate-400">${tx.user_email || '—'}</p>
                     <p class="text-[10px] text-slate-400">${date}</p>
                 </div>
                 <div class="text-right">
-                    <p class="text-sm font-black ${isDeposit?'text-emerald-600':'text-orange-600'}">$${(tx.amount||0).toFixed(2)}</p>
-                    <span class="badge-success">SUCCESS</span>
+                    <p class="text-sm font-black ${color}">$${(tx.amount||0).toFixed(2)}</p>
+                    <span class="badge-success">${tx.status.toUpperCase()}</span>
                 </div>
             </div>`;
         }).join('');
@@ -1043,13 +1109,16 @@ async function loadCompletedTransactions(){
 // ─── APPROVE DEPOSIT ──────────────────────────────────────────
 async function approveDeposit(txId, userId, amount){
     if(!confirm(`Approve deposit of $${amount}?`)) return;
+    // Loading state
+    const btn = event && event.target ? event.target : null;
+    if(btn){ btn.disabled=true; btn.textContent='⏳ Processing...'; }
     try {
         const batch = db.batch();
         batch.update(db.collection('transactions').doc(txId), {
             status:'success',
             approved_at: firebase.firestore.FieldValue.serverTimestamp(),
             approved_by: adminUser.email,
-            commission_triggered: true  // Prevent client-side double trigger
+            commission_triggered: true
         });
         batch.update(db.collection('users').doc(userId), {
             balance: firebase.firestore.FieldValue.increment(amount),
@@ -1057,14 +1126,16 @@ async function approveDeposit(txId, userId, amount){
         });
         await batch.commit();
 
-        // Trigger deposit commission for referrer (admin side)
         await triggerDepositCommission(userId, amount);
         
         logAdminAction('approve_deposit', { txId, userId, amount });
         alert('✅ Deposit approved! Balance updated.');
         loadPendingDeposits();
         loadStatsCards();
-    } catch(e) { alert('Error: '+e.message); }
+    } catch(e) {
+        if(btn){ btn.disabled=false; btn.textContent='✅ Approve'; }
+        alert('Error: '+e.message);
+    }
 }
 
 async function triggerDepositCommission(userId, depositAmount){
@@ -1078,7 +1149,11 @@ async function triggerDepositCommission(userId, depositAmount){
         if(refSnap.empty) return;
 
         const refUser = { id: refSnap.docs[0].id, ...refSnap.docs[0].data() };
-        const commission = parseFloat((depositAmount * 0.03).toFixed(2));
+        // Get commission rate from platform config
+        const cfgSnap = await db.collection('config').doc('platform').get();
+        const rate = cfgSnap.exists ? (cfgSnap.data().referral_commission_rate||0.03) : 0.03;
+        const commission = parseFloat((depositAmount * rate).toFixed(2));
+        if(commission <= 0) return;
 
         const batch = db.batch();
         batch.update(db.collection('users').doc(refUser.id), { earn_wallet: firebase.firestore.FieldValue.increment(commission) });
@@ -1086,6 +1161,7 @@ async function triggerDepositCommission(userId, depositAmount){
             user_id: refUser.id, user_email: refUser.email,
             amount: commission, transaction_type: 'DEPOSIT_COMMISSION',
             status: 'success', from_user: userId,
+            notes: `${(rate*100).toFixed(0)}% deposit commission from $${depositAmount} deposit`,
             created_at: firebase.firestore.FieldValue.serverTimestamp()
         });
         await batch.commit();
@@ -1095,13 +1171,22 @@ async function triggerDepositCommission(userId, depositAmount){
 // ─── APPROVE WITHDRAWAL ───────────────────────────────────────
 async function approveWithdrawal(txId, userId, amount){
     if(!confirm(`Approve withdrawal of $${amount}? Confirm payment was sent.`)) return;
+    const btn = event && event.target ? event.target : null;
+    if(btn){ btn.disabled=true; btn.textContent='⏳ Processing...'; }
     try {
-        await db.collection('transactions').doc(txId).update({ status:'success', approved_at: firebase.firestore.FieldValue.serverTimestamp(), approved_by: adminUser.email });
+        await db.collection('transactions').doc(txId).update({
+            status:'success',
+            approved_at: firebase.firestore.FieldValue.serverTimestamp(),
+            approved_by: adminUser.email
+        });
         logAdminAction('approve_withdrawal', { txId, userId, amount });
         alert('✅ Withdrawal marked as approved!');
         loadPendingWithdrawals();
         loadStatsCards();
-    } catch(e) { alert('Error: '+e.message); }
+    } catch(e) {
+        if(btn){ btn.disabled=false; btn.textContent='✅ Approve'; }
+        alert('Error: '+e.message);
+    }
 }
 
 // ─── REJECT MODAL ─────────────────────────────────────────────
@@ -1163,22 +1248,44 @@ function renderVIPUsers(){
 function userCard(u, highlight=false){
     const isVip = u.is_vip && u.vip_expiry > Date.now();
     const vipDays = isVip ? Math.ceil((u.vip_expiry - Date.now())/(1000*60*60*24)) : 0;
-    const joinDate = u.created_at ? new Date(u.created_at.toDate()).toLocaleDateString() : '—';
+    const joinDate = u.created_at ? new Date(u.created_at.toDate()).toLocaleString() : '—';
+    const vipExpiry = isVip && u.vip_expiry ? new Date(u.vip_expiry).toLocaleDateString() : '—';
     const border = highlight ? 'border-purple-300 bg-purple-50' : 'border-slate-200';
-    return `<div class="border ${border} rounded-xl p-3">
+    const suspBadge = u.suspended ? `<span class="inline-block px-2 py-0.5 bg-red-100 text-red-700 text-[9px] font-black rounded-lg uppercase ml-1">SUSPENDED</span>` : '';
+    const blackBadge = u.blacklisted ? `<span class="inline-block px-2 py-0.5 bg-black text-white text-[9px] font-black rounded-lg uppercase ml-1">BLACKLISTED</span>` : '';
+    return `<div class="border ${border} rounded-xl p-3 mb-2">
         <div class="flex justify-between items-start mb-2">
-            <div>
-                <p class="text-sm font-bold">${(u.first_name||'')+' '+(u.last_name||'')}</p>
-                <p class="text-xs text-slate-500">${u.email}</p>
-                <p class="text-[10px] text-slate-400">Joined: ${joinDate} | Ref: ${u.ref_code||'—'}</p>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1 flex-wrap mb-0.5">
+                    <p class="text-sm font-black text-black">${(u.first_name||'')+' '+(u.last_name||'')}</p>
+                    <span class="${isVip?'badge-vip':'badge-pending'}">${isVip?`VIP ${vipDays}d left`:'FREE'}</span>
+                    ${suspBadge}${blackBadge}
+                </div>
+                <p class="text-xs text-sky-700 font-bold">📧 ${u.email||'—'}</p>
+                <p class="text-xs text-slate-600 font-semibold">📱 ${u.phone||'—'}</p>
+                <p class="text-[10px] text-slate-400">📅 Joined: ${joinDate}</p>
+                <p class="text-[10px] text-slate-400">🔖 Ref Code: <span class="font-bold text-slate-600">${u.ref_code||'—'}</span> | Referred By: <span class="font-bold text-slate-600">${u.referred_by||'None'}</span></p>
+                ${isVip ? `<p class="text-[10px] text-purple-500 font-bold">👑 VIP Expires: ${vipExpiry}</p>` : ''}
+                ${u.suspended ? `<p class="text-[10px] text-red-500 font-bold">⛔ Reason: ${u.suspend_reason||'—'}</p>` : ''}
             </div>
-            <span class="${isVip?'badge-vip':'badge-pending'}">${isVip?`VIP ${vipDays}d`:'FREE'}</span>
         </div>
-        <div class="grid grid-cols-4 gap-2 text-center mb-2">
-            <div class="bg-white p-1.5 rounded-lg border border-slate-100"><p class="text-[9px] text-slate-400">Balance</p><p class="text-xs font-black text-green-600">$${(u.balance||0).toFixed(2)}</p></div>
-            <div class="bg-white p-1.5 rounded-lg border border-slate-100"><p class="text-[9px] text-slate-400">Earn</p><p class="text-xs font-black text-sky-600">$${(u.earn_wallet||0).toFixed(2)}</p></div>
-            <div class="bg-white p-1.5 rounded-lg border border-slate-100"><p class="text-[9px] text-slate-400">Deposited</p><p class="text-xs font-black text-slate-700">$${(u.total_deposited||0).toFixed(2)}</p></div>
-            <div class="bg-white p-1.5 rounded-lg border border-slate-100"><p class="text-[9px] text-slate-400">Referrals</p><p class="text-xs font-black text-blue-600">${u.referrals||0}</p></div>
+        <div class="grid grid-cols-4 gap-1.5 text-center mb-2">
+            <div class="bg-green-50 p-1.5 rounded-lg border border-green-100">
+                <p class="text-[9px] text-slate-400 font-bold">Main Bal</p>
+                <p class="text-xs font-black text-green-600">$${(u.balance||0).toFixed(2)}</p>
+            </div>
+            <div class="bg-sky-50 p-1.5 rounded-lg border border-sky-100">
+                <p class="text-[9px] text-slate-400 font-bold">Earn Wal</p>
+                <p class="text-xs font-black text-sky-600">$${(u.earn_wallet||0).toFixed(2)}</p>
+            </div>
+            <div class="bg-slate-50 p-1.5 rounded-lg border border-slate-100">
+                <p class="text-[9px] text-slate-400 font-bold">Deposited</p>
+                <p class="text-xs font-black text-slate-700">$${(u.total_deposited||0).toFixed(2)}</p>
+            </div>
+            <div class="bg-blue-50 p-1.5 rounded-lg border border-blue-100">
+                <p class="text-[9px] text-slate-400 font-bold">Refs</p>
+                <p class="text-xs font-black text-blue-600">${u.referrals||0}</p>
+            </div>
         </div>
         <div class="flex gap-1.5">
             <button onclick="editUserBalance('${u.id}',${u.balance||0},'balance')" class="flex-1 bg-orange-100 text-orange-700 py-1.5 rounded-lg font-bold text-[10px]">💰 Bal</button>
@@ -1290,6 +1397,8 @@ async function createPromoCode(){
     const data = { reward, active: true, max_uses: maxUses, uses: 0, created_by: adminUser.email, created_at: firebase.firestore.FieldValue.serverTimestamp() };
     if(expiryVal) data.expires_at = firebase.firestore.Timestamp.fromDate(new Date(expiryVal));
 
+    const createBtn = document.querySelector('button[onclick="createPromoCode()"]');
+    if(createBtn){ createBtn.disabled=true; createBtn.textContent='⏳ Creating...'; }
     try {
         await db.collection('promo_codes').doc(code).set(data);
         logAdminAction('create_promo', { code, reward, maxUses });
@@ -1297,6 +1406,7 @@ async function createPromoCode(){
         document.getElementById('promo-code').value = '';
         loadPromoCodes();
     } catch(e) { alert('Error: '+e.message); }
+    finally { if(createBtn){ createBtn.disabled=false; createBtn.textContent='✨ Create Promo Code'; } }
 }
 
 async function loadPromoCodes(){
@@ -1959,10 +2069,11 @@ async function updateWalletAddresses(){
     const bnb  = document.getElementById('t-wallet-bnb').value.trim();
     if(!usdt&&!bnb){ alert('Enter at least one address'); return; }
     const update = {};
-    if(usdt) update.wallet_usdt = usdt;
-    if(bnb)  update.wallet_bnb = bnb;
+    // Use same field names as app.html reads: wallet_trc20 and wallet_binance
+    if(usdt) update.wallet_trc20 = usdt;
+    if(bnb)  update.wallet_binance = bnb;
     await db.collection('config').doc('platform').set(update, { merge:true });
-    logAdminAction('update_wallets', { usdt, bnb });
+    logAdminAction('update_wallets', { wallet_trc20: usdt, wallet_binance: bnb });
     alert('✅ Wallet addresses updated!');
 }
 
@@ -1994,12 +2105,19 @@ async function loadTrafficStats(){
             db.collection('visits').where('timestamp','>=', firebase.firestore.Timestamp.fromDate(month)).get(),
             db.collection('visits').get()
         ]);
-        document.getElementById('traffic-today').textContent  = todaySnap.size;
-        document.getElementById('traffic-week').textContent   = weekSnap.size;
-        document.getElementById('traffic-month').textContent  = monthSnap.size;
-        document.getElementById('traffic-total').textContent  = totalSnap.size;
+        const vals = [todaySnap.size, weekSnap.size, monthSnap.size, totalSnap.size];
+        // Update both tools tab and reports tab elements
+        ['traffic-today','traffic-week','traffic-month','traffic-total'].forEach((id,i)=>{
+            const el = document.getElementById(id); if(el) el.textContent = vals[i];
+        });
+        ['rep-traffic-today','rep-traffic-week','rep-traffic-month','rep-traffic-total'].forEach((id,i)=>{
+            const el = document.getElementById(id); if(el) el.textContent = vals[i];
+        });
     } catch(e) { console.error('Traffic error:', e); }
 }
+
+// Reports tab traffic — reuses same function
+async function loadReportsTraffic(){ await loadTrafficStats(); }
 
 
 function exportVIPUsers(){
@@ -2012,30 +2130,6 @@ function exportVIPUsers(){
     downloadCSV('silver-x-vip-users.csv', rows);
 }
 
-async function loadReportsTraffic(){
-    try {
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const week  = new Date(now - 7*86400000);
-        const month = new Date(now.getFullYear(), now.getMonth(), 1);
-        const [a,b,c,d] = await Promise.all([
-            db.collection('visits').where('timestamp','>=', firebase.firestore.Timestamp.fromDate(today)).get(),
-            db.collection('visits').where('timestamp','>=', firebase.firestore.Timestamp.fromDate(week)).get(),
-            db.collection('visits').where('timestamp','>=', firebase.firestore.Timestamp.fromDate(month)).get(),
-            db.collection('visits').get()
-        ]);
-        ['rep-traffic-today','rep-traffic-week','rep-traffic-month','rep-traffic-total'].forEach((id,i)=>{
-            const el = document.getElementById(id);
-            if(el) el.textContent = [a,b,c,d][i].size;
-        });
-        // Also update tools tab traffic
-        ['traffic-today','traffic-week','traffic-month','traffic-total'].forEach((id,i)=>{
-            const el = document.getElementById(id);
-            if(el) el.textContent = [a,b,c,d][i].size;
-        });
-    } catch(e) { console.error(e); }
-}
-
 async function loadPlatformConfig(){
     const el = document.getElementById('config-display');
     try {
@@ -2044,7 +2138,7 @@ async function loadPlatformConfig(){
         const configItems = [
             { label: 'Maintenance Mode', value: cfg.maintenance_mode ? '🔴 ON' : '🟢 OFF', color: cfg.maintenance_mode ? 'text-red-600' : 'text-green-600' },
             { label: 'VIP Price', value: '$'+(cfg.vip_price||199), color: 'text-purple-600' },
-            { label: 'Investment ROI', value: ((cfg.investment_roi||0.15)*100).toFixed(0)+'%', color: 'text-green-600' },
+            { label: 'Investment ROI', value: (cfg.investment_roi||15)+'%', color: 'text-green-600' },
             { label: 'Maturity Hours', value: (cfg.investment_maturity_hours||24)+'h', color: 'text-sky-600' },
             { label: 'Joining Bonus', value: '$'+(cfg.joining_bonus||10), color: 'text-amber-600' },
             { label: 'Ad Reward', value: '$'+(cfg.ad_reward||2), color: 'text-sky-600' },
